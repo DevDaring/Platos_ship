@@ -123,7 +123,7 @@ def generate_personas_for_question(
             "reasoning_style_label": chosen_style,
             "generated_persona_text": response.raw_text_output,
             "generation_temperature": 0.9,
-            "generator_model_name": llama_agent.actually_loaded_repository or "meta-llama/Llama-3.1-8B-Instruct",
+            "generator_model_name": getattr(llama_agent, "actually_loaded_repository", None) or getattr(llama_agent, "model_name", "meta-llama/llama-3.1-8b-instruct"),
             "validation_pass_status": "pending",
             "regeneration_attempts_used": 0,
         })
