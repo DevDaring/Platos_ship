@@ -160,6 +160,12 @@ def sample_mmlu_pro(
             options = row.get("options", [])
             if isinstance(options, str):
                 options = json.loads(options)
+            elif hasattr(options, "tolist"):  # numpy array / pandas array
+                options = options.tolist()
+            elif options is None or (not isinstance(options, list) and not hasattr(options, "__iter__")):
+                options = []
+            else:
+                options = list(options)  # ensure plain Python list
 
             # Determine correct answer letter
             answer = str(row.get("answer", ""))
