@@ -22,7 +22,7 @@ logger = logging.getLogger("platos_ship.dataset_builder")
 
 # MMLU-Pro subjects in priority order
 MMLU_PRO_SUBJECTS = [
-    "mathematics", "physics", "chemistry", "biology", "computer science",
+    "math", "physics", "chemistry", "biology", "computer science",
     "economics", "history", "law", "philosophy", "psychology",
 ]
 
