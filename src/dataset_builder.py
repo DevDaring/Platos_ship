@@ -41,7 +41,8 @@ def load_gsm8k(cache_dir: Path) -> pd.DataFrame:
     """Download and return GSM8K test split."""
     from datasets import load_dataset
     logger.info("Loading GSM8K dataset...")
-    ds = load_dataset("gsm8k", "main", split="test", cache_dir=str(cache_dir))
+    # Use canonical HF name ("openai/gsm8k"); the old alias "gsm8k" is deprecated
+    ds = load_dataset("openai/gsm8k", "main", split="test", cache_dir=str(cache_dir))
     df = ds.to_pandas()
     logger.info(f"GSM8K loaded: {len(df)} rows, columns: {list(df.columns)}")
     return df
@@ -69,10 +70,15 @@ def generate_gsm8k_wrong_answers(correct_answer_str: str) -> List[str]:
     wrongs = set()
     candidates = [
         correct + 1, correct - 1, correct * 2,
-        round(correct / 2), correct + 10,
+        correct / 2, correct + 10,
     ]
     for c in candidates:
-        c_str = str(int(c)) if c == int(c) else f"{c:.2f}"
+        # Use integer formatting only when the value is a whole number
+        try:
+            c_int = int(round(c))
+            c_str = str(c_int) if abs(c - c_int) < 1e-9 else f"{c:.2f}"
+        except (OverflowError, ValueError):
+            c_str = f"{c:.2f}"
         if c_str != correct_answer_str and c_str not in wrongs:
             wrongs.add(c_str)
 
@@ -148,6 +154,11 @@ def sample_mmlu_pro(
 
     for subject in subjects:
         subject_df = df[df[category_col].str.lower() == subject.lower()]
+        if len(subject_df) == 0:
+            raise ValueError(
+                f"Subject '{subject}' not found in MMLU-Pro dataset. "
+                f"Available categories: {sorted(df[category_col].unique().tolist())}"
+            )
         if len(subject_df) < questions_per_subject:
             logger.warning(
                 f"Subject '{subject}' has only {len(subject_df)} items "
@@ -426,6 +437,31 @@ def build_question_pool(
         output_path = project_root / output_path
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(str(output_path), index=False)
+
+    # ── Post-build sanity assertions ──────────────────────────────────────────
+    if not dry_run:
+        expected_total = exp_config["total_questions_in_pool"]
+        expected_mmlu  = exp_config["mmlu_pro_question_count"]
+        expected_gsm   = exp_config["gsm8k_question_count"]
+        actual_mmlu    = int((df["source_dataset"] == "mmlu_pro").sum())
+        actual_gsm     = int((df["source_dataset"] == "gsm8k").sum())
+        actual_total   = len(df)
+
+        if actual_mmlu != expected_mmlu:
+            raise ValueError(
+                f"Question pool MMLU-Pro count mismatch: got {actual_mmlu}, "
+                f"expected {expected_mmlu}. Check subject names and dataset availability."
+            )
+        if actual_gsm != expected_gsm:
+            raise ValueError(
+                f"Question pool GSM8K count mismatch: got {actual_gsm}, "
+                f"expected {expected_gsm}."
+            )
+        if actual_total != expected_total:
+            raise ValueError(
+                f"Question pool total mismatch: got {actual_total}, "
+                f"expected {expected_total}."
+            )
 
     logger.info(f"Question pool saved: {len(df)} questions to {output_path}")
     logger.info(f"  MMLU-Pro: {len(df[df['source_dataset'] == 'mmlu_pro'])}")
