@@ -1,0 +1,39 @@
+# Plato's Ship — Pinned Dependencies
+# PyTorch must be installed separately with CUDA index:
+#   pip install torch==2.5.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# Core ML
+numpy<2.0
+transformers==4.46.0
+accelerate==0.34.0
+datasets==2.16.0
+bitsandbytes==0.46.1
+sentencepiece==0.2.0
+protobuf==4.25.0
+
+# Data processing
+pandas==2.2.2
+pyarrow==17.0.0
+
+# API clients
+openai==1.43.0
+requests==2.31.0
+google-generativeai==0.8.5
+mistralai==1.6.0
+
+# Configuration and utilities
+python-dotenv==1.0.0
+pyyaml==6.0.2
+jsonschema==4.23.0
+tqdm==4.65.0
+
+# Statistics
+scipy==1.13.1
+statsmodels==0.14.2
+
+# Embeddings (for potential persona similarity checks)
+sentence-transformers==3.0.1
+
+# Flash attention installed separately from wheel:
+#   wget https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.5cxx11abiFALSE-cp312-cp312-linux_x86_64.whl -O /tmp/flash_attn.whl
+#   pip install --no-deps /tmp/flash_attn.whl

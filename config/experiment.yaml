@@ -1,0 +1,71 @@
+random_seed: 20260502
+total_questions_in_pool: 300
+mmlu_pro_question_count: 200
+gsm8k_question_count: 100
+mmlu_pro_subject_count: 10
+questions_per_subject: 20
+trials_per_question_main_conditions: 5
+trials_per_question_mitigation_condition: 3
+debate_rounds: 1
+peer_message_ordering: randomized_per_trial
+
+reasoning_styles:
+  - surface_keyword_match
+  - false_analogy
+  - overconfident_assertion
+  - misapplied_rule
+
+dumb_persona_variants_per_question: 5
+
+main_conditions:
+  C1_smart_solo:
+    smart_agent_count: 1
+    dumb_agent_count: 0
+    aggregation_rule: none
+    description: Single smart agent answers alone, no debate
+  C2_three_smart:
+    smart_agent_count: 3
+    dumb_agent_count: 0
+    aggregation_rule: standard_debate
+    description: Three smart agents debate, capability-homogeneous control
+  C3_two_smart_one_dumb:
+    smart_agent_count: 2
+    dumb_agent_count: 1
+    aggregation_rule: standard_debate
+    description: Two smart plus one dumb, the Plato condition
+  C4_one_smart_two_dumb:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    aggregation_rule: standard_debate
+    description: One smart plus two dumb, capability collapse condition
+
+mitigation_condition:
+  C5_one_smart_two_dumb_confidence_weighted:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    aggregation_rule: confidence_weighted
+    description: Same composition as C4 but with confidence-weighted peer aggregation
+    questions_subset_size: 100
+    questions_sampling_strategy: stratified_random_from_full_pool
+    trials_per_question: 3
+    confidence_threshold_for_filtering: 60
+    confidence_weight_function: linear_above_threshold
+    runs_only_if_calibration_gate_passes: true
+
+focal_smart_agent_assignment: deepseek_primary
+cross_model_validation_subset_size: 50
+cross_model_validation_focal_agent: openrouter_gpt4o_mini
+
+answer_extraction_strategy: regex_first_then_judge_fallback
+parse_failure_retry_attempts: 1
+
+calibration_gate:
+  description: Decides whether C5 mitigation experiment is run.
+  condition_subset_to_analyse:
+    - C3_two_smart_one_dumb
+    - C4_one_smart_two_dumb
+  agent_role_to_analyse: dumb
+  precondition_metric_name: probability_high_confidence_given_wrong_answer
+  high_confidence_threshold: 60
+  precondition_metric_threshold: 0.40
+  decision_rule: run_C5_if_precondition_metric_is_at_or_above_threshold

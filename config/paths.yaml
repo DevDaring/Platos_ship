@@ -1,0 +1,16 @@
+data_root: ./data
+raw_data_directory: ./data/raw
+processed_data_directory: ./data/processed
+output_directory: ./data/outputs
+logs_directory: ./logs
+question_pool_file: ./data/processed/question_pool.parquet
+dumb_personas_file: ./data/processed/dumb_personas.parquet
+trial_log_file: ./data/outputs/trial_log.parquet
+final_answers_file: ./data/outputs/final_answers.parquet
+metrics_summary_file: ./data/outputs/metrics_summary.parquet
+statistical_tests_file: ./data/outputs/statistical_tests.parquet
+calibration_gate_report_file: ./data/outputs/calibration_gate_report.parquet
+mitigation_summary_file: ./data/outputs/mitigation_summary.parquet
+experiment_metadata_file: ./data/outputs/experiment_metadata.json
+completed_trials_checkpoint_file: ./data/outputs/completed_trials.parquet
+huggingface_cache_directory: ~/.cache/huggingface

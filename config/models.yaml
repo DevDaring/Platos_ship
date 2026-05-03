@@ -1,0 +1,91 @@
+smart_agents:
+  deepseek_primary:
+    provider: deepseek
+    model_name_env_variable: DEEPSEEK_PRIMARY_MODEL_NAME
+    api_key_env_variables:
+      - DEEPSEEK_API_KEY_1
+      - DEEPSEEK_API_KEY_2
+    api_base_url_env_variable: DEEPSEEK_API_BASE_URL
+    temperature: 0.7
+    max_output_tokens: 600
+    request_timeout_seconds: 120
+    maximum_retry_attempts: 5
+    retry_backoff_seconds: [2, 4, 8, 16, 32]
+  openrouter_gpt4o_mini:
+    provider: openrouter
+    model_name_env_variable: OPENROUTER_PRIMARY_MODEL_NAME
+    api_key_env_variables:
+      - OPENROUTER_API_KEY_1
+      - OPENROUTER_API_KEY_2
+    api_base_url_env_variable: OPENROUTER_API_BASE_URL
+    temperature: 0.7
+    max_output_tokens: 600
+    request_timeout_seconds: 120
+    maximum_retry_attempts: 5
+    retry_backoff_seconds: [2, 4, 8, 16, 32]
+
+dumb_agents:
+  llama_3_1_8b_instruct:
+    provider: openrouter
+    model_name_env_variable: OPENROUTER_LLAMA_MODEL_NAME
+    api_key_env_variables:
+      - OPENROUTER_API_KEY_1
+      - OPENROUTER_API_KEY_2
+    api_base_url_env_variable: OPENROUTER_API_BASE_URL
+    temperature: 0.9
+    max_output_tokens: 350
+    request_timeout_seconds: 120
+    maximum_retry_attempts: 5
+    retry_backoff_seconds: [2, 4, 8, 16, 32]
+  gemma_3_4b_instruct:
+    provider: openrouter
+    model_name_env_variable: OPENROUTER_GEMMA_MODEL_NAME
+    api_key_env_variables:
+      - OPENROUTER_API_KEY_1
+      - OPENROUTER_API_KEY_2
+    api_base_url_env_variable: OPENROUTER_API_BASE_URL
+    temperature: 0.9
+    max_output_tokens: 350
+    request_timeout_seconds: 120
+    maximum_retry_attempts: 5
+    retry_backoff_seconds: [2, 4, 8, 16, 32]
+
+# Judge cascade: Gemini (primary) -> Mistral (secondary) -> DeepSeek (tertiary)
+# No retry within any tier — only fallback to the next tier
+judge_cascade:
+  primary:
+    provider: gemini
+    model_name_env_variable: GEMINI_MODEL_NAME
+    api_key_env_variables:
+      - GEMINI_API_KEY_1
+      - GEMINI_API_KEY_2
+      - GEMINI_API_KEY_3
+      - GEMINI_API_KEY_4
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+  secondary:
+    provider: mistral
+    model_name_env_variable: MISTRAL_MODEL_NAME
+    api_key_env_variables:
+      - MISTRAL_API_KEY
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+  tertiary:
+    provider: deepseek
+    model_name_env_variable: DEEPSEEK_JUDGE_MODEL_NAME
+    api_key_env_variables:
+      - DEEPSEEK_API_KEY_1
+      - DEEPSEEK_API_KEY_2
+    api_base_url_env_variable: DEEPSEEK_API_BASE_URL
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+
+bit_precision_policy:
+  policy_description: >
+    All models (smart, dumb, judge) are accessed via remote API.
+    No local models are loaded. Precision is server-side.
+  local_model_torch_dtype: not_applicable
+  local_model_quantization: not_applicable
