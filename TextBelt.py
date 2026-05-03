@@ -50,17 +50,19 @@ def _atexit_handler():
 
 def register_exit_notifier():
     """
-    Register atexit and signal handlers so the user is notified even if the
-    pipeline dies unexpectedly. Call this once from main() after load_dotenv().
+    Register atexit and SIGTERM handler so the user is notified even if the
+    pipeline dies unexpectedly.  Call this once from main() after load_dotenv().
 
-    The atexit handler is a safety net only — it fires only when no explicit
-    send_sms() call has been made yet, preventing duplicate messages.
+    SIGINT (Ctrl-C) is intentionally NOT registered here — the TrialRunner
+    owns SIGINT so it can flush the checkpoint first, then calls send_sms().
+
+    The atexit handler fires only when no explicit send_sms() call has been
+    made yet, preventing duplicate messages.
     """
     atexit.register(_atexit_handler)
 
-    def on_signal(signum, frame):
-        send_sms("⚠️ Plato's Ship: interrupted by SIGTERM / Ctrl-C")
+    def on_sigterm(signum, frame):
+        send_sms("\u26a0\ufe0f Plato's Ship: terminated by SIGTERM")
         sys.exit(0)
 
-    signal.signal(signal.SIGTERM, on_signal)
-    signal.signal(signal.SIGINT, on_signal)
+    signal.signal(signal.SIGTERM, on_sigterm)

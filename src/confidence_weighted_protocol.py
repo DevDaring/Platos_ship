@@ -70,13 +70,17 @@ def filter_peers_by_confidence(
 
 def build_c5_round1_prompt(
     question_text: str,
-    answer_options: Optional[List[str]],
+    answer_options,
     filtered_peers: List[Dict[str, Any]],
     ordering_seed: int,
 ) -> Tuple[str, str]:
     """Build the C5 confidence-weighted Round 1 prompt for the focal smart agent."""
     system = "You are a knowledgeable respondent in a group reasoning task."
-    
+
+    # Guard against float NaN
+    if answer_options is not None and not isinstance(answer_options, (str, list)):
+        answer_options = None
+
     options_block = ""
     if answer_options:
         if isinstance(answer_options, str):
@@ -144,7 +148,7 @@ def run_round1_confidence_weighted(
     )
     
     answer_options_str = ""
-    if question.get("answer_options"):
+    if question.get("answer_options") and isinstance(question["answer_options"], (str, list)):
         opts = question["answer_options"]
         if isinstance(opts, str):
             opts = json.loads(opts)

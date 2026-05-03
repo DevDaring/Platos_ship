@@ -141,7 +141,6 @@ def sample_mmlu_pro(
 ) -> List[Dict]:
     """Stratified sampling from MMLU-Pro with difficulty probe."""
     rng = random.Random(seed)
-    np_rng = np.random.RandomState(seed)
     all_questions = []
 
     # Map category column
@@ -236,7 +235,6 @@ def sample_gsm8k(
 ) -> List[Dict]:
     """Sample GSM8K questions with difficulty probe."""
     rng = random.Random(seed)
-    np_rng = np.random.RandomState(seed)
 
     indices = list(range(len(df)))
     rng.shuffle(indices)
@@ -318,15 +316,30 @@ def build_question_pool(
     """
     Build the complete question pool and save to parquet.
 
+    If the question pool parquet already exists (and this is not a dry-run),
+    it is loaded directly without re-downloading datasets or re-running the
+    difficulty probe.  This makes crash-resume free and reproducible.
+
     Args:
         project_root: Root directory of the project.
-        probe_agent: LocalHuggingFaceAgent for difficulty probing (optional).
+        probe_agent: Agent used for difficulty probing (optional).
         dry_run: If True, use minimal sample sizes.
     """
     with open(project_root / "config" / "experiment.yaml") as f:
         exp_config = yaml.safe_load(f)
     with open(project_root / "config" / "paths.yaml") as f:
         paths = yaml.safe_load(f)
+
+    # ── Cache check: load parquet if it already exists and we are NOT in dry-run ──
+    if not dry_run:
+        qp_path = paths["question_pool_file"]
+        if not Path(qp_path).is_absolute():
+            qp_path = project_root / qp_path
+        if Path(qp_path).exists():
+            logger.info(f"Question pool already exists at {qp_path} — loading from cache")
+            df = pd.read_parquet(str(qp_path))
+            logger.info(f"Question pool loaded: {len(df)} questions")
+            return df
 
     seed = exp_config["random_seed"]
     raw_dir = Path(os.path.expanduser(paths["raw_data_directory"]))

@@ -145,6 +145,17 @@ def generate_all_personas(
     seed = exp_config["random_seed"]
     variants = 1 if dry_run else exp_config["dumb_persona_variants_per_question"]
 
+    # ── Cache check: load parquet if it already exists and we are NOT in dry-run ──
+    if not dry_run:
+        output_path = paths["dumb_personas_file"]
+        if not Path(output_path).is_absolute():
+            output_path = project_root / output_path
+        if Path(output_path).exists():
+            df = pd.read_parquet(str(output_path))
+            expected_rows = None  # we cannot know yet without loading question pool
+            logger.info(f"Personas already exist at {output_path} — loading from cache ({len(df)} rows)")
+            return df
+
     # Load question pool
     qp_path = paths["question_pool_file"]
     if not Path(qp_path).is_absolute():

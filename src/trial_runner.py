@@ -36,6 +36,12 @@ def _signal_handler(signum, frame):
     global _SHUTDOWN_REQUESTED
     _SHUTDOWN_REQUESTED = True
     logger.warning("Shutdown requested (SIGINT). Finishing current trial and flushing checkpoint...")
+    # Notify via SMS — import lazily to avoid circular imports
+    try:
+        from TextBelt import send_sms
+        send_sms("\u26a0\ufe0f Plato's Ship: interrupted by SIGINT / Ctrl-C")
+    except Exception:
+        pass
 
 
 class TrialRunner:

@@ -32,10 +32,14 @@ ROUND_1_INSTRUCTION = (
 
 def build_round0_prompt(
     question_text: str,
-    answer_options: Optional[List[str]] = None,
+    answer_options=None,
 ) -> Tuple[str, str]:
     """Build Round 0 independent prompt."""
     system = "You are a knowledgeable respondent in a group reasoning task."
+
+    # Guard against float NaN (pandas to_dict() on a null parquet cell)
+    if answer_options is not None and not isinstance(answer_options, (str, list)):
+        answer_options = None
 
     options_block = ""
     if answer_options:
@@ -56,7 +60,7 @@ def build_round0_prompt(
 
 def build_round1_prompt(
     question_text: str,
-    answer_options: Optional[List[str]],
+    answer_options,
     peer_responses: List[Dict[str, Any]],
     ordering_seed: int,
 ) -> Tuple[str, str]:
@@ -67,6 +71,10 @@ def build_round1_prompt(
         'agent_identifier', 'response_text', 'confidence' (int or None)
     """
     system = "You are a knowledgeable respondent in a group reasoning task."
+
+    # Guard against float NaN
+    if answer_options is not None and not isinstance(answer_options, (str, list)):
+        answer_options = None
 
     options_block = ""
     if answer_options:
@@ -140,8 +148,9 @@ def run_round0(
     )
 
     answer_options_str = ""
-    if question.get("answer_options"):
-        opts = question["answer_options"]
+    _ans_opts = question.get("answer_options")
+    if _ans_opts and isinstance(_ans_opts, (str, list)):
+        opts = _ans_opts
         if isinstance(opts, str):
             opts = json.loads(opts)
         answer_options_str = ", ".join(f"{chr(65+i)}" for i in range(len(opts)))
@@ -227,8 +236,9 @@ def run_round1_standard(
     Each agent sees all OTHER agents' Round 0 responses.
     """
     answer_options_str = ""
-    if question.get("answer_options"):
-        opts = question["answer_options"]
+    _ans_opts = question.get("answer_options")
+    if _ans_opts and isinstance(_ans_opts, (str, list)):
+        opts = _ans_opts
         if isinstance(opts, str):
             opts = json.loads(opts)
         answer_options_str = ", ".join(f"{chr(65+i)}" for i in range(len(opts)))

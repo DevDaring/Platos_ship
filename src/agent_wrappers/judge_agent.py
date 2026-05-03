@@ -95,11 +95,11 @@ class JudgeCascade:
     """
     3-tier judge cascade for answer extraction from debate transcripts.
 
-    Tier 1: Gemini (4 keys round-robin)
-    Tier 2: Mistral (1 key)
+    Tier 1: Gemini (4 keys round-robin) — 1 retry on transient errors
+    Tier 2: Mistral (1 key)              — 1 retry on transient errors
     Tier 3: DeepSeek (2 keys round-robin)
 
-    No retry within any tier. If a tier fails, falls through to the next.
+    Falls through to the next tier only after retries are exhausted.
     """
 
     JUDGE_SYSTEM_PROMPT = (
@@ -166,56 +166,68 @@ class JudgeCascade:
         )
 
     def _try_gemini(self, user_prompt: str) -> Optional[str]:
-        """Tier 1: Gemini via google-generativeai."""
+        """Tier 1: Gemini via google-generativeai.  1 retry on transient errors."""
         if not self._gemini_rr:
             return None
-        try:
-            import google.generativeai as genai
+        for attempt in range(2):  # 1 initial + 1 retry
+            try:
+                import google.generativeai as genai
 
-            api_key = self._gemini_rr.get_next_key()
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(self._gemini_model)
-            response = model.generate_content(
-                f"{self.JUDGE_SYSTEM_PROMPT}\n\n{user_prompt}",
-                generation_config=genai.GenerationConfig(
-                    temperature=0.0,
-                    max_output_tokens=50,
-                ),
-            )
-            text = response.text.strip() if response.text else None
-            if text and text != "UNPARSEABLE":
-                self._tier_usage["gemini"] += 1
-                return text
-            return text  # Could be UNPARSEABLE
-        except Exception as e:
-            api_failure_logger.warning(f"Gemini judge failed: {type(e).__name__}: {str(e)[:200]}")
-            return None
+                api_key = self._gemini_rr.get_next_key()
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel(self._gemini_model)
+                response = model.generate_content(
+                    f"{self.JUDGE_SYSTEM_PROMPT}\n\n{user_prompt}",
+                    generation_config=genai.GenerationConfig(
+                        temperature=0.0,
+                        max_output_tokens=50,
+                    ),
+                )
+                text = response.text.strip() if response.text else None
+                if text and text != "UNPARSEABLE":
+                    self._tier_usage["gemini"] += 1
+                    return text
+                return text  # Could be UNPARSEABLE
+            except Exception as e:
+                api_failure_logger.warning(
+                    f"Gemini judge attempt {attempt + 1} failed: "
+                    f"{type(e).__name__}: {str(e)[:200]}"
+                )
+                if attempt == 0:
+                    time.sleep(2)
+        return None
 
     def _try_mistral(self, user_prompt: str) -> Optional[str]:
-        """Tier 2: Mistral via mistralai SDK."""
+        """Tier 2: Mistral via mistralai SDK.  1 retry on transient errors."""
         if not self._mistral_key:
             return None
-        try:
-            from mistralai import Mistral
+        for attempt in range(2):  # 1 initial + 1 retry
+            try:
+                from mistralai import Mistral
 
-            client = Mistral(api_key=self._mistral_key)
-            response = client.chat.complete(
-                model=self._mistral_model,
-                messages=[
-                    {"role": "system", "content": self.JUDGE_SYSTEM_PROMPT},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.0,
-                max_tokens=50,
-            )
-            text = response.choices[0].message.content.strip() if response.choices else None
-            if text and text != "UNPARSEABLE":
-                self._tier_usage["mistral"] += 1
+                client = Mistral(api_key=self._mistral_key)
+                response = client.chat.complete(
+                    model=self._mistral_model,
+                    messages=[
+                        {"role": "system", "content": self.JUDGE_SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=0.0,
+                    max_tokens=50,
+                )
+                text = response.choices[0].message.content.strip() if response.choices else None
+                if text and text != "UNPARSEABLE":
+                    self._tier_usage["mistral"] += 1
+                    return text
                 return text
-            return text
-        except Exception as e:
-            api_failure_logger.warning(f"Mistral judge failed: {type(e).__name__}: {str(e)[:200]}")
-            return None
+            except Exception as e:
+                api_failure_logger.warning(
+                    f"Mistral judge attempt {attempt + 1} failed: "
+                    f"{type(e).__name__}: {str(e)[:200]}"
+                )
+                if attempt == 0:
+                    time.sleep(2)
+        return None
 
     def _try_deepseek(self, user_prompt: str) -> Optional[str]:
         """Tier 3: DeepSeek via openai-compatible client."""
