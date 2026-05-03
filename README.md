@@ -212,31 +212,27 @@ scp -i ~/.ssh/id_rsa_gcp .env debz@<VM_IP>:/home/debz/Platos_ship/.env
 
 ### 5.3 Install Python Dependencies (CPU VM)
 
+Ubuntu 24.04 enforces PEP 668 and blocks system-wide pip installs.
+**Use a virtual environment:**
+
 ```bash
-cd /home/debz/Platos_ship
-pip install \
-    "numpy<2.0" pandas==2.2.2 pyarrow==17.0.0 \
-    openai==1.43.0 requests==2.31.0 \
-    google-generativeai==0.8.5 mistralai==1.6.0 \
-    python-dotenv==1.0.0 pyyaml==6.0.2 jsonschema==4.23.0 tqdm==4.65.0 \
-    scipy==1.13.1 statsmodels==0.14.2 \
-    datasets==2.16.0 huggingface_hub \
-    sentence-transformers==3.0.1 \
-    transformers==4.46.0 accelerate==0.34.0 \
-    sentencepiece==0.2.0 protobuf==4.25.0
+# Create venv (one-time)
+python3 -m venv ~/venv
+
+# Install all dependencies
+~/venv/bin/pip install -r /home/debz/Platos_ship/requirements.txt
 ```
 
-> torch, bitsandbytes, and flash_attn are NOT installed on CPU VM.
-> All inference is via API.
+The project scripts are pre-configured to call `~/venv/bin/python3` directly,
+so you do not need to `source activate` the venv to run them.
+
+> torch, bitsandbytes, and flash_attn are NOT installed.
+> All inference is via API only.
 
 ### 5.4 Verify Imports
 
 ```bash
-python3 -c "
-import openai, google.generativeai, mistralai, datasets
-import pandas, scipy, statsmodels, yaml, dotenv, tqdm
-print('All critical imports OK')
-"
+~/venv/bin/python3 -c "import openai, datasets, pandas, scipy, statsmodels; print('imports ok')"
 ```
 
 ### 5.5 Run Pre-Flight Checks
@@ -406,6 +402,10 @@ trials in `data/outputs/completed_trials.parquet` are automatically skipped.
 | Unexpected exit | Plato's Ship: unexpected exit |
 
 Loaded from `.env` automatically. Silent if keys missing.
+
+> **Note:** TextBelt's default plan covers US/Canada numbers only.
+> For Indian (+91) or other international numbers, purchase an international
+> plan at https://textbelt.com or use a different SMS provider.
 
 ---
 
