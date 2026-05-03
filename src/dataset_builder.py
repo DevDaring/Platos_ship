@@ -380,9 +380,13 @@ def build_question_pool(
     logger.info(f"MMLU-Pro total rows: {len(mmlu_df)}")
     logger.info(f"GSM8K total rows: {len(gsm_df)}")
 
+    # In dry-run mode skip the difficulty probe entirely (random strata assigned).
+    # Probing all candidates for just 1-2 questions wastes hundreds of API calls.
+    _probe = None if dry_run else probe_agent
+
     # Sample
-    mmlu_questions = sample_mmlu_pro(mmlu_df, subjects, mmlu_per_subject, seed, probe_agent)
-    gsm_questions = sample_gsm8k(gsm_df, gsm_count, seed, probe_agent)
+    mmlu_questions = sample_mmlu_pro(mmlu_df, subjects, mmlu_per_subject, seed, _probe)
+    gsm_questions = sample_gsm8k(gsm_df, gsm_count, seed, _probe)
 
     # Build unified question pool
     all_questions = []
