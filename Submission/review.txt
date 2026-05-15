@@ -1,0 +1,339 @@
+# Copilot Repair Instructions — CSR Paper Submission
+
+## Context for Copilot
+
+You are editing two files for an **Elsevier Cognitive Systems Research (CSR)** submission:
+- `CSR_Paper.tex` — main manuscript
+- `CSR_Supplement.tex` — supplementary material
+
+The paper has been pre-reviewed and has critical defects. Apply ALL fixes below in priority order. **Do not invent new experimental data. Do not add results not already in the files.** Where a fix requires removing or reframing claims, edit existing text — do not fabricate new analyses.
+
+**Brevity goal:** The current main paper is ~12 typeset pages. Target ≤ 9 pages. Long papers are rejected more often because reviewers stop reading. Cut every sentence that does not earn its space.
+
+When you finish a priority block, summarise what you changed before moving to the next block. At the end, run the verification checklist and report unresolved items back to me.
+
+---
+
+## Priority 0 — Submission Blockers (these alone will cause desk-reject)
+
+### P0.1 Remove every provenance marker
+
+Search both files for the literal string `% PROVENANCE — REMOVE BEFORE SUBMIT` and for `PROVENANCE`. Delete the entire sentence containing it from every caption.
+
+Specifically in `CSR_Paper.tex`:
+- Table 2 caption — delete: `Source: data/outputs/metrics_summary.parquet and data/outputs/statistical_tests.parquet. % PROVENANCE — REMOVE BEFORE SUBMIT`
+- Figure 1 caption — delete: `Source: data/outputs/final_answers.parquet. % PROVENANCE — REMOVE BEFORE SUBMIT`
+- Figure 2 caption — delete: `Source: data/outputs/final_answers.parquet.`
+- Figure 3 caption — delete: `Source: data/outputs/trial_log.parquet. % PROVENANCE — REMOVE BEFORE SUBMIT`
+
+Do the same scan in `CSR_Supplement.tex`. No `parquet` filename should appear in any caption.
+
+### P0.2 Fix every arithmetic error
+
+The paper currently has inconsistent subtraction between Table 2 values and the prose Δ figures. Apply these exact replacements:
+
+| Location | Find | Replace |
+|---|---|---|
+| Abstract | `(+9.0 percentage points)` | `(+7.9 percentage points)` |
+| Abstract | `accuracy fell 2.0 percentage points in C3` | `accuracy fell 4.0 percentage points in C3` |
+| Section 4.1 | `The net gain in C4 is +9.0 percentage points` | `The net gain in C4 is +7.9 percentage points` |
+| Conclusion | `net accuracy gain in C4 masks` | keep, but verify the +9.0 number elsewhere in the same paragraph is changed to +7.9 |
+| Table 2, DS C2 Δ | `+2.9` | `+2.5` |
+| Table 2, DS C3 Δ | `+2.2` | `+2.1` |
+| Table 2, DS C4 Δ | `+9.0` | `+7.9` |
+| Table 2, DS C5 Δ | `+7.4` | `+6.3` |
+| Table 2, GPT C2 Δ | `+4.4` | `+2.0` |
+| Table 2, GPT C3 Δ | (verify it shows the correct sign) | `-4.0` |
+| Table 2, GPT C4 Δ | (verify) | `+0.4` |
+| Supplement Table 1 | match every Δ above | match |
+
+After replacement, every Δ in both Table 2 and Supplement Table 1 must equal R1 accuracy minus 76.2 (for DeepSeek) or minus 64.8 (for GPT-4o-mini). Verify this arithmetically and report any cell that does not reconcile.
+
+### P0.3 Fix the total trial count
+
+The abstract claims **"7,300 trials across five conditions"**. The actual count is:
+- DeepSeek-v4-flash: 1500 trials × 5 conditions = 7,500
+- GPT-4o-mini: 250 trials × 4 conditions (no C5 for GPT) = 1,000
+- Total: **8,500**
+
+Replace every occurrence of `7,300` with `8,500` in both files. Replace `7,300 trials` with `8,500 trials`. Check the conclusion's opening sentence as well.
+
+### P0.4 Resolve every unverified reference
+
+Search both files for the string `REQUIRES MANUAL VERIFICATION`. The following references are tagged unverified:
+
+- Ashery et al. 2025 — Emergent collective conventions and biases in populations of language models
+- Choi et al. 2025 — When identity skews debate
+- Hong et al. 2025 — SYCON-Bench
+- Pitre et al. 2025 — CONSENSAGENT
+- Weng et al. 2025 — BENCHFORM
+- Wu et al. 2025 — Talk Isn't always cheap
+
+For each, do this in order:
+1. Search arXiv and Google Scholar for an exact title match.
+2. If found, replace the placeholder bibliography entry with a complete BibTeX entry including arXiv ID or DOI. Remove the `REQUIRES MANUAL VERIFICATION` tag.
+3. **If NOT found within two search attempts**, remove the bibliography entry AND every `\cite{}` to that key, AND adjust the surrounding sentences in the body so they flow without that citation. Do not leave dangling clauses like "as shown by ()".
+
+After this step, no occurrence of `REQUIRES MANUAL VERIFICATION` may remain in either file. Report back which references you kept and which you removed.
+
+### P0.5 Remove every TODO placeholder
+
+Find and remove:
+- `[Additional acknowledgements to be added before submission.]` in the Acknowledgements section. Replace with either a real acknowledgement string OR delete the bracketed text entirely, leaving the rest of the section intact.
+- Any other `[INSERT ...]`, `[TODO ...]`, or `[...to be added]` placeholder. If you cannot resolve one, leave a clear `% TODO_FOR_AUTHOR:` comment for me and list it in your final report.
+
+---
+
+## Priority 1 — Framing Repair (the post-mortem's fatal flaw)
+
+### P1.1 Retitle the paper
+
+The current title "Capability-Asymmetric Multi-Agent Debate Degrades Strong LLM Reasoners: A Bias-Theoretic Account" is contradicted by Table 2 (strong model gains +7.9 pp under maximum weak-peer exposure). Replace it with:
+
+```
+Correction and Corruption Signals in Capability-Asymmetric Multi-Agent LLM Debate: A Bias-Theoretic Account
+```
+
+Apply in `CSR_Paper.tex` `\title{...}` and `CSR_Supplement.tex` title line (which should be prefixed with `Supplementary Material: `).
+
+### P1.2 Rewrite the abstract
+
+Replace the entire abstract block in `CSR_Paper.tex` with this exact text (180 words). Do not paraphrase — paste verbatim:
+
+```
+Multi-agent debate frameworks let language models critique and revise one another, often improving aggregate performance on reasoning tasks. When agents differ in capability, peer exposure exerts two simultaneous forces on a strong focal agent: a correction signal from peers who got different questions right, and a corruption signal from peers who hold incorrect positions. This work presents a controlled five-condition experiment that varies the number of weak peers exposed to a strong focal agent, using DeepSeek-v4-flash as the primary focal model and GPT-4o-mini for cross-model comparison, across 300 MMLU-Pro and GSM8K questions with five replications per question. For DeepSeek-v4-flash the correction signal dominates: Round 1 accuracy rises from 76.2\% solo to 84.1\% with two weak peers (+7.9 pp). For GPT-4o-mini the corruption signal dominates: accuracy falls 4.0 pp under one weak peer, with a correct-to-incorrect flip rate of 17.2\% under two. Confidence-weighted peer filtering fails as a mitigation because weak agents over-report certainty in 99.5\% of trials. Debate protocols should weight peers by verifiable accuracy, not self-reported confidence.
+```
+
+### P1.3 Demote the "Asch conformity index" everywhere
+
+The paper calls the C→I flip rate the "Asch conformity index" then admits in Section 3.5 that "the index reduces to the raw C→I flip rate." A hostile reviewer will quote this as evidence of a relabelled metric. Fix:
+
+- **Section 3.5:** Find the paragraph defining "Asch conformity index" as a separate metric. Delete it. Replace with this single sentence: `Because all heterogeneous trials produced a unanimous-wrong dumb-peer consensus, the C\textrightarrow{}I flip rate also serves as a conformity signature; we report it as the flip rate throughout and discuss its bandwagon interpretation in Section 5.`
+- **Section 4.3 heading:** change `Asch conformity signatures` → `Conformity signatures and a design limit`
+- **Section 4.3 body:** delete every occurrence of "Asch index" / "Asch conformity index" as a metric name. Replace with `C\textrightarrow{}I flip rate`. Numerical values stay the same.
+- **At the end of Section 4.3, append this paragraph:**
+```
+Because the dumb-peer consensus was unanimously wrong in every heterogeneous trial, the design cannot separate unanimity-driven bandwagon pressure from generic distractor-induced flipping. The reported flip-rate escalation is consistent with --- but does not isolate --- the bandwagon mechanism. A split-peer condition is required to attribute the effect to unanimity per se and is left to future work.
+```
+- **Figure 2 caption:** change `Annotated Asch conformity indices (flip-rate difference relative to the solo baseline) confirm monotone conformity escalation` → `Annotated C\textrightarrow{}I flip rates by condition show monotone escalation`
+- **Conclusion:** change `the Asch conformity index reached 0.065 in C4` → `the C\textrightarrow{}I flip rate reached 6.5\% in C4`. Change `Asch conformity index reaches 0.172` → `C\textrightarrow{}I flip rate reaches 17.2\%`.
+
+### P1.4 Remove "dose-response" framing
+
+Three peer-count values (0, 1, 2) is not a dose-response. Replace every occurrence in both files:
+
+| Find | Replace |
+|---|---|
+| `dose-response` (any case) | `peer-count trend` |
+| `Dose-response:` (figure title) | `Round 1 accuracy vs. weak peer count` |
+| `Dose-response relationship` (Section 4.2 heading) | `Peer-count trend` |
+| `dose-response measurement` | `three-point peer-count gradient measurement` |
+
+### P1.5 Replace "cross-model replication" with "cross-model comparison"
+
+GPT-4o-mini's curve is non-monotone (worst at C3, recovers at C4) — this is not replication. Replace in both files:
+
+- `cross-model replication` → `cross-model comparison`
+- Section 1 contribution 3: `confirming that the degradation mechanism operates---and is stronger---in a model with lower baseline capability` → `showing that the corruption signal dominates in a model with lower baseline capability`
+- Section 4.4 heading: `Cross-model replication and subject-level variation` → `Cross-model comparison and subject-level variation`
+
+### P1.6 Reframe C5 as calibration confirmation, not mitigation evaluation
+
+The supplementary admits the calibration gate predicted C5 would fail before the main experiment ran. Reframe accordingly:
+
+- **End of Section 3.4**, append: `Because the calibration gate (Supplementary S3) predicted that the threshold of 60 would not filter any peer in 99.5\% of trials, C5 is properly described as a confirmation of confidence miscalibration in weak agents, not as an independent mitigation evaluation.`
+- **Section 4.1:** find `The confidence-weighted condition C5 yields accuracy only 1.6 percentage points below C4 (p = 0.453, not significant), consistent with the null effect of filtering when the filter is never activated.` Replace with: `C5 yields R1 accuracy of 82.5\%, statistically indistinguishable from C4, confirming the pre-registered calibration prediction that the threshold would be inactive.`
+- **Conclusion:** change `Confidence-weighted peer filtering, evaluated in C5, fails universally because weak agents over-report confidence in 99.5\% of trials, leaving the filter permanently inactive.` → `Confidence-weighted peer filtering at threshold 60, evaluated in C5, was confirmed inactive in 99.5\% of trials, in line with the pre-registered calibration gate. The result is a confirmation of weak-agent miscalibration rather than an evaluation of confidence-based mitigation in general.`
+
+### P1.7 Reconcile trial-level vs. question-level inconsistency
+
+The McNemar test (question-level, 33 worse vs. 12 better, p = 0.0025) appears to contradict the trial-level Δ = +7.9 pp. Both can be true; the paper must say so explicitly.
+
+Insert this paragraph in Section 4.1, immediately after the existing McNemar sentence:
+```
+These two aggregations measure different objects. The trial-level R1 accuracy (84.1\%) reflects per-trial correctness across 1{,}500 trials; the McNemar test uses per-question majority-vote correctness across 300 questions. The contrast --- a net trial-level gain alongside a net question-level loss --- indicates that the C4 gains concentrate on a subset of questions while a different subset regresses, and that the question-level result is sensitive to majority-vote aggregation over five replications. We treat the trial-level figure as the primary outcome and the McNemar result as a robustness check that surfaces question-level heterogeneity.
+```
+
+### P1.8 Add CI on the flip-rate difference
+
+The "5.0% → 6.5% monotone rise" is not significant at α = 0.05. Add to Section 4.1 immediately after the flip-rate sentence:
+```
+A two-proportion test on the C2 vs.\ C4 C\textrightarrow{}I rates gives $p \approx 0.10$, so the C2-to-C4 gap is at the boundary of detectability with the current sample size; we report it as a trend, not as a significant escalation.
+```
+
+---
+
+## Priority 2 — Brevity (long papers get rejected more)
+
+**Target: main paper ≤ 9 typeset pages. Compile after each block and report page count.**
+
+### P2.1 Compress Section 2 (Related Work) — target ≤ 1 page
+
+- Merge subsections 2.1 and 2.2 into a single paragraph (no subheading) of at most 8 sentences covering: (a) homogeneous debate improves factuality (Du et al.), (b) capability heterogeneity introduces failure modes (Wu et al. or equivalent if kept), (c) sycophancy (Sharma et al.) and bandwagon (Koo et al., Asch, Bond & Smith) documented in single-agent settings.
+- Section 2.3 (mitigation): cut from one paragraph to two sentences mentioning CONSENSAGENT (if retained) and the present work's stress test.
+- Table 1 (study comparison): if any cited row was deleted in P0.4, remove that row.
+
+### P2.2 Compress Section 3 (Method)
+
+- Section 3.3 (datasets and persona pipeline): cut `1{,}486 of 1{,}500 personas (99.1\%) passed a validation gate requiring coherence and non-repetition.` Replace with `Personas were validated by a separate pipeline (details in Supplementary~S5).`
+- Section 3.5: cut `Answer extraction uses a three-stage cascade: regular-expression parsing (91.4\%), structured parsing (7.8\%), and a three-judge LLM cascade for the remaining 0.9\%; parse failures account for under 1\% of responses.` Replace with `Answer-extraction details (regex / structured / judge-cascade rates) are in Supplementary~S4.`
+
+### P2.3 Move subject-level results to supplementary
+
+- In Section 4.4: remove Figure 3 and the paragraph beginning `Figure 3 shows the C\textrightarrow{}I flip rate in C4 broken down by subject domain`. Replace with a single sentence: `Subject-level variation in C\textrightarrow{}I flip rates for DeepSeek-v4-flash in C4 is reported in Supplementary~S8; symbolic-manipulation domains (mathematics, engineering) show lower flip rates than judgment-intensive domains (law, health, history).`
+- Add Section S8 to `CSR_Supplement.tex` containing Figure 3 (moved from main paper) with its caption (provenance marker removed per P0.1) and one paragraph of discussion.
+
+### P2.4 Cut Section 5 (Discussion) to two short paragraphs
+
+- Paragraph 1 — dual mechanism: keep the correction/corruption framing, one numerical anchor per model. Do NOT restate the +7.9 / 17.2% numbers if they are already in Section 4.
+- Paragraph 2 — limitations: combine into one paragraph covering API access, discrete capability gap, unanimity-only design, and dataset coverage. See P3.1–P3.3 below for required additions.
+
+Delete every sentence in the current Section 5 that merely restates a Section 4 number.
+
+### P2.5 Cut Section 1 redundancies
+
+- Cut the second paragraph of Section 1 by half. Preserve the Plato's-ship-of-state hook (CSR-friendly) but delete duplicate definitions of sycophancy and bandwagon — those belong only in Section 2.
+- Remove `Each agent adopts one of four rhetorically distinct personas, and a three-stage judge cascade resolves ambiguous answers.` This is methodology, not contribution.
+
+### P2.6 Streamline contributions list
+
+The current four-item contributions list partly overlaps the abstract. Cut to three items, each ≤ 1 sentence:
+
+```
+\begin{enumerate}
+    \item A controlled three-point peer-count gradient measurement of focal-agent accuracy and correct-to-incorrect flip rate in a strong LLM reasoner exposed to up to two weak peers.
+    \item A bias-theoretic decomposition into correction (I\textrightarrow{}C) and corruption (C\textrightarrow{}I) signals, with an explicit design-limit discussion of bandwagon attribution under unanimous-wrong peer conditions.
+    \item A cross-model comparison with GPT-4o-mini showing that the corruption signal dominates in a weaker focal model, and an empirical confirmation that confidence-weighted peer filtering fails when weak agents over-report certainty.
+\end{enumerate}
+```
+
+---
+
+## Priority 3 — Address Methodological Gaps Without New Experiments
+
+Add the following limitations as a single paragraph at the end of Section 5 (Discussion):
+
+```
+Several limitations bound these claims. First, no self-consistency baseline was run; some fraction of the C2 lift (three smart agents debating) may be attributable to sample aggregation rather than to debate-induced revision, and comparing C2 to a self-consistency control is the most important follow-up. Second, in C2 and C3 the smart non-focal agents are also DeepSeek-v4-flash instances, so the C2 result conflates debate-based revision with intra-model self-consistency; a heterogeneous-smart-agent control would isolate the two. Third, MMLU-Pro and GSM8K appear in the pretraining corpora of contemporary LLMs, so the baseline accuracies may overstate genuine reasoning; the relative comparison across conditions is robust to a constant contamination offset, but the 45-percentage-point capability gap should be read as an empirical observation on these specific items. Fourth, the design provides only three peer-count values and only unanimous-wrong peer signals, so the bandwagon mechanism is not isolated from generic distractor pollution. Fifth, both focal models are accessed via commercial APIs, so the mechanistic attribution to sycophancy and the bandwagon effect is supported by the flip-rate patterns but cannot be verified at the representation level.
+```
+
+This single paragraph replaces any existing limitations text and addresses the post-mortem's missing-baseline, confound, and contamination concerns by acknowledgement.
+
+---
+
+## Priority 4 — Reproducibility Fixes
+
+### P4.1 Pin model versions
+
+In Section 3.2, replace:
+```
+The smart focal agent is DeepSeek-v4-flash (runtime model deepseek-chat, accessed via the DeepSeek direct API).
+```
+with:
+```
+The smart focal agent is DeepSeek-v4-flash (API identifier \texttt{deepseek-chat}, accessed via the DeepSeek direct API during the experiment window % TODO_FOR_AUTHOR: insert date range, e.g., March--April 2026
+). The API alias was stable across the experiment window but is not guaranteed to resolve to the same checkpoint indefinitely; reproducibility therefore depends on the provider's checkpoint retention policy.
+```
+
+Do the same for GPT-4o-mini and the two OpenRouter dumb-agent endpoints — add `% TODO_FOR_AUTHOR: insert date range` markers I can fill in.
+
+### P4.2 Specify replication mechanism
+
+After `with five replications per question` (Section 3.3 or 3.4), append:
+```
+Replications were independent API calls with temperature $=$ % TODO_FOR_AUTHOR: insert temperature value
+ and no fixed random seed (commercial API constraint). Variability across replications reflects the model serving stack rather than controlled stochasticity.
+```
+
+### P4.3 Prompt templates in supplementary
+
+In `CSR_Supplement.tex`, Section S4, the current text says `The full system- and user-prompt strings are embedded in the pipeline source code at src/debate_protocol.py and src/persona_generator.py.` This is insufficient.
+
+Replace with:
+```
+The full system- and user-prompt strings are reproduced verbatim below. % TODO_FOR_AUTHOR: choose path A or path B
+
+% Path A (preferred): paste prompt strings here in verbatim blocks
+% Path B (code release): replace this section with a sentence giving the public repository URL and commit hash.
+
+\subsection*{Round-0 prompt (focal and smart agents)}
+\begin{verbatim}
+% TODO_FOR_AUTHOR: paste Round-0 prompt verbatim
+\end{verbatim}
+
+\subsection*{Round-1 prompt}
+\begin{verbatim}
+% TODO_FOR_AUTHOR: paste Round-1 prompt verbatim
+\end{verbatim}
+
+\subsection*{C5 filtered-peer preface}
+\begin{verbatim}
+% TODO_FOR_AUTHOR: paste C5 filter preface verbatim
+\end{verbatim}
+```
+
+### P4.4 Judge-cascade conflict disclosure
+
+In Supplementary S4, after the description of the three-judge cascade, append:
+```
+The tertiary judge (DeepSeek-v4-flash) is the same model family as the primary focal agent. This judge was invoked on 0.9\% of responses; we did not run a sensitivity analysis excluding those trials, and the dependence is a known limitation.
+```
+
+---
+
+## Priority 5 — Final Polish
+
+### P5.1 Keywords
+
+In the keyword list, insert `cognitive systems` as the first keyword. Final keyword line:
+```
+\keyword{cognitive systems \sep multi-agent debate \sep sycophancy \sep conformity bias \sep large language models \sep bandwagon effect}
+```
+
+### P5.2 Document class
+
+Confirm the file uses `\documentclass[review,3p,times]{elsarticle}` or equivalent Elsevier `elsarticle` setup. Bibliography style should be `elsarticle-harv` (CSR uses Harvard style). If the file uses a non-Elsevier class, switch.
+
+### P5.3 Compile and report
+
+After all edits, compile both files. Report:
+1. Final page count of the main paper.
+2. Any LaTeX warnings or errors.
+3. Any unresolved `% TODO_FOR_AUTHOR:` markers — list them with line numbers.
+4. Page count delta vs. before edits.
+
+---
+
+## Verification Checklist (run after all priority blocks)
+
+Confirm each of the following is true. Report any that are not.
+
+1. [ ] No occurrence of `PROVENANCE` in either file.
+2. [ ] No occurrence of `REQUIRES MANUAL VERIFICATION` in either file.
+3. [ ] No occurrence of `[Additional` or `[INSERT` left unresolved (only `% TODO_FOR_AUTHOR:` comments remain, with a complete list reported to me).
+4. [ ] Title in `CSR_Paper.tex` is the new title; title in `CSR_Supplement.tex` is `Supplementary Material: ` + new title.
+5. [ ] Abstract is the verbatim 180-word block from P1.2.
+6. [ ] No `+9.0` remains anywhere; replaced with `+7.9` in main paper and supplement.
+7. [ ] No `2.0 percentage points` referring to GPT-4o-mini C3; replaced with `4.0`.
+8. [ ] No `7,300 trials` remains; replaced with `8,500 trials`.
+9. [ ] No `Asch conformity index` remains as a metric name. The phrase may appear once in a discussion of the bandwagon mechanism but not as a label for a number.
+10. [ ] No `dose-response` remains.
+11. [ ] No `cross-model replication` remains; `cross-model comparison` everywhere instead.
+12. [ ] Table 2 Δ column and Supplement Table 1 Δ column are arithmetically self-consistent with the R1 accuracy columns.
+13. [ ] Main paper compiles to ≤ 9 typeset pages.
+14. [ ] Supplementary compiles cleanly.
+15. [ ] Every bibliography entry has at least one of: DOI, arXiv ID, venue/year.
+16. [ ] Figure 3 has moved to Supplement S8; main paper Section 4.4 has only the one-sentence reference.
+
+---
+
+## Reporting Back
+
+When done, produce a single summary message with:
+- Number of edits applied per priority block.
+- Final page count of `CSR_Paper.tex`.
+- List of `% TODO_FOR_AUTHOR:` markers awaiting my input (file, line, description).
+- List of references kept vs. removed in P0.4.
+- Any item from the verification checklist that did not pass, with the reason.
+
+End of instructions.

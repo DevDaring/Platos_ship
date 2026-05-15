@@ -1,0 +1,85 @@
+%% cover_letter.tex — Cover letter for Cognitive Systems Research submission
+\documentclass[12pt,a4paper]{letter}
+
+\usepackage[british]{babel}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\begin{document}
+
+\begin{letter}{%
+  The Editors\\
+  \textit{Cognitive Systems Research}\\
+  Elsevier B.V.}
+
+\opening{Dear Editors,}
+
+This letter accompanies the submission of the manuscript titled
+``\textit{Capability-Asymmetric Multi-Agent Debate Degrades Strong LLM
+Reasoners: A Bias-Theoretic Account}'' for consideration in
+\textit{Cognitive Systems Research}.
+
+\textbf{What the paper does.}
+The paper reports a controlled five-condition experiment in which a strong
+large language model (LLM) focal agent debates under increasing numbers of
+deliberately weak peers, measuring how peer composition affects final-round
+accuracy, correct-to-incorrect flip rates, and the Asch conformity index.
+The primary focal agent is \textit{DeepSeek-v4-flash}; a cross-validation
+uses \textit{GPT-4o-mini}. Weak peers are \textit{Llama~3.1~8B Instruct}
+and \textit{Gemma~3~4B Instruct}, achieving around 30\% accuracy on the
+same 300-question pool drawn from MMLU-Pro and GSM8K.
+
+\textbf{Why it belongs in this journal.}
+\textit{Cognitive Systems Research} covers computational models of human and
+machine cognition, including bias, social influence, and collective
+reasoning.
+This work brings a classic social psychology paradigm (Asch conformity) to
+bear on multi-agent LLM systems, providing the first controlled dose-response
+measurement of how capability asymmetry drives conformity-induced errors.
+The bias-theoretic framing, the mechanistic decomposition of sycophancy and
+bandwagon effects, and the practical mitigation analysis are all directly
+relevant to the journal's scope.
+
+\textbf{Key findings.}
+The correct-to-incorrect flip rate rises monotonically with dumb peer count
+(5.0\% in C2 to 6.5\% in C4) even when the net accuracy outcome is positive
+for the stronger model.
+For \textit{GPT-4o-mini}, accuracy falls 2.0 percentage points in C3 and
+the Asch conformity index reaches 0.172 in C4.
+Confidence-weighted peer filtering (C5) fails completely because weak agents
+report high confidence in 99.5\% of trials, including incorrect responses.
+The McNemar test confirms significant question-level regression under maximal
+dumb-peer exposure ($p = 0.0025$, Bonferroni-corrected).
+
+\textbf{Novelty and significance.}
+This work differs from prior MAD studies by (a)~independently varying the
+count of weak peers in a factorial design, (b)~mapping outcomes explicitly
+onto the sycophancy and bandwagon mechanisms through the Asch index, and
+(c)~replicating across two focal models of different capability.
+To the best of the author's knowledge, no prior paper has subjected a
+confidence-weighted peer filter to a deliberate worst-case test of this kind.
+The negative result for C5 is a timely and practically important finding.
+
+\textbf{Declarations.}
+The manuscript has not been published elsewhere and is not under
+consideration by any other journal.
+The experiment involves only publicly available language models and benchmark
+datasets; no human subjects were involved.
+Data availability is described in a dedicated statement included with the
+submission.
+
+This paper has been prepared for single-blind review and the author looks
+forward to the reviewers' feedback.
+
+\closing{Yours sincerely,}
+
+\vspace{1em}
+Koushik Deb\\
+{[Department, Institution]}\\
+{[Email]}\\
+{[Date]}
+
+\end{letter}
+
+\end{document}
