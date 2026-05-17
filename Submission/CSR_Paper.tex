@@ -132,10 +132,12 @@ experiment run on 300 \textit{MMLU-Pro}~\citep{wang2024mmlupro} and
 \textit{GSM8K}~\citep{cobbe2021training} questions, with five replications
 per question, covering 7{,}300 trials across five conditions.
 The primary focal agent is \textit{DeepSeek-v4-flash}; the weak peers are
-\textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3} (29.2\% accuracy) and
-\textit{Gemma~3~4B Instruct}~\citep{gemma2025technical} (31.7\% accuracy).
-Each agent adopts one of four rhetorically distinct personas; a
-three-stage judge cascade resolves ambiguous answers.
+\textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3} and \textit{Gemma~3~4B
+Instruct}~\citep{gemma2025technical}, anchored to assigned wrong answers
+via a persona pipeline (Section~\ref{sub:data}) so that their Round-0
+responses act as adversarial distractors rather than as natural
+low-capability outputs.
+A three-stage judge cascade resolves ambiguous answers.
 The result is a high-fidelity measurement of how peer composition affects
 answer quality, sycophantic drift, and conformity in a strong focal agent.
 
@@ -279,10 +281,22 @@ instances, ensuring that performance differences across conditions are
 attributable to peer composition rather than to heterogeneity among the
 smart agents.
 Dumb agents are \textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3}
-and \textit{Gemma~3~4B Instruct}~\citep{gemma2025technical}, both accessed
-via OpenRouter; their baseline Round~0 accuracies are 29.2\% and 31.7\%
-respectively on the same question pool, confirming a capability gap of over
-45 percentage points relative to the focal agent.
+and \textit{Gemma~3~4B Instruct}~\citep{gemma2025technical}, accessed via
+OpenRouter.
+Each dumb-agent Round-0 response is generated from a persona prompt that
+pre-assigns one specific wrong answer per trial
+(Section~\ref{sub:data}); as a consequence dumb-agent Round-0
+correctness is zero by design in 5{,}850 of 5{,}850 trials, and
+Round-0 dumb responses should be read as adversarial distractors
+constructed from the wrong-answer pool of each question rather than as
+naturalistic outputs of these models.
+Round-1 dumb correctness rises to 55--70\% on average across the three
+heterogeneous conditions, because dumb agents see smart-peer Round-0
+answers in the debate context and revise toward them.
+The unprompted accuracy of these two models on MMLU-Pro and GSM8K is
+not measured in this study; published evaluations place both well below
+\textit{DeepSeek-v4-flash}, with capability gaps in the 30 to 40
+percentage-point range~\citep{meta2024llama3,gemma2025technical}.
 The cross-validation uses \textit{GPT-4o-mini}~\citep{openai2024gpt4o}
 (model string \texttt{openai/gpt-4o-mini}, via OpenRouter) as the focal
 agent on a 50-question subset, with five replications (250 trials per
@@ -413,13 +427,18 @@ to 78.3\% in C3 and then to 84.1\% in C4, against a solo baseline of 76.2\%
 in C1.
 A free self-consistency-of-three baseline (row SC3 in
 Table~\ref{tab:conditions}) — per-trial majority vote of the three smart
-agents' independent Round~0 answers in C2, before any debate exchange —
-attains 76.8\% accuracy.
+agents' Round~0 answers in C2, before any debate exchange — attains 76.8\%
+accuracy.
 The 1.9-percentage-point gap between C2's Round~1 result (78.7\%) and this
 SC3 baseline isolates the benefit of the debate exchange itself from the
-benefit of simply aggregating three independent samples; about three-quarters
-of C2's gain over the solo baseline is therefore debate-driven revision and
-the remaining quarter is multi-sample noise reduction.
+benefit of simply aggregating three samples; about three-quarters of C2's
+gain over the solo baseline is therefore debate-driven revision and the
+remaining quarter is multi-sample noise reduction.
+Inter-agent Cohen's $\kappa$ on the three smart agents' Round-0
+correctness is $0.72$ (Section~\ref{sub:dependence}), so the three samples
+are far from statistically independent; the SC3 baseline therefore reflects
+roughly 1.5 effective draws, and any larger SC-style gain over C1 would
+require non-trivial decorrelation across smart-agent seeds.
 The much larger net gain in C4 ($+$7.9 percentage points) is driven almost
 entirely by the I$\rightarrow$C flip rate, which jumps from 27.5\% in C2 to
 55.8\% in C4: the weak peers' Round~0 answers contain enough signal about
@@ -599,6 +618,47 @@ value for \textit{DeepSeek-v4-flash}.
 Subject-domain flip-rate variation for \textit{DeepSeek-v4-flash} is
 reported in Supplementary~S8.
 
+%% ── 4.5 ──────────────────────────────────────────────────────────────────
+\subsection{Inter-agent dependence and confidence diagnostic}
+\label{sub:dependence}
+
+Two auxiliary analyses sharpen the interpretation of the headline results.
+
+Cohen's $\kappa$ on Round-0 correctness, computed pairwise within each
+condition over the same (question, replication) trials, quantifies whether
+peer agents supply independent or correlated signal about question
+correctness.
+In C2 (three \textit{DeepSeek-v4-flash} instances), the three pairwise
+values are tightly clustered around 0.72 (mean $\kappa = 0.722$ for
+\textit{DeepSeek-v4-flash}; $\kappa = 0.758$ for the \textit{GPT-4o-mini}
+cross-validation), confirming that three temperature-0.7 samples from one
+strong model produce highly correlated error patterns and that C2's
+"three independent agents" are not statistically independent.
+This is consistent with the modest SC3 gain over the C1 baseline reported
+in Table~\ref{tab:conditions}: at $\kappa \approx 0.72$ the three samples
+behave roughly like 1.5 effective independent draws.
+Pairwise $\kappa$ values involving a dumb agent are uninformative under
+this design because dumb-agent Round-0 correctness is constant zero
+(the wrong-anchored persona has no variance to correlate with);
+this limit is itself a design observation and motivates a future
+heterogeneous-smart-agent control.
+
+AUROC of self-reported confidence against per-trial correctness checks
+whether confidence is usable as a peer-quality score.
+For the dumb models in Round-1, AUROC is $0.61$ (Gemma) and $0.65$
+(Llama), with mean confidence on correct versus wrong responses of
+$98.6/97.3$ and $96.5/92.3$ respectively---the gap between conditional
+means is 1.3 to 4.2 points on a 0-to-100 scale.
+For the smart focal agents, AUROC is $0.60$
+(\textit{DeepSeek-v4-flash}~R1) and $0.67$ (\textit{GPT-4o-mini}~R1),
+also near chance.
+Confidence carries some weak signal across all models, but the gap is
+too small to drive a binary filter at any threshold: no choice of
+threshold on these distributions yields a meaningful separation between
+right and wrong responses, which is what the calibration gate would have
+detected had it tested the discriminative quantity rather than the
+absolute high-confidence rate (Section~\ref{sub:protocol}).
+
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Discussion}
 \label{sec:discussion}
@@ -630,14 +690,22 @@ systematically over-report confidence, as demonstrated by the 99.5\% rate
 at which dumb agents exceeded the threshold in C5.
 
 Several limitations bound these claims.
-First, no self-consistency baseline was run; some fraction of the C2 lift
-(three smart agents debating) may be attributable to sample aggregation
-rather than to debate-induced revision, and comparing C2 to a
-self-consistency control is the most important follow-up.
-Second, in C2 and C3 the smart non-focal agents are also
-\textit{DeepSeek-v4-flash} instances, so the C2 result conflates
-debate-based revision with intra-model self-consistency; a
-heterogeneous-smart-agent control would isolate the two.
+First, the self-consistency baseline reported here (SC3, derived from
+C2's Round-0 samples) shows that debate adds $+$1.9~pp on top of
+sample aggregation; this is reassuring but should be confirmed with a
+dedicated solo-sampling control where the three samples are drawn with
+the same prompt as C2's Round~0 but without any subsequent debate
+exchange, since C2's Round-0 prompt does include the "Agent\_Alpha /
+Beta / Gamma" role marker that distinguishes it from a pure-solo
+sampling regime.
+Second, all three smart agents in C2 (and the two smart agents in C3)
+are \textit{DeepSeek-v4-flash} instances; their Round-0 correctness has
+Cohen's $\kappa \approx 0.72$ pairwise (Section~\ref{sub:dependence}),
+so C2 conflates debate-based revision with intra-model self-consistency
+on highly correlated samples.
+A heterogeneous-smart-agent control with three architecturally distinct
+models would supply the missing independent-sample comparison; this is
+the highest-priority follow-up.
 Third, \textit{MMLU-Pro} and \textit{GSM8K} appear in the pretraining
 corpora of contemporary LLMs, so the baseline accuracies may overstate
 genuine reasoning; the relative comparison across conditions is robust to
