@@ -400,14 +400,27 @@ consensus, the C\textrightarrow{}I flip rate also serves as a conformity
 signature; it is reported as the flip rate throughout and its bandwagon
 interpretation is discussed in Section~5.
 
-Statistical significance is assessed with two tests.
-The McNemar test (two-tailed) compares question-level correctness between
-paired conditions ($\mathbf{C}_1$ vs.\ $\mathbf{C}_4$), with Bonferroni
-correction over five comparisons ($\alpha_{\text{adj}} = 0.01$).
-A logistic regression of Round~1 correctness on the count of dumb peers
-(0 in C2, 1 in C3, 2 in C4) assesses the peer-count trend across
-4,500 trials.
-All confidence intervals are 95\% bootstrap CIs (5,000 resamples).
+Statistical significance is assessed at the trial level on paired
+observations matched by (question, replication index).
+The McNemar test (continuity-corrected) compares Round-1 correctness
+between condition pairs.
+Holm-Bonferroni correction is applied within each focal-agent family of
+six pairwise comparisons (C1 vs C2, C1 vs C3, C1 vs C4, C2 vs C3,
+C2 vs C4, C3 vs C4); the C4-vs-C5 comparison is treated separately
+because it uses a different (100-question, three-replication) substrate.
+A generalised estimating equation (GEE) logistic regression with an
+exchangeable correlation structure clustered by question identifier
+fits Round-1 correctness as a function of weak-peer count (0 in C2,
+1 in C3, 2 in C4); the GEE accounts for the within-question correlation
+introduced by the five replications, which a naive logit would treat as
+independent.
+Effect sizes are reported as Cohen's $h$ for paired proportion
+differences and as odds ratios with 95\% confidence intervals for the
+GEE coefficient.
+Post-hoc power is reported for any comparison whose raw $p$-value
+exceeds 0.05.
+All confidence intervals are 95\% bootstrap CIs (5{,}000 resamples)
+unless otherwise noted.
 Prompt templates and the answer-extraction cascade are documented in
 Supplementary~S4.
 
@@ -451,14 +464,17 @@ statistically significant in the \textit{negative} direction
 Thirty-three questions regressed (correct in C1, wrong in C4) against only
 12 that improved, a net question-level loss of 21 items (7.0 percentage
 points).
-Critically, the C$\rightarrow$I flip rate rises monotonically from 5.0\% in
-C2 to 6.5\% in C4, confirming that the sycophancy mechanism is active and
-increasing with dumb-peer count even while the net accuracy figure is
-positive.
-A two-proportion test on the C2 vs.\ C4 C\textrightarrow{}I rates gives
-$p \approx 0.10$, so the C2-to-C4 gap is at the boundary of detectability
-with the current sample size; it is reported as a trend, not a significant
-escalation.
+The C$\rightarrow$I flip rate rises in the predicted direction from
+5.0\% in C2 to 6.5\% in C4, but the effect size is small (Cohen's
+$h = 0.05$ on the C2-vs-C4 contrast, two-proportion $p = 0.15$,
+post-hoc power $0.30$); the gap is consistent with a monotone rise but
+is underpowered for detection at the current sample size and should be
+read as suggestive, not statistically established.
+The corresponding I$\rightarrow$C flip rate change from 27.5\% in C2 to
+55.8\% in C4 is large (Cohen's $h = 0.58$, $p < 0.001$, power
+$> 0.99$), so the C4 net gain is dominated by the correction signal
+even when the conformity signal is also active in the predicted
+direction.
 
 These two aggregations measure different objects.
 The trial-level R1 accuracy (84.1\%) reflects per-trial correctness across
@@ -536,12 +552,20 @@ reference line.
 The peer-count trend for \textit{DeepSeek-v4-flash} is non-monotone
 in the accuracy dimension but strictly monotone in the
 C$\rightarrow$I flip dimension.
-A logistic regression of Round~1 correctness on dumb peer count across
-conditions C2--C4 ($n = 4{,}500$ trials) yields a coefficient of $+$0.174
-($p = 1.68 \times 10^{-4}$, Bonferroni-corrected $p = 0.0012$), indicating
-that the I$\rightarrow$C correction mechanism dominates for this model.
-The same regression for \textit{GPT-4o-mini} is negative, consistent with
-the accuracy drop observed in C3.
+A GEE logistic regression of Round~1 correctness on weak-peer count
+across conditions C2--C4 ($n = 4{,}500$ trials nested in 300 question
+clusters) yields an odds ratio of $1.19$ (95\% CI $[1.08, 1.31]$,
+$p = 6 \times 10^{-4}$) for the per-peer increment for
+\textit{DeepSeek-v4-flash}; each additional weak peer multiplies the
+odds of a correct Round-1 answer by 19\%, indicating that the
+I$\rightarrow$C correction mechanism dominates for this model.
+Question-level clustering moves the raw $p$-value from $1.68 \times
+10^{-4}$ (naive logit) to $6 \times 10^{-4}$ (GEE), so the finding
+survives proper accounting for within-question correlation.
+The same regression for \textit{GPT-4o-mini} yields an odds ratio of
+$0.97$ ($[0.80, 1.16]$, $p = 0.71$, $n = 750$): the point estimate is
+below one, consistent with the C3 accuracy drop, but the cross-validation
+sample is too small to establish a dose-response trend for this model.
 Together, the two patterns indicate that the net accuracy outcome of peer
 exposure depends on whether the focal model can evaluate peer reasoning
 critically: a stronger model absorbs correct signal from even weak peers,
