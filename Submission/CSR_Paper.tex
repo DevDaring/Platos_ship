@@ -377,10 +377,20 @@ agents are reported in Table~\ref{tab:conditions}.
 For \textit{DeepSeek-v4-flash}, Round~1 accuracy rises from 78.7\% in C2
 to 78.3\% in C3 and then to 84.1\% in C4, against a solo baseline of 76.2\%
 in C1.
-The net gain in C4 is $+$7.9 percentage points and is driven almost entirely
-by the I$\rightarrow$C flip rate, which jumps from 27.5\% in C2 to 55.8\%
-in C4: the weak peers' Round~0 answers contain enough signal about the
-questions the focal agent missed to produce a substantial correction effect.
+A free self-consistency-of-three baseline (row SC3 in
+Table~\ref{tab:conditions}) — per-trial majority vote of the three smart
+agents' independent Round~0 answers in C2, before any debate exchange —
+attains 76.8\% accuracy.
+The 1.9-percentage-point gap between C2's Round~1 result (78.7\%) and this
+SC3 baseline isolates the benefit of the debate exchange itself from the
+benefit of simply aggregating three independent samples; about three-quarters
+of C2's gain over the solo baseline is therefore debate-driven revision and
+the remaining quarter is multi-sample noise reduction.
+The much larger net gain in C4 ($+$7.9 percentage points) is driven almost
+entirely by the I$\rightarrow$C flip rate, which jumps from 27.5\% in C2 to
+55.8\% in C4: the weak peers' Round~0 answers contain enough signal about
+the questions the focal agent missed to produce a substantial correction
+effect, even when many of the peers' own answers are wrong.
 At the question level, however, the McNemar test comparing C1 and C4 is
 statistically significant in the \textit{negative} direction
 ($p = 0.0025$, Bonferroni-corrected $p = 0.017$, contingency matrix:
@@ -426,27 +436,34 @@ not as a failed mitigation design.
 \small
 \caption{Per-condition accuracy and flip rates for both focal agents.
 $\Delta$ = Round~1 accuracy change relative to C1 (solo baseline).
-Flip C$\rightarrow$I = fraction of R0-correct trials that become
-R1-incorrect.
+C$\to$I = fraction of R0-correct trials that become R1-incorrect.
+I$\to$C = fraction of R0-incorrect trials that become R1-correct.
 ``---''~= not applicable (no peer debate in C1, or metric not computed).
 S = smart agent; D = weak (dumb) agent.
 \textsuperscript{$\dagger$}C5 was run on a 100-question stratified subset
 ($\times$ 3 replications, $N = 300$); all other rows use the full
 300-question pool ($\times$ 5 replications, $N$ in column header).
+\textsuperscript{$\ddagger$}SC3 is a free self-consistency baseline:
+per-trial majority vote of the three independent Round-0 answers
+already produced by the three smart agents in C2, before any debate
+exchange. Comparing C2's Round-1 accuracy ($78.7\%$) to SC3 ($76.8\%$)
+isolates debate-induced revision from multi-sample noise reduction
+(Section~\ref{sub:accuracy}).
 \label{tab:conditions}}
-\begin{tabular}{@{}lllllll@{}}
+\begin{tabular}{@{}llllllllll@{}}
 \toprule
- & & \multicolumn{3}{c}{\textit{DeepSeek-v4-flash} ($N=1{,}500$)} &
-       \multicolumn{2}{c}{\textit{GPT-4o-mini} ($N=250$)} \\
-\cmidrule(lr){3-5} \cmidrule(lr){6-7}
-Cond. & Peers & R1 acc.\ (\%) & $\Delta$ (pp) & Flip C$\rightarrow$I (\%) &
-                R1 acc.\ (\%) & Flip C$\rightarrow$I (\%) \\
+ & & \multicolumn{4}{c}{\textit{DeepSeek-v4-flash} ($N=1{,}500$)} &
+       \multicolumn{3}{c}{\textit{GPT-4o-mini} ($N=250$)} \\
+\cmidrule(lr){3-6} \cmidrule(lr){7-9}
+Cond. & Peers & R1 (\%) & $\Delta$ (pp) & C$\to$I (\%) & I$\to$C (\%) &
+                R1 (\%) & C$\to$I (\%) & I$\to$C (\%) \\
 \midrule
-C1 & Solo        & 76.2 & --- & ---  & 64.8 & ---  \\
-C2 & 3S + 0D     & 78.7 & $+$2.5 & 5.0  & 66.8 & ---  \\
-C3 & 2S + 1D     & 78.3 & $+$2.1 & 6.0  & 60.8 & 11.5 \\
-C4 & 1S + 2D     & 84.1 & $+$7.9 & 6.5  & 65.2 & 17.2 \\
-C5\textsuperscript{$\dagger$} & 1S + 2D + filter & 78.0 & $+$1.8 & ---  & ---  & ---  \\
+C1 & Solo        & 76.2 & ---    & ---  & ---  & 64.8 & ---  & ---  \\
+SC3\textsuperscript{$\ddagger$} & C2 R0 majority-vote-of-3 & 76.8 & $+$0.6 & --- & --- & --- & --- & --- \\
+C2 & 3S + 0D     & 78.7 & $+$2.5 & 5.0  & 27.5 & 66.8 & 5.8  & 21.3 \\
+C3 & 2S + 1D     & 78.3 & $+$2.1 & 6.0  & 28.5 & 60.8 & 11.5 & 14.0 \\
+C4 & 1S + 2D     & 84.1 & $+$7.9 & 6.5  & 55.8 & 65.2 & 17.2 & 32.2 \\
+C5\textsuperscript{$\dagger$} & 1S + 2D + filter & 78.0 & $+$1.8 & 10.1 & 40.3 & ---  & ---  & ---  \\
 \bottomrule
 \end{tabular}
 \end{table}
