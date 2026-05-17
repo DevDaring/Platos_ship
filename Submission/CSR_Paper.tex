@@ -71,11 +71,14 @@ A self-consistency-of-three baseline derived from the same Round~0
 samples used in the three-smart-agent condition shows that debate adds
 $+$1.9~pp on top of sample aggregation, so the headline lift is a mixture
 of real revision and multi-sample noise reduction.
-A confidence-weighted peer filter strips 100\% of peer messages because
-weak agents report confidence at or above the filtering threshold on
-99.5\% of trials regardless of correctness, demonstrating that
-self-reported confidence cannot identify weak peers in mixed-capability
-ensembles.
+A confidence-weighted peer filter strips 100\% of peer messages: weak
+agents emit no confidence integer in the persona-anchored Round-0 prompt
+(0 of 5{,}850 Round-0 responses parse successfully), and in Round-1
+responses where they do emit one, the conditional rates
+$P(\text{conf}\geq 60 \mid \text{wrong}) = 0.995$ and
+$P(\text{conf}\geq 60 \mid \text{correct}) = 0.998$ differ by less than
+0.5~pp, so confidence cannot discriminate weak peers from correct ones
+even when it is present.
 Aggregate accuracy in multi-agent debate evaluations hides
 deployment-relevant subset regressions; confidence-based peer weighting is
 not a viable mitigation when peer capability varies.
@@ -323,16 +326,47 @@ producing an answer and a supporting rationale.
 In Round~1 each agent receives the full Round~0 outputs (answers and
 stated reasoning) of all other agents, then produces a final answer.
 In C5 the focal agent additionally receives a filtered view: only peer
-Round~0 messages with self-reported confidence of 60 or above are included.
-The calibration gate verified, prior to the main experiment, that
-\textit{Llama~3.1~8B Instruct} and \textit{Gemma~3~4B Instruct} report
-confidence $\geq 60$ in 99.5\% of trials regardless of answer correctness
-(95\% CI: [99.1\%, 99.8\%]), exceeding the activation threshold of 40\%
-that would make filtering informative.
-Because the calibration gate (Supplementary~S3) predicted that the
-threshold of 60 would not filter any peer in 99.5\% of trials, C5 is
-properly described as a confirmation of confidence miscalibration in
-weak agents, not as an independent mitigation evaluation.
+Round~0 messages with self-reported confidence of 60 or above are
+included; messages with no parsed confidence are treated as below
+threshold and excluded.
+
+A calibration gate ran prior to C5 to check whether the confidence
+values reported by weak peers in C3 and C4 could discriminate correct
+from incorrect responses.
+Across 4{,}146 dumb-agent Round-1 responses with parsed confidence, the
+gate measured $P(\text{conf} \geq 60 \mid \text{wrong}) = 0.995$
+(95\% CI [0.991, 0.998]) and $P(\text{conf} \geq 60 \mid \text{correct})
+= 0.998$, so the discriminative quantity
+$P(\text{loud}\mid\text{wrong}) - P(\text{loud}\mid\text{correct}) =
+-0.003$.
+The gate as originally specified passed because the absolute
+loud-and-wrong rate (0.995) exceeds its activation threshold of 0.40, but
+the near-zero gap between the two conditional rates predicts that a
+confidence threshold cannot remove wrong peers selectively.
+We treat the gate's pass-decision as a misspecification: an informative
+filter requires a discriminative gap, not merely a high marginal rate.
+
+The C5 run confirms the predicted null-effect and surfaces a second
+design issue empirically.
+The dumb-agent Round-0 persona prompt embeds an assigned wrong answer
+and does not include the universal confidence-line instruction used in
+all smart-agent prompts; consequently weak agents never emit a
+confidence integer in Round~0 (0 of 5{,}850 Round-0 dumb responses parse
+successfully).
+In Round~1, where the debate context exhibits the format from smart-agent
+peers, weak agents comply with the confidence instruction in 78.7\% of
+trials (4{,}606 of 5{,}850), suggesting that confidence elicitation in
+small instruction-tuned models depends on in-context format
+demonstration rather than the instruction alone.
+Because the C5 filter operates on Round-0 confidences, every peer is
+excluded as below-threshold null and the focal agent receives the
+empty-peer-messages branch described in Section~\ref{sub:conditions}.
+C5 therefore reduces to a solo task in 100\% of trials and is best
+interpreted as a joint demonstration that (i) the originally specified
+gate metric is misspecified for confidence-based filtering, since it
+does not test the discriminative quantity, and (ii) confidence-based
+filtering further requires the filtering-round prompt to elicit
+confidence, a prerequisite not satisfied by persona-anchored prompts.
 
 %% ── 3.5 ──────────────────────────────────────────────────────────────────
 \subsection{Metrics and statistical tests}
@@ -425,11 +459,16 @@ The C$\rightarrow$I flip rate for \textit{GPT-4o-mini} reaches 11.5\% in
 C3 and 17.2\% in C4---nearly three times the value observed for
 \textit{DeepSeek-v4-flash}---confirming that a weaker focal model is
 substantially more vulnerable to peer-induced error.
-The confidence-weighted condition C5 yields accuracy only 1.6~pp below C4
-($p = 0.453$, not significant), consistent with the null effect of
-filtering; as noted in Section~\ref{sub:protocol}, C5 is best interpreted
-as an empirical demonstration of weak-agent confidence miscalibration,
-not as a failed mitigation design.
+The confidence-weighted condition C5 yields accuracy 1.6~pp below C4
+on the matched 100-question subset ($p = 0.453$, McNemar; not
+significant).
+Every peer message is excluded by the Round-0 confidence filter in 100\%
+of C5 trials (Section~\ref{sub:protocol}), so the contrast is between
+C4 (one smart focal agent visible to two weak peers' Round-0 messages)
+and a solo-equivalent setting.
+C5 therefore neither validates nor refutes confidence-weighted filtering
+as a mechanism; it documents that the protocol as configured strips its
+own input.
 
 \begin{table}[t]
 \centering
