@@ -745,43 +745,15 @@ The divergence between the two models reflects a threshold property:
 debate with heterogeneous peers is beneficial when the focal model is
 strong enough to reject incorrect peer reasoning, and harmful when it is
 not.
-Confidence-weighted peer filtering fails as a mitigation when weak agents
-systematically over-report confidence, as demonstrated by the 99.5\% rate
-at which dumb agents exceeded the threshold in C5.
-
-Several limitations bound these claims.
-First, the self-consistency baseline reported here (SC3, derived from
-C2's Round-0 samples) shows that debate adds $+$1.9~pp on top of
-sample aggregation; this is reassuring but should be confirmed with a
-dedicated solo-sampling control where the three samples are drawn with
-the same prompt as C2's Round~0 but without any subsequent debate
-exchange, since C2's Round-0 prompt does include the "Agent\_Alpha /
-Beta / Gamma" role marker that distinguishes it from a pure-solo
-sampling regime.
-Second, all three smart agents in C2 (and the two smart agents in C3)
-are \textit{DeepSeek-v4-flash} instances; their Round-0 correctness has
-Cohen's $\kappa \approx 0.72$ pairwise (Section~\ref{sub:dependence}),
-so C2 conflates debate-based revision with intra-model self-consistency
-on highly correlated samples.
-A heterogeneous-smart-agent control with three architecturally distinct
-models would supply the missing independent-sample comparison; this is
-the highest-priority follow-up.
-Third, \textit{MMLU-Pro} and \textit{GSM8K} appear in the pretraining
-corpora of contemporary LLMs, so the focal-agent baseline accuracies
-may overstate genuine reasoning; the relative comparison across
-conditions is robust to a constant contamination offset, but the
-within-condition accuracies should be read as conditional on these
-specific item sets.
-Fourth, the design provides only three peer-count values and only
-unanimous-wrong peer signals, so the conformity-revision pressure
-documented here cannot be attributed to bandwagon-under-unanimity per
-se as distinct from generic wrong-peer distractor effects.
-Fifth, both focal models are accessed via commercial APIs, so this
-study reports the behavioural-level effect of peer composition on
-focal-agent outcomes but not the representation-level mechanism;
-attribution to sycophancy or the bandwagon effect as named processes
-remains tentative and requires either probing of open-weights focal
-models or a split-peer design.
+Confidence-weighted peer filtering is unavailable as a mitigation in
+this setting.
+Weak agents emit no confidence integer in the persona-anchored Round-0
+prompt and produce non-discriminative confidence distributions in
+Round-1 (Section~\ref{sub:protocol}, Section~\ref{sub:dependence}); a
+filter operating on either round therefore lacks usable signal.
+Mitigations that depend on externally verified peer accuracy, such as
+held-out calibration sets or architecturally distinct verifier
+models, are required.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Conclusion}
@@ -807,11 +779,20 @@ weak-peer count (5.0\% in C2 to 6.5\% in C4 for \textit{DeepSeek-v4-flash};
 significance only in the weaker focal model; the dose-response in the
 stronger model survives mainly through the rise in beneficial
 incorrect-to-correct flips (27.5\% to 55.8\%).
-C5 functions as an empirical validation of the calibration gate
-(Section~\ref{sub:protocol}): the gate predicted that confidence-weighted
-filtering would not be informative because weak agents report confidence
-above the filtering threshold on 99.5\% of trials, and the C5 run
-confirms this empirically by stripping 100\% of peer messages.
+C5 surfaces two methodological observations about confidence-based
+filtering in mixed-capability ensembles.
+First, weak agents do not emit a confidence integer under the
+persona-anchored Round-0 prompt; in Round-1, after seeing the format
+in smart-agent peer responses, they comply in 78.7\% of trials but
+with confidence distributions that are statistically identical for
+correct and incorrect answers
+($P(\text{conf} \geq 60 \mid \text{wrong}) = 0.995$ vs
+$P(\text{conf} \geq 60 \mid \text{correct}) = 0.998$).
+Second, the originally designed calibration gate tested only the
+absolute high-confidence rate against a 0.40 threshold and passed;
+the discriminative gap relevant for filtering is $-0.003$, and a
+better-specified gate must test the difference between the
+right-and-loud and wrong-and-loud rates.
 
 These findings have two implications for multi-agent debate deployments.
 First, single-number accuracy reporting hides per-question regressions
@@ -827,6 +808,141 @@ split-peer condition to separate debate-based revision from sample
 aggregation and to isolate unanimity-driven conformity from generic
 distractor pressure, and should extend the design to open-ended tasks
 where binary correctness is not available.
+
+%% ─────────────────────────────────────────────────────────────────────────
+\section*{Limitations}
+\label{sec:limitations}
+
+\paragraph{Self-consistency control is partial.}
+The SC3 baseline reported in Table~\ref{tab:conditions} is derived from
+C2's Round-0 samples, which share the C2 system prompt and its
+\textit{Agent\_Alpha / Beta / Gamma} role markers.
+A dedicated solo-sampling control with three temperature-0.7 draws
+from the C1 prompt would close the comparison; that experiment is
+deferred.
+
+\paragraph{Homogeneous smart agents.}
+All three smart agents in C2 (and the two smart agents in C3) are
+\textit{DeepSeek-v4-flash} instances; pairwise Cohen's $\kappa$ on
+their Round-0 correctness is approximately $0.72$
+(Section~\ref{sub:dependence}), so C2 conflates debate-based revision
+with intra-model self-consistency on highly correlated samples.
+A heterogeneous-smart-agent control with three architecturally
+distinct focal models is the highest-priority follow-up.
+
+\paragraph{Wrong-peer unanimity is not isolated.}
+In every heterogeneous trial of this experiment the dumb-peer consensus
+was unanimously wrong; the design does not separate unanimity-driven
+conformity pressure from generic wrong-peer distractor effects
+(Section~\ref{sub:asch}).
+A split-peer condition (one wrong peer alongside one correct peer) is
+required to make this distinction.
+
+\paragraph{Persona-anchored dumb agents.}
+Dumb-agent Round-0 responses are generated from a persona prompt that
+pre-assigns one specific wrong answer per trial.
+Their Round-0 correctness is therefore zero by design (0 of 5{,}850
+trials), and their Round-0 messages should be read as adversarial
+distractors rather than as low-capability outputs of these models.
+The behavioural findings transfer to deployment settings in which
+weak peers produce confidently wrong output; they do not transfer to
+settings in which weak peers respond honestly without anchoring.
+
+\paragraph{Two focal models.}
+The opposite-signed-outcome finding rests on $n = 2$ focal models.
+A wider focal-model sweep is required to establish whether the
+qualitative outcome is predictable from any single capability metric.
+
+\paragraph{Binary correctness only.}
+The dependent variable is per-trial binary correctness on multiple-
+choice and numeric-answer benchmarks.
+Open-ended generation tasks have richer error structures that this
+design does not address.
+
+\paragraph{Benchmark contamination.}
+\textit{MMLU-Pro} and \textit{GSM8K} appear in the pretraining corpora
+of contemporary LLMs; per-condition accuracies should be read as
+conditional on these specific item sets.
+Constructed-from-scratch hold-out items would be required to rule out
+contamination as a partial driver of the focal-agent baseline.
+
+\paragraph{Behavioural, not mechanistic.}
+Both focal models are accessed via commercial APIs; this study reports
+the behavioural-level effect of peer composition on focal-agent
+outcomes, not the representation-level mechanism.
+Attribution to sycophancy or the bandwagon effect as named cognitive
+processes requires either probing of open-weights focal models or the
+split-peer design noted above.
+
+%% ─────────────────────────────────────────────────────────────────────────
+\section*{Ethics Statement}
+\label{sec:ethics}
+
+This study uses publicly available large language models accessed via
+commercial APIs and publicly available benchmark datasets
+(\textit{MMLU-Pro}~\citep{wang2024mmlupro},
+\textit{GSM8K}~\citep{cobbe2021training}).
+No human subjects were involved and no personal data were collected.
+The dumb-agent persona prompts deliberately elicit adversarial
+wrong-answer responses; the prompts and generated responses are
+confined to the experimental pipeline and are not deployed or released
+as a stand-alone artefact intended for downstream use.
+The findings describe a failure mode of confidence-based peer
+filtering and should not be used to justify deployment of mixed-
+capability ensembles in high-reliability settings without externally
+verified peer-quality signals.
+The compute footprint is API-based and modest (approximately
+\$10--\$15 of inference cost across all conditions, no GPU training);
+the carbon impact is correspondingly small.
+
+%% ─────────────────────────────────────────────────────────────────────────
+\section*{Reproducibility}
+\label{sec:repro}
+
+The experiment pipeline, configuration files, parquet artefacts, and
+the analysis scripts producing every numerical claim in this paper
+will be released as an anonymised repository for the review period and
+deposited at Zenodo upon acceptance.
+The released artefacts include the per-trial log
+(\texttt{trial\_log.parquet}, 35{,}050 rows), the consolidated
+final-answers table (\texttt{final\_answers.parquet}, 7{,}300 rows),
+the metrics summary, the statistical-test outputs, the
+calibration-gate report, the question pool, the generated dumb-agent
+personas, an \texttt{experiment\_metadata.json} listing actual served
+model identifiers and package versions, and two analysis scripts
+(\texttt{free\_analyses.py},
+\texttt{inter\_agent\_dependence.py}) that produce every number in
+this paper from those parquet files.
+
+\paragraph{Models and snapshots.}
+Smart focal: \textit{DeepSeek-v4-flash} via the DeepSeek direct API
+(runtime alias \texttt{deepseek-chat}).
+Cross-validation focal: \textit{GPT-4o-mini} via OpenRouter
+(\texttt{openai/gpt-4o-mini}).
+Dumb agents: \textit{Llama~3.1~8B Instruct}
+(\texttt{meta-llama/llama-3.1-8b-instruct}) and \textit{Gemma~3~4B
+Instruct} (\texttt{google/gemma-3-4b-it}) via OpenRouter.
+Judge cascade: \textit{Gemini~2.0~Flash} (primary, 4-key round-robin),
+\textit{Mistral~Small} (secondary), \textit{DeepSeek-v4-flash}
+(tertiary).
+Model snapshots are aliases served by the respective APIs at the time
+of the experiment (2026-05-03 to 2026-05-04 UTC);
+\texttt{experiment\_metadata.json} records the served model strings
+returned by each provider call.
+
+\paragraph{Random seeds.}
+The master seed is $20{,}260{,}502$.
+Per-trial seeds for peer-message ordering and persona-variant sampling
+are derived deterministically from the master seed, the question
+index, and the trial-replication index; the mitigation-subset
+selection seed is master seed $+1$.
+
+\paragraph{Answer and confidence extraction.}
+Regex captures 91.4\% of trial-log rows; a three-tier judge cascade
+recovers 7.8\% more; 0.9\% are unrecovered parse failures.
+Confidence extraction uses a separate regex; null-confidence cases are
+flagged in the \texttt{confidence\_parse\_status} column of
+\texttt{trial\_log.parquet}.
 
 %% ─────────────────────────────────────────────────────────────────────────
 \section*{Acknowledgements}
