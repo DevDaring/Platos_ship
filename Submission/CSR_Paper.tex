@@ -548,12 +548,15 @@ trials), and the C4 contrast is essentially null ($+0.4$~pp, CI
 $[-8.0, +8.8]$~pp); both CIs overlap zero, so the accuracy-level
 "opposite-signed outcome" is not statistically established for
 \textit{GPT-4o-mini}.
-The flip-rate response, by contrast, is unambiguous: the
-C$\rightarrow$I flip rate rises from $5.8\%$ in C2 to $11.5\%$ in C3
-and $17.2\%$ in C4 (C2-vs-C4 contrast: Cohen's $h = 0.30$,
+The flip-rate response, by contrast, is unambiguous.
+The C$\rightarrow$I flip rate rises from $5.8\%$ ($95\%$ CI
+$[2.6, 9.6]$) in C2 to $11.5\%$ ($[7.0, 16.6]$) in C3 and $17.2\%$
+($[11.7, 23.3]$) in C4 (C2-vs-C4 contrast: Cohen's $h = 0.30$,
 $p = 0.001$, post-hoc power $0.91$), a roughly three-fold increase
 in conformity-revision pressure relative to
-\textit{DeepSeek-v4-flash}.
+\textit{DeepSeek-v4-flash}, whose C$\rightarrow$I rate stays in
+$[5.0\%, 6.5\%]$ across C2--C4 with overlapping CIs (Section
+\ref{sub:dependence}, Table~\ref{tab:conditions}).
 The two focal models therefore diverge on flip dynamics rather than
 on net accuracy: under maximum weak-peer exposure
 \textit{DeepSeek-v4-flash} converts most of its peer exposure into
@@ -740,11 +743,21 @@ the question pool.
 Split by source dataset, the C4 Round-1 accuracy is 79.9\% on the 200
 MMLU-Pro multiple-choice items (vs.\ 76.0\% in C1, $+$3.9~pp) and 92.6\%
 on the 100 GSM8K free-form math problems (vs.\ 76.6\% in C1, $+$16.0~pp).
-The C4 gain is therefore concentrated on GSM8K: weak-peer messages on
-numeric word problems supply the focal agent with alternative working
-that can be re-checked arithmetically, even when the peers themselves
-give wrong answers, while ten-option multiple choice gives a smaller
-margin for the same mechanism.
+The C4 gain is therefore concentrated on GSM8K.
+A GEE logistic regression of Round-1 correctness on
+$\text{dumb\_count} \times \text{is\_gsm8k}$ (clustered by question,
+$n = 4{,}500$) returns an interaction odds ratio of $1.61$
+($95\%$ CI $[1.30, 1.99]$, $p \approx 10^{-5}$): each additional
+weak peer multiplies the odds of a correct Round-1 answer by $1.61$
+times \emph{more} on GSM8K than on MMLU-Pro.
+The main effect of \texttt{dumb\_count} on MMLU-Pro alone (i.e. the
+\texttt{dumb\_count} coefficient at $\text{is\_gsm8k} = 0$) is
+$\mathrm{OR} = 1.03$ ($[0.94, 1.13]$, $p = 0.56$): when source is
+controlled, the per-peer effect on multiple-choice items is
+statistically null. Weak-peer messages on numeric word problems
+supply the focal agent with alternative working that can be
+re-checked arithmetically, while ten-option multiple choice gives a
+smaller margin for the same mechanism.
 Split by per-question difficulty (a zero-shot probe stratifies each
 MMLU-Pro subject 50/50 into easier and harder halves), the C4 Round-1
 accuracy reaches 92.2\% on probe-easy items ($+$6.0~pp over C1) and
@@ -771,12 +784,17 @@ that fresh recomputation on arithmetic problems yields ground truth,
 whereas on multi-option MCQ the focal can still land on a wrong
 option even when it ignores the peers.
 Subject-level variation within MMLU-Pro is wide: physics and law show
-C$\rightarrow$I flip rates above 20\% in C4, while biology and history
-fall below 4\% (full breakdown in Supplementary~S8).
-These subject-level differences are not predicted by the
-correction/corruption decomposition in
-Section~\ref{sub:accuracy} and motivate a follow-up study targeting
-domain-specific vulnerability.
+C$\rightarrow$I flip rates above $20\%$ in C4, while biology and
+history fall below $4\%$ (full breakdown in Supplementary~S8).
+The per-subject $95\%$ bootstrap CIs are wide ($\pm 8$ to $\pm 10$~pp
+at $n \approx 70$ R0-correct trials per subject) and we do not run
+pairwise between-subject contrasts; with ten subjects the
+Holm-corrected family-wise alpha after $\binom{10}{2} = 45$
+comparisons would require effect sizes substantially larger than
+those observed here to detect any single pair as different.
+The subject-level breakdown is therefore reported as descriptive and
+motivates a follow-up study targeting domain-specific vulnerability
+at higher per-subject power.
 
 %% ── 4.5 ──────────────────────────────────────────────────────────────────
 \subsection{Inter-agent dependence and confidence diagnostic}
@@ -789,11 +807,14 @@ condition over the same (question, replication) trials, quantifies whether
 peer agents supply independent or correlated signal about question
 correctness.
 In C2 (three \textit{DeepSeek-v4-flash} instances), the three pairwise
-values are tightly clustered around 0.72 (mean $\kappa = 0.722$ for
-\textit{DeepSeek-v4-flash}; $\kappa = 0.758$ for the \textit{GPT-4o-mini}
-cross-validation), confirming that three temperature-0.7 samples from one
-strong model produce highly correlated error patterns and that C2's
-"three independent agents" are not statistically independent.
+values are tightly clustered: for \textit{DeepSeek-v4-flash} the three
+pair-$\kappa$ values are $0.73$, $0.72$, $0.71$ ($95\%$ bootstrap CIs
+all contained in $[0.66, 0.77]$); for the \textit{GPT-4o-mini}
+cross-validation the three values are $0.78$, $0.74$, $0.75$
+($95\%$ CIs in $[0.65, 0.85]$, $n = 250$ trials each).
+This confirms that three temperature-$0.7$ samples from one strong
+model produce highly correlated error patterns and that C2's ``three
+independent agents'' are not statistically independent.
 This is consistent with the modest SC3 gain over the C1 baseline reported
 in Table~\ref{tab:conditions}: under the correlated-rater
 approximation $\mathrm{ESS} = k / [1 + (k-1)\rho]$ with $k = 3$ and
@@ -807,13 +828,14 @@ heterogeneous-smart-agent control.
 
 AUROC of self-reported confidence against per-trial correctness checks
 whether confidence is usable as a peer-quality score.
-For the dumb models in Round-1, AUROC is $0.61$ (Gemma) and $0.65$
-(Llama), with mean confidence on correct versus wrong responses of
-$98.6/97.3$ and $96.5/92.3$ respectively---the gap between conditional
-means is 1.3 to 4.2 points on a 0-to-100 scale.
-For the smart focal agents, AUROC is $0.60$
-(\textit{DeepSeek-v4-flash}~R1) and $0.67$ (\textit{GPT-4o-mini}~R1),
-also near chance.
+For the dumb models in Round-1, AUROC is $0.61$ ($95\%$ CI
+$[0.58, 0.63]$, Gemma, $n = 2{,}206$) and $0.65$ ($[0.63, 0.67]$,
+Llama, $n = 2{,}400$), with mean confidence on correct versus wrong
+responses of $98.6/97.3$ and $96.5/92.3$ respectively---the gap between
+conditional means is 1.3 to 4.2 points on a 0-to-100 scale.
+For the smart focal agents, AUROC is $0.60$ ($[0.59, 0.62]$,
+\textit{DeepSeek-v4-flash}~R1) and $0.67$ ($[0.62, 0.71]$,
+\textit{GPT-4o-mini}~R1), also near chance.
 Confidence carries some weak signal across all models, but the gap
 is too small to drive a binary filter at any threshold.
 A direct test sweeps the confidence threshold from $0$ to $100$ in
