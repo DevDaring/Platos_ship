@@ -782,14 +782,12 @@ its R0-correct trials and the net accuracy effect is null.
 The divergence is consistent with a focal-strength-dependent
 threshold, but $n = 2$ focal models is too narrow to establish one.
 
-On mitigation, confidence-weighted peer filtering is unavailable: a
-filter on either round lacks usable signal (weak agents emit no
-Round-0 confidence integer; Round-1 distributions are
-non-discriminative, Section~\ref{sub:protocol},
-Appendix~\ref{ssec:dependence_app}).
-Mitigations depending on externally verified peer accuracy---held-out
-calibration sets or architecturally distinct verifier models---are
-required instead.
+On mitigation, confidence-weighted peer filtering is unavailable
+here: a filter on either round lacks usable signal
+(Section~\ref{sub:protocol},
+Appendix~\ref{ssec:dependence_app}), so mitigations relying on
+externally verified peer accuracy---held-out calibration sets or
+architecturally distinct verifier models---are required instead.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Conclusion}
@@ -798,16 +796,17 @@ required instead.
 
 In a controlled exposure of a strong focal LLM to adversarially
 anchored wrong-peer messages, \textit{DeepSeek-v4-flash} gains
-$+7.9$~pp in C4 (Holm $p = 0.017$), concentrated on GSM8K
-($\mathrm{OR}_{\text{int.}} = 1.61$, $p \approx 10^{-5}$) and driven
-by fresh arithmetic recomputation; \textit{GPT-4o-mini}'s
-C$\rightarrow$I rate triples ($5.8\%\!\to\!17.2\%$) without a
-detectable accuracy effect.
-C2's homogeneous-debate lift is not detectable above multi-sample
-aggregation (SC-3, $p = 0.22$).
-The C5 filter strips all peer messages; the originally specified
-calibration gate is misspecified, and a corrected gate based on the
-discriminative gap predicts the C5 null deterministically.
+$7.9$ percentage points in post-debate accuracy under two wrong
+peers ($p = 0.017$ Holm-corrected), concentrated on GSM8K
+(interaction $\mathrm{OR} = 1.61$) and driven by fresh arithmetic
+recomputation; \textit{GPT-4o-mini}'s rate of flipping a correct
+answer to an incorrect one nearly triples ($5.8\%$ to $17.2\%$)
+without a detectable accuracy change.
+The homogeneous-debate condition's lift over solo is not detectable
+above multi-sample aggregation, and a confidence-weighted peer
+filter strips all peer messages because weak peers do not produce a
+usable confidence signal; the originally specified pre-flight gate
+is misspecified, and a corrected gate predicts the filter failure.
 
 %% ─────────────────────────────────────────────────────────────────────────
 \section*{Limitations}
