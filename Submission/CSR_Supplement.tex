@@ -488,6 +488,70 @@ Across the full pool, this pattern accounts for the 6.5\%
 C$\rightarrow$I rate observed in C4 for
 \textit{DeepSeek-v4-flash}.
 
+%% ═════════════════════════════════════════════════════════════════════════
+\section*{S10. Persona-style flip-rate ablation}
+\label{ssec:persona_ablation}
+%% ═════════════════════════════════════════════════════════════════════════
+
+Each dumb-agent Round-0 response was generated from one of four
+wrong-reasoning style personas (Section~\ref{ssec:personas}).
+Table~\ref{stab:persona_ablation} reports the focal-agent
+C$\rightarrow$I flip rate in C3 and C4 broken down by the dominant
+persona style of the dumb peers in each trial; ``mixed'' rows are
+omitted because in C4 the two dumb peers always shared one style by
+construction (a single style was randomly sampled per trial and
+applied to both peers).
+Bootstrap $95\%$ CIs come from
+\texttt{Submission/Analyse/round3\_analyses\_output.json} (key
+\texttt{J\_persona\_style\_ablation}).
+
+\begin{table}[h]
+\centering\small
+\caption{Per-persona-style focal C$\rightarrow$I flip rate in C3 and
+C4 with $95\%$ bootstrap CIs.
+\label{stab:persona_ablation}}
+\begin{tabular}{@{}llrl@{}}
+\toprule
+Condition / focal & Reasoning style & $n_{\text{R0 correct}}$ &
+                    Flip C$\to$I (\%, $[95\%$ CI$]$) \\
+\midrule
+\multirow{4}{*}{C3 / DeepSeek}
+  & surface\_keyword\_match    & 312 & $5.4$ $[3.2, 8.0]$ \\
+  & false\_analogy             & 274 & $6.2$ $[3.6, 9.1]$ \\
+  & overconfident\_assertion   & 278 & $8.6$ $[5.4, 12.2]$ \\
+  & misapplied\_rule           & 278 & $4.0$ $[1.8, 6.5]$ \\
+\midrule
+\multirow{4}{*}{C4 / DeepSeek}
+  & surface\_keyword\_match    & 305 & $4.6$ $[2.3, 7.2]$ \\
+  & false\_analogy             & 270 & $7.8$ $[4.8, 11.5]$ \\
+  & overconfident\_assertion   & 271 & $6.6$ $[3.7, 10.0]$ \\
+  & misapplied\_rule           & 281 & $7.1$ $[4.3, 10.0]$ \\
+\midrule
+\multirow{4}{*}{C4 / GPT-4o-mini}
+  & surface\_keyword\_match    & 41  & $17.1$ $[7.3, 29.3]$ \\
+  & false\_analogy             & 36  & $11.1$ $[2.8, 22.2]$ \\
+  & overconfident\_assertion   & 42  & $16.7$ $[7.1, 28.6]$ \\
+  & misapplied\_rule           & 44  & $22.7$ $[11.4, 34.1]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For \textit{DeepSeek-v4-flash} in C4 the spread across the four
+styles is $3.2$~pp ($4.6\%$ to $7.8\%$); the $95\%$ CIs of all four
+styles overlap.
+For \textit{GPT-4o-mini} in C4 the spread is larger ($11.6$~pp;
+$11.1\%$ to $22.7\%$) but the per-style sample size is $n \approx 40$
+and the CIs are correspondingly wide ($\pm 10$ to $\pm 11$~pp).
+We do not run pairwise between-style contrasts; with four styles and
+twelve pairwise comparisons per focal agent the Holm-corrected
+family-wise alpha makes none of these contrasts detectable at this
+precision.
+The four wrong-reasoning styles are therefore not empirically
+distinguishable as drivers of focal-agent C$\rightarrow$I flips in
+this study, which we read as a positive sanity check on the design:
+the aggregate C$\rightarrow$I rate is not an artefact of any single
+persona choice.
+
 \bibliography{references}
 
 \end{document}

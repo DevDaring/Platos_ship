@@ -285,7 +285,12 @@ filtering):
 \medskip
 \noindent
 \textbf{C1}: solo smart agent (no debate); solo baseline. \\
-\textbf{C2}: three smart agents, zero dumb; homogeneous debate control. \\
+\textbf{C2}: three smart agents, zero dumb; nominally a homogeneous
+debate control, but the three temperature-$0.7$ samples turn out to be
+highly correlated (pairwise Cohen's $\kappa \approx 0.72$,
+Section~\ref{sub:dependence}, $\mathrm{ESS} \approx 1.2$ effective
+draws), so C2 functions empirically as a homogeneous-sampling control
+more than as a debate test. \\
 \textbf{C3}: two smart and one dumb agent. \\
 \textbf{C4}: one smart and two dumb agents. \\
 \textbf{C5}: as C4, with confidence-weighted peer filtering applied.
@@ -950,7 +955,17 @@ statistically identical for correct and incorrect answers
 (discriminative gap $-0.003$).
 Mitigations that rely on externally verifiable peer accuracy, rather
 than self-reported confidence, are required.
-Future work should run a heterogeneous-smart-agent control and a
+Three concrete operationalisations are worth testing: (i) per-peer
+weights derived from held-out benchmark accuracy on the question's
+subject (e.g. an MMLU-Pro-by-subject prior); (ii) ensemble agreement
+among a small panel of architecturally-distinct verifier models that
+the focal does not see (the three-tier judge cascade used here for
+answer extraction shows that such panels are cheap to deploy); and
+(iii) logit-margin-based confidence sourced from the peer's own
+output distribution rather than a self-reported integer, which has
+been shown elsewhere to discriminate correctness more reliably than
+verbalised confidence.
+Future work should also run a heterogeneous-smart-agent control and a
 split-peer condition to separate debate-based revision from sample
 aggregation and to isolate unanimity-driven conformity from generic
 distractor pressure, and should extend the design to open-ended tasks
