@@ -1,8 +1,53 @@
 # Plato's Ship - Capability-Asymmetric LLM Debate Study
 
-A fully reproducible research pipeline measuring whether a **smart LLM agent's accuracy degrades** when forced to debate with capability-weaker ("dumb") peer agents, and whether a **confidence-weighted aggregation rule** can recover the lost accuracy.
+A fully reproducible research pipeline that measures how a strong LLM
+focal agent's reasoning changes when it is forced to debate with
+capability-weaker ("dumb") peer agents, and whether a confidence-weighted
+peer-filtering rule is available as a mitigation.
 
-Named after Plato's ship-of-state metaphor: does the presence of unskilled crew members drag down a skilled navigator?
+Named after Plato's ship-of-state metaphor: do unskilled crew members
+drag down a skilled navigator? The empirical answer reported in the
+accompanying paper is **focal-model-dependent** — DeepSeek-v4-flash
+gains +7.9 pp Round-1 accuracy under two weak peers while GPT-4o-mini
+loses 4.0 pp under one. The gain for DeepSeek is also not uniform: 33
+of 300 questions regress at the question level even as the aggregate
+rises. Confidence-weighted filtering is unavailable as a mitigation
+because weak agents emit no usable confidence signal.
+
+The paper accompanying this repository (`Submission/CSR_Paper.tex` +
+`Submission/CSR_Supplement.tex`) targets ACL ARR; the prior CSR
+formatting is retained.
+
+## Headline findings
+
+- **Trial total:** 7,300 across 5 conditions and 2 focal models.
+  Dataset: 200 MMLU-Pro + 100 GSM8K = 300 questions.
+- **DeepSeek-v4-flash, C4 (1 smart + 2 weak peers):** Round-1 accuracy
+  rises from 76.2% solo to 84.1% (+7.9 pp). The +7.9 pp average hides
+  a per-question regression: paired McNemar shows 33 questions
+  regress vs 12 improve (Holm-corrected p = 0.017).
+- **GPT-4o-mini, C3 (1 weak peer):** accuracy drops 4.0 pp. C→I flip
+  rate reaches 17.2% in C4, ~3× DeepSeek's.
+- **Self-consistency-of-3 baseline (free from C2's R0 samples):** debate
+  adds +1.9 pp over sample aggregation; the three smart agents in C2
+  are highly correlated (Cohen's κ = 0.72), so SC-3 is roughly 1.5
+  effective independent draws.
+- **C5 confidence-weighted filter strips 100% of peers** in every
+  trial. Two failure modes: (a) dumb agents emit no confidence
+  integer under the persona-anchored Round-0 prompt (0 of 5,850 R0
+  parses); (b) when they do emit one in Round-1, the conditional rates
+  P(conf≥60|wrong) = 0.995 and P(conf≥60|correct) = 0.998 differ by
+  -0.003, so confidence carries no discriminative signal. The
+  originally specified calibration gate metric is shown to be
+  misspecified.
+- **GSM8K drives the headline gain.** DeepSeek C4 on GSM8K: +16.0 pp.
+  On MMLU-Pro: +3.9 pp.
+
+The full attack-and-fix review for ACL ARR readiness is in
+`Submission/final_review.md`. Every numerical claim in the paper
+traces to one of the parquet artefacts in `results/data/outputs/` via
+`Submission/Analyse/free_analyses.py` or
+`Submission/Analyse/inter_agent_dependence.py`.
 
 ---
 
@@ -60,18 +105,39 @@ C5 only: dumb peers with confidence < 60 are filtered from the focal
 ### Calibration Gate (Stage 2)
 
 ```
-P(confidence >= 60 | answer wrong, agent dumb, condition in {C3,C4}) >= 0.40
-  -> PASS: run C5
-  -> FAIL: skip C5 (valid negative result; report in paper)
+Gate as implemented:
+  P(confidence >= 60 | wrong, dumb agent, condition in {C3,C4}) >= 0.40
+    -> PASS: run C5
+    -> FAIL: skip C5
+
+In this experiment the gate PASSED (metric = 0.995) but C5
+nonetheless stripped 100% of peer messages. The gate metric as
+specified is misspecified: it should test the discriminative gap
+  P(loud | wrong) - P(loud | correct)
+against a small positive threshold, not the absolute high-confidence
+rate. The observed gap is -0.003. A correctly-specified gate would
+have FAILED and Stage 3 would not have been run. See Section 3.4 of
+the paper and Submission/Analyse/free_analyses_output.json
+("calibration_by_dumb_model").
 ```
 
 ### Key Metrics
 
-- Round-0 vs Round-1 accuracy per condition
-- Flip rate correct->incorrect (conformity signal)
-- Asch conformity index (unanimous vs split peers)
-- McNemar + Bonferroni (6-7 paired comparisons)
-- Dose-response logistic regression (C2->C3->C4)
+- Round-0 and Round-1 accuracy per condition, per focal agent
+- Flip rates C→I (revision pressure) and I→C (correction signal)
+- Self-consistency-of-3 baseline derived from C2's Round-0 samples
+  (free, no extra API calls)
+- Inter-agent Cohen's κ on Round-0 correctness (how independent are
+  three "independent" smart-agent samples in C2?)
+- AUROC of self-reported confidence against correctness (peer-quality
+  signal usability)
+- Cohen's h effect size and post-hoc power for every paired
+  proportion comparison
+- Trial-level McNemar with Holm-Bonferroni correction over six
+  pairwise comparisons per focal agent
+- GEE logistic regression of R1 correctness on weak-peer count,
+  clustered by question identifier (accounts for the 5-replications-
+  per-question nesting)
 
 ---
 
@@ -101,9 +167,10 @@ Platos_ship/
 +-- .env.example                  # Template with blank values
 +-- .gitignore
 +-- README.md
++-- CLAUDE.md                     # Orientation for future Claude Code sessions
 +-- requirements.txt
 +-- TextBelt.py                   # SMS notifier
-+-- coding_agent.md               # Full implementation spec (v2)
++-- coding_agent.md               # Full implementation spec (v2; historical)
 +-- config/
 |   +-- experiment.yaml           # Conditions, sizes, seeds
 |   +-- models.yaml               # Model registry + API params
@@ -145,6 +212,31 @@ Platos_ship/
 |   +-- run_mitigation_experiment.sh  # Stage 3
 +-- tests/
 |   +-- dry_run_assertions.py
++-- Submission/                   # ACL ARR submission bundle (LaTeX + analyses)
+|   +-- CSR_Paper.tex             # Main manuscript
+|   +-- CSR_Supplement.tex        # Supplement S1-S8
+|   +-- cover_letter.tex          # CSR cover letter (legacy)
+|   +-- highlights.tex            # 5 Elsevier highlights
+|   +-- references.bib            # 22 entries (some flagged in
+|   |                             #   bibliography_verification_log.md)
+|   +-- final_review.md           # Adversarial ACL ARR review (30 attacks)
+|   +-- generate_figures.py       # Builds the three PNGs in images/
+|   +-- images/                   # figure1-3 PNG renderings
+|   +-- Analyse/
+|       +-- analysis.md           # Narrative results doc
+|       +-- generate_analysis.py  # Loads parquets, prints every number
+|       +-- free_analyses.py      # SC-of-3, GEE, effect sizes,
+|       |                         #   difficulty/subject/dataset splits
+|       +-- free_analyses_output.json
+|       +-- inter_agent_dependence.py  # Cohen's kappa + AUROC
+|       +-- inter_agent_dependence_output.json
++-- results/                      # Experiment artefacts (post-run)
+|   +-- data/
+|   |   +-- processed/            # question_pool, dumb_personas
+|   |   +-- outputs/              # trial_log, final_answers, metrics,
+|   |                             #   statistical_tests, calibration_gate,
+|   |                             #   mitigation_summary, experiment_metadata
+|   +-- logs/                     # pipeline.log, api_failures.log
 +-- data/                         # Runtime only - not in git
 +-- logs/                         # Runtime only - not in git
 ```
@@ -379,9 +471,10 @@ python3 -m src.pipeline_orchestrator --stage all
 | Stage | Trials | Est. time |
 |-------|--------|-----------|
 | Dry run | ~10 | < 5 min |
-| Stage 1 (C1-C4) | 7 000 | 18-28 h |
+| Stage 1 (C1-C4, DeepSeek + GPT-4o-mini) | 7 000 | 18-28 h |
 | Stage 2 (gate) | 0 | < 5 min |
-| Stage 3 (C5) | 300 | 2-4 h |
+| Stage 3 (C5, DeepSeek only) | 300 | 2-4 h |
+| **Total** | **7 300** | **20-32 h** |
 
 ### Crash Recovery
 
@@ -411,30 +504,55 @@ Loaded from `.env` automatically. Silent if keys missing.
 
 ## 10. Output Files
 
-All in `data/outputs/` - excluded from git.
+Runtime pipeline output lives in `data/outputs/` (gitignored); the
+committed snapshot of the May 2026 experiment lives in
+`results/data/outputs/`.
 
 | File | Row = | Purpose |
 |------|-------|---------|
-| trial_log.parquet | Agent response | Raw record of every call |
-| final_answers.parquet | (question, condition, trial, focal) | Analysis view |
+| trial_log.parquet | Agent response | Raw record of every call (35,050 rows) |
+| final_answers.parquet | (question, condition, trial, focal) | Analysis view (7,300 rows) |
 | completed_trials.parquet | Trial tuple | Resume checkpoint |
 | metrics_summary.parquet | (condition, focal) | Accuracy, flip rates, CIs |
-| statistical_tests.parquet | Condition pair | McNemar, Bonferroni |
+| statistical_tests.parquet | Condition pair | McNemar + Bonferroni |
 | calibration_gate_report.parquet | Gate run | P(loud-and-wrong) + decision |
-| mitigation_summary.parquet | C4 vs C5 | Mitigation effect |
+| mitigation_summary.parquet | C4 vs C5 | Filter outcome (100% peer removal) |
 | experiment_metadata.json | Run | Full provenance |
+
+Paper-side analysis artefacts (in `Submission/Analyse/`):
+
+| File | Purpose |
+|------|---------|
+| analysis.md | Narrative walkthrough of every number reported in the paper |
+| generate_analysis.py | Original printer that produced analysis.md |
+| free_analyses.py | SC-of-3 baseline, GEE clustered regression, Cohen's h + power, difficulty/subject/dataset stratifications, trial-level McNemar with Holm-Bonferroni, net-flip arithmetic audit, calibration-by-model |
+| free_analyses_output.json | Output JSON cited throughout the paper |
+| inter_agent_dependence.py | Pairwise Cohen's κ on R0 correctness, AUROC of confidence-to-correctness |
+| inter_agent_dependence_output.json | Output JSON for §4.5 of the paper |
 
 ---
 
 ## 11. Reproducing Results
 
-Recompute metrics from `trial_log.parquet` without rerunning any model:
+Recompute paper numbers from the saved parquet artefacts without
+rerunning any model:
 
 ```bash
+# Original pipeline-side metrics (uses the runtime outputs)
 python3 -m src.metrics_calculator
 python3 -m src.statistical_analyzer
 python3 -m src.calibration_gate
+
+# Paper-side analyses (loads results/data/outputs/, no API calls)
+python3 Submission/Analyse/free_analyses.py
+python3 Submission/Analyse/inter_agent_dependence.py
+python3 Submission/Analyse/generate_analysis.py
 ```
+
+Every numerical claim in `Submission/CSR_Paper.tex` and
+`Submission/CSR_Supplement.tex` can be re-derived from
+`results/data/outputs/*.parquet` by running the two analysis scripts
+above. The outputs are committed for inspection.
 
 ---
 
