@@ -498,10 +498,12 @@ $95\%$ CI $[-0.5, +5.5]$, $p = 0.11$; C3 vs C1 $\Delta = +2.13$~pp,
 $95\%$ CI $[-0.9, +5.1]$, $p = 0.16$); only the C4 contrast against C1
 is detectable ($\Delta = +7.93$~pp, $95\%$ CI $[+5.1, +10.8]$,
 $p < 10^{-4}$).
-A free self-consistency-of-three baseline (row SC3 in
-Table~\ref{tab:conditions}) — per-trial majority vote of the three smart
-agents' Round-0 answers in C2, before any debate exchange — attains 76.8\%
-accuracy.
+
+To separate debate revision from sample aggregation, a free
+self-consistency-of-three baseline (row SC3 in
+Table~\ref{tab:conditions}) — per-trial majority vote of the three
+smart agents' Round-0 answers in C2, before any debate exchange —
+attains $76.8\%$ accuracy.
 The $1.9$~pp gap between C2's Round-1 accuracy ($78.7\%$) and the SC-3
 baseline ($76.8\%$) is not statistically detectable at this sample size
 (two-proportion $z$-test, $p = 0.22$, Cohen's $h = 0.045$, post-hoc
@@ -516,12 +518,14 @@ correlated-rater approximation $\mathrm{ESS} = k / [1 + (k-1)\rho]$
 gives an effective sample size of about $1.2$ independent draws,
 which limits how much an SC-style procedure can extract from C2's
 Round-0 distribution.
-The much larger net gain in C4 ($+7.9$~pp at trial level, $+7.0$~pp at
-question level) is driven almost entirely by the I$\rightarrow$C flip
-rate, which jumps from $27.5\%$ in C2 to $55.8\%$ in C4: the weak
-peers' Round-0 answers contain enough signal about the questions the
-focal agent missed to roughly double the I$\rightarrow$C rate, even
-when many of the peers' own answers are wrong.
+
+The C4 result is qualitatively different.
+The much larger net gain in C4 ($+7.9$~pp at trial level, $+7.0$~pp
+at question level) is driven almost entirely by the I$\rightarrow$C
+flip rate, which jumps from $27.5\%$ in C2 to $55.8\%$ in C4: the
+weak peers' Round-0 answers contain enough signal about the questions
+the focal agent missed to roughly double the I$\rightarrow$C rate,
+even when many of the peers' own answers are wrong.
 Paired trial-level and question-level McNemar tests both confirm the
 C4 gain: at the question level, $33$ of $300$ items move from
 incorrect in C1 to correct in C4 against only $12$ that move the
@@ -536,14 +540,17 @@ A separate analysis stratified by zero-shot probe difficulty shows
 that the question-level gain is larger on probe-hard items ($+14$
 questions net of $152$) than on probe-easy items ($+7$ of $148$),
 consistent with the correction-signal interpretation.
+
+Decomposing the C4 outcome into its two flip components clarifies the
+mechanism.
 The C$\rightarrow$I flip rate rises in the predicted direction from
-5.0\% in C2 to 6.5\% in C4, but the effect size is small (Cohen's
+$5.0\%$ in C2 to $6.5\%$ in C4, but the effect size is small (Cohen's
 $h = 0.05$ on the C2-vs-C4 contrast, two-proportion $p = 0.15$,
-post-hoc power $0.30$); the gap is consistent with a monotone rise but
-is underpowered for detection at the current sample size and should be
-read as suggestive, not statistically established.
-The corresponding I$\rightarrow$C flip rate change from 27.5\% in C2 to
-55.8\% in C4 is large (Cohen's $h = 0.58$, $p < 0.001$, power
+post-hoc power $0.30$); the gap is consistent with a monotone rise
+but is underpowered for detection at the current sample size and
+should be read as suggestive, not statistically established.
+The corresponding I$\rightarrow$C flip rate change from $27.5\%$ in
+C2 to $55.8\%$ in C4 is large (Cohen's $h = 0.58$, $p < 0.001$, power
 $> 0.99$), so the C4 net gain is dominated by the correction signal
 even when the conformity signal is also active in the predicted
 direction.
@@ -843,6 +850,7 @@ this design because dumb-agent Round-0 correctness is constant zero
 this limit is itself a design observation and motivates a future
 heterogeneous-smart-agent control.
 
+The second auxiliary analysis turns to the confidence signal.
 AUROC of self-reported confidence against per-trial correctness checks
 whether confidence is usable as a peer-quality score.
 For the dumb models in Round-1, AUROC is $0.61$ ($95\%$ CI
@@ -901,7 +909,8 @@ Direct numerical comparison with prior debate gains is not possible
 without harmonising the peer-construction protocol; we report the
 within-study peer-count gradient as the primary quantitative claim.
 
-\textit{GPT-4o-mini} fits the prior literature more conventionally.
+In contrast, \textit{GPT-4o-mini} fits the prior literature more
+conventionally.
 Its C$\rightarrow$I rate of $17.2\%$ ($[11.7, 23.3]$ 95\% CI) under
 two wrong peers is one in six of the $163$ R0-correct trials, and the
 net accuracy outcome is neutral to negative.
@@ -911,8 +920,8 @@ narrow a basis from which to establish such a threshold and the
 relationship between baseline accuracy, recomputation capacity, and
 C$\rightarrow$I susceptibility is left to follow-up work.
 
-Confidence-weighted peer filtering is unavailable as a mitigation in
-this setting.
+The mitigation question follows the same direction: confidence-weighted
+peer filtering is unavailable in this setting.
 Weak agents emit no confidence integer in the persona-anchored Round-0
 prompt and produce non-discriminative confidence distributions in
 Round-1 (Section~\ref{sub:protocol}, Section~\ref{sub:dependence}); a
