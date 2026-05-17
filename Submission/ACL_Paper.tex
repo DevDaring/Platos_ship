@@ -364,20 +364,20 @@ confidence of 60 or above are included; messages with no parsed
 confidence are treated as below threshold and excluded.
 
 A calibration gate ran prior to C5 to check whether the confidence
-values reported by weak peers in C3 and C4 could discriminate correct
+values reported by weak peers in C3 and C4 could distinguish correct
 from incorrect responses.
-Across 4{,}146 dumb-agent Round-1 responses with parsed confidence, the
-gate measured $P(\text{conf} \geq 60 \mid \text{wrong}) = 0.995$
-(95\% CI [0.991, 0.998]) and $P(\text{conf} \geq 60 \mid \text{correct})
-= 0.998$, so the discriminative quantity
-$P(\text{loud}\mid\text{wrong}) - P(\text{loud}\mid\text{correct}) =
--0.003$.
-The gate as originally specified passed because the absolute
-loud-and-wrong rate (0.995) exceeds its activation threshold of 0.40, but
-the near-zero gap between the two conditional rates predicts that a
-confidence threshold cannot remove wrong peers selectively.
-We treat the gate's pass-decision as a misspecification: an informative
-filter requires a discriminative gap, not merely a high marginal rate.
+Across $4{,}146$ dumb-agent Round-1 responses with parsed confidence,
+$99.5\%$ of wrong answers and $99.8\%$ of correct answers had
+confidence at or above the $60$ threshold.
+The originally specified gate rule passed (the loud-and-wrong rate
+$99.5\%$ exceeds its $40\%$ activation threshold), but the gap
+between the two conditional rates---only $-0.3$ percentage
+points---predicts that a confidence threshold cannot remove wrong
+peers selectively.
+An informative filter requires that confidence \emph{discriminate}
+wrong from correct responses, not merely that wrong responses are
+loud in absolute terms; we treat the gate's pass-decision as a
+misspecification.
 
 The C5 run confirms the predicted null-effect and surfaces a second
 design issue empirically.
