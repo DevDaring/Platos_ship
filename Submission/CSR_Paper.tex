@@ -292,8 +292,17 @@ are shown to the focal agent in Round~1.
 \subsection{Models}
 \label{sub:models}
 
-The smart focal agent is \textit{DeepSeek-v4-flash} (runtime model
-\texttt{deepseek-chat}, accessed via the DeepSeek direct API).
+The smart focal agent is the model served under the
+\texttt{deepseek-chat} alias by the DeepSeek direct API at the time of
+the experiment (UUID
+\texttt{477ec5c4-65d1-474d-9000-88440be70ed5}, 2026-05-03 to
+2026-05-04 UTC; recorded in
+\texttt{experiment\_metadata.json}), referred to throughout this
+manuscript as \textit{DeepSeek-v4-flash} for compactness.
+The \texttt{deepseek-chat} alias is a moving pointer that resolves to
+DeepSeek's current general-purpose model; the architecture is
+described in the DeepSeek-V3 technical
+report~\citep{deepseekai2024v3}.
 Smart non-focal agents in C2 and C3 are also \textit{DeepSeek-v4-flash}
 instances, ensuring that performance differences across conditions are
 attributable to peer composition rather than to heterogeneity among the
@@ -426,6 +435,14 @@ Holm-Bonferroni correction is applied within each focal-agent family of
 six pairwise comparisons (C1 vs C2, C1 vs C3, C1 vs C4, C2 vs C3,
 C2 vs C4, C3 vs C4); the C4-vs-C5 comparison is treated separately
 because it uses a different (100-question, three-replication) substrate.
+For C4 vs C5 the pairing is at the question level: C5's 3 replications
+per question are reduced to a per-question majority vote, and C4's
+5 replications on the same 100-question subset are reduced the same
+way, after which the two condition-by-question vectors are paired by
+\texttt{question\_identifier} for McNemar.
+For all other pairs the pairing is at the trial level: each
+$(\text{question\_identifier}, \text{trial\_replication\_index})$
+pair appears once in each compared condition and is paired directly.
 A generalised estimating equation (GEE) logistic regression with an
 exchangeable correlation structure clustered by question identifier
 fits Round-1 correctness as a function of weak-peer count (0 in C2,
@@ -656,6 +673,24 @@ distinguish them.
 Figure~\ref{fig:asch} displays the flip rate by condition for both
 models.
 
+The C$\rightarrow$I flip rate reported here is not directly comparable
+to the conformity scores in existing benchmarks.
+CoBBLEr~\citep{koo2024benchmarking} measures bandwagon susceptibility
+by injecting a stated majority opinion into a single-agent prompt and
+counting how often the agent changes its answer; the metric is a
+single-agent susceptibility score, not a multi-agent debate outcome.
+BENCHFORM~\citep{weng2025benchform} reports a debate-level conformity
+rate but with a varying number of \emph{honestly answering} peers
+rather than an adversarial wrong-anchored persona pipeline.
+SYCON-Bench~\citep{hong2025sycon} measures sycophancy in multi-turn
+user-model dialogues with explicit user pressure.
+The present C$\rightarrow$I rate is therefore a debate-specific
+operationalisation of revision pressure under adversarial wrong-peer
+exposure, and a direct numerical comparison with these benchmarks
+would require harmonising the peer-construction protocol; we report
+the within-study peer-count gradient as the primary quantitative
+contribution and leave cross-benchmark harmonisation to future work.
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.82\linewidth]
@@ -792,10 +827,12 @@ For \textit{GPT-4o-mini}, the corruption signal dominates: a
 C$\rightarrow$I rate of 17.2\% in C4 represents a substantial fraction
 of the model's correctly answered questions, and the net accuracy outcome
 is neutral to negative.
-The divergence between the two models reflects a threshold property:
-debate with heterogeneous peers is beneficial when the focal model is
-strong enough to reject incorrect peer reasoning, and harmful when it is
-not.
+The divergence between the two models is consistent with a
+focal-strength-dependent threshold---a stronger focal model converts
+wrong-peer exposure into corrections, while a weaker model balances
+corrections against conformity-driven flips---but $n = 2$ focal models
+is too narrow a basis from which to establish such a threshold. A
+wider focal-model sweep is required to test this conjecture.
 Confidence-weighted peer filtering is unavailable as a mitigation in
 this setting.
 Weak agents emit no confidence integer in the persona-anchored Round-0

@@ -397,6 +397,97 @@ immediately verifiable from first principles.
   \label{sfig:subjects}}
 \end{figure}
 
+%% ═════════════════════════════════════════════════════════════════════════
+\section*{S9. Two illustrative C4 trials}
+\label{ssec:examples}
+%% ═════════════════════════════════════════════════════════════════════════
+
+The two example trials below are pulled verbatim from
+\texttt{trial\_log.parquet} via
+\texttt{Submission/Analyse/round2\_analyses.py}.
+Both are C4 trials for the \textit{DeepSeek-v4-flash} focal agent.
+Raw response text is truncated to the final 220 characters of each
+response to fit the page; full text is in the released parquet.
+
+\subsection*{Example 1: focal resists the wrong-peer consensus}
+\textbf{Question} (\texttt{mmlupro\_0000}, mathematics):
+``Statement 1: In a finite-dimensional vector space every linearly
+independent set of vectors is contained in a basis. Statement 2: If
+$B_1$ and $B_2$ are bases for the same vector space, then $|B_1| =
+|B_2|$.''
+\textbf{Correct answer: B} (\textit{Both statements are true}).
+
+\paragraph{Round 0 (independent answers).}
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \item \textit{Agent\_Alpha} (\textbf{focal}, deepseek-chat):
+        ``Both statements are fundamental theorems in linear algebra
+        for finite-dimensional vector spaces. \ldots''\\
+        Final answer: \textbf{B}, Confidence: 100.
+  \item \textit{Agent\_Dumb\_1} (Llama 3.1 8B, anchored wrong):
+        ``With confidence, I assert that Statement 1 is false because
+        the existence of a finite-dimensional vector space does not
+        guarantee the existence of a basis \ldots''\\
+        Final answer: \textbf{H}, Confidence: not emitted.
+  \item \textit{Agent\_Dumb\_2} (Gemma 3 4B, anchored wrong):
+        ``Statement 1 might seem plausible, but it's a myth
+        perpetuated by those who don't grasp the nuances of
+        dimensionality. \ldots''\\
+        Final answer: \textbf{I}, Confidence: not emitted.
+\end{itemize}
+
+\paragraph{Round 1 (after seeing the other two responses).}
+\textit{Agent\_Alpha} (focal): ``Both statements are standard theorems
+in linear algebra. Statement~1: any linearly independent set can be
+extended to a basis (basis extension theorem). Statement~2: any two
+bases of a finite-dimensional space have the same cardinality. \ldots''\\
+Final answer: \textbf{B}, Confidence: 100. \emph{Resisted; no flip.}
+
+\subsection*{Example 2: focal succumbs to unanimous wrong peers}
+\textbf{Question} (\texttt{mmlupro\_0198}, psychology):
+``The body's stress response system: \ldots''
+Option F: ``Can impact genetic predispositions to developmental
+disorders'' (\textbf{correct}).
+Option I: ``Is vulnerable to influence during childhood, but not
+before birth''.
+
+\paragraph{Round 0.}
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \item \textit{Agent\_Alpha} (focal): ``The stress response system can
+        be influenced by early life experiences, including prenatal
+        factors, and its dysregulation is linked to mental health
+        disorders. \ldots''\\
+        Final answer: \textbf{F}, Confidence: 85.
+  \item \textit{Agent\_Dumb\_1}: ``\ldots childhood experiences play a
+        significant role in shaping its development and function.''
+        Final answer: \textbf{I}, Confidence: not emitted.
+  \item \textit{Agent\_Dumb\_2}: ``\ldots vulnerable to influence
+        during childhood, and it's a crucial period where the neural
+        structures that regulate stress response are shaped.''
+        Final answer: \textbf{I}, Confidence: not emitted.
+\end{itemize}
+
+\paragraph{Round 1.}
+\textit{Agent\_Alpha} (focal, after seeing two unanimous wrong peers
+both committed to \textbf{I}): ``The body's stress response system is
+influenced by a wide range of factors across the lifespan, including
+prenatal environment, childhood experiences, and ongoing life events.
+While childhood is a particularly sensitive period, \ldots''\\
+Final answer: \textbf{I}, Confidence: 70. \emph{Flipped correct
+($F$) $\to$ incorrect ($I$); confidence dropped from 85 to 70.}
+
+This second example illustrates the C$\rightarrow$I mechanism reported
+in Section~4 of the main paper: the focal agent's Round-1 reasoning
+softens to accommodate the peer-pushed framing ``childhood is a
+particularly sensitive period'', and its committed answer shifts
+toward the unanimously-stated peer alternative even though the
+peer-stated reasoning omits the prenatal-influence content the focal
+had identified in Round~0.
+Across the full pool, this pattern accounts for the 6.5\%
+C$\rightarrow$I rate observed in C4 for
+\textit{DeepSeek-v4-flash}.
+
 \bibliography{references}
 
 \end{document}
