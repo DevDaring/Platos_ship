@@ -588,36 +588,40 @@ whereas a weaker model is overcome by the noise they introduce.
 \subsection{Conformity signatures and a design limit}
 \label{sub:asch}
 
-The C$\rightarrow$I flip rate per condition provides a conformity
-signature, reported over trials in which weak peers were unanimously wrong.
-The \texttt{dumb\_peer\_consensus\_status} field records that dumb-peer
-signals were unanimously wrong in every heterogeneous trial, so no
-split-peer cases arose.
-For \textit{DeepSeek-v4-flash}, the flip rate rises from 6.0\% in C3 to
-6.5\% in C4, indicating that a larger unanimous-wrong majority exerts
-greater conformity pressure.
-For \textit{GPT-4o-mini} the flip rate is substantially higher at 11.5\%
-in C3 and 17.2\% in C4, indicating that conformity susceptibility is
-amplified in a model with weaker baseline reasoning.
-Figure~\ref{fig:asch} displays the C$\rightarrow$I flip rate by condition
-for both models.
+The C$\rightarrow$I flip rate per condition measures the rate at which
+a focal agent revises a correct Round-0 answer to an incorrect Round-1
+answer after exposure to peer messages.
+In every heterogeneous trial of this experiment the dumb-peer consensus
+was unanimously wrong (the \texttt{dumb\_peer\_consensus\_status} field
+in \texttt{final\_answers} records no split-peer cases), so the
+C$\rightarrow$I rate measures the joint effect of (a) wrong peer answers
+being present at all and (b) all visible peers being wrong
+simultaneously.
+The design does not separate these two factors, and as a consequence
+the C$\rightarrow$I rate cannot be attributed exclusively to
+unanimity-driven conformity pressure as distinct from generic
+distractor-induced flipping.
+A split-peer control (one wrong peer alongside one right peer) is the
+required follow-up to make this distinction and is deferred to future
+work.
 
-The elevation in the flip rate in C4 relative to C3 is consistent with
-the classical finding that conformity pressure scales non-linearly with
-unanimity group size~\citep{asch1951effects,bond1996culture}.
-A single wrong peer constitutes a minority voice; two wrong peers constitute
-a unanimous majority against the lone focal agent.
-The effect is markedly larger for \textit{GPT-4o-mini}, suggesting that
-the bandwagon threshold is lower for models with weaker discriminative
-capacity.
-
-Because the dumb-peer consensus was unanimously wrong in every
-heterogeneous trial, the design cannot separate unanimity-driven
-bandwagon pressure from generic distractor-induced flipping.
-The reported flip-rate escalation is consistent with---but does not
-isolate---the bandwagon mechanism.
-A split-peer condition is required to attribute the effect to unanimity
-per se and is left to future work.
+Within this design limit, the flip rate rises with weak-peer count in
+both focal models.
+For \textit{DeepSeek-v4-flash} the rise from 6.0\% in C3 to 6.5\% in C4
+is small and underpowered (Section~\ref{sub:accuracy}).
+For \textit{GPT-4o-mini} the rise from 11.5\% in C3 to 17.2\% in C4 is
+substantively large (Cohen's $h = 0.14$ on the C3-vs-C4 contrast,
+$p = 0.12$, post-hoc power $0.34$), and the C2-vs-C4 contrast is
+detectable at this sample size (Cohen's $h = 0.30$, $p = 0.001$,
+power $0.91$).
+The conformity-bias literature offers two related but non-isolable
+mechanisms that could account for the rise: sycophancy
+\citep{sharma2023towards} and the bandwagon effect under unanimous
+majorities \citep{asch1951effects,bond1996culture,koo2024benchmarking}.
+The present data are consistent with both being active but cannot
+distinguish them.
+Figure~\ref{fig:asch} displays the flip rate by condition for both
+models.
 
 \begin{figure}[t]
   \centering
@@ -731,17 +735,21 @@ A heterogeneous-smart-agent control with three architecturally distinct
 models would supply the missing independent-sample comparison; this is
 the highest-priority follow-up.
 Third, \textit{MMLU-Pro} and \textit{GSM8K} appear in the pretraining
-corpora of contemporary LLMs, so the baseline accuracies may overstate
-genuine reasoning; the relative comparison across conditions is robust to
-a constant contamination offset, but the 45-percentage-point capability
-gap should be read as an empirical observation on these specific items.
+corpora of contemporary LLMs, so the focal-agent baseline accuracies
+may overstate genuine reasoning; the relative comparison across
+conditions is robust to a constant contamination offset, but the
+within-condition accuracies should be read as conditional on these
+specific item sets.
 Fourth, the design provides only three peer-count values and only
-unanimous-wrong peer signals, so the bandwagon mechanism is not isolated
-from generic distractor pollution.
-Fifth, both focal models are accessed via commercial APIs, so the
-mechanistic attribution to sycophancy and the bandwagon effect is
-supported by the flip-rate patterns but cannot be verified at the
-representation level.
+unanimous-wrong peer signals, so the conformity-revision pressure
+documented here cannot be attributed to bandwagon-under-unanimity per
+se as distinct from generic wrong-peer distractor effects.
+Fifth, both focal models are accessed via commercial APIs, so this
+study reports the behavioural-level effect of peer composition on
+focal-agent outcomes but not the representation-level mechanism;
+attribution to sycophancy or the bandwagon effect as named processes
+remains tentative and requires either probing of open-weights focal
+models or a split-peer design.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Conclusion}
