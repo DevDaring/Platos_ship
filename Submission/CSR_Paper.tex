@@ -53,27 +53,32 @@ large language models \sep bandwagon effect
 %% ── Abstract ─────────────────────────────────────────────────────────────
 \begin{abstract}
 Multi-agent debate frameworks let language models critique and revise one
-another, often improving aggregate performance on reasoning tasks.
-When agents differ in capability, peer exposure exerts two simultaneous
-forces on a strong focal agent: a correction signal from peers who got
-different questions right, and a corruption signal from peers who hold
-incorrect positions.
-This work presents a controlled five-condition experiment that varies the
-number of weak peers exposed to a strong focal agent, using
-\textit{DeepSeek-v4-flash} as the primary focal model and
-\textit{GPT-4o-mini} for cross-model comparison, across 300
-\textit{MMLU-Pro} and \textit{GSM8K} questions with five replications
-per question.
-For \textit{DeepSeek-v4-flash} the correction signal dominates:
-Round~1 accuracy rises from 76.2\% solo to 84.1\% with two weak peers
-($+$7.9~pp).
-For \textit{GPT-4o-mini} the corruption signal dominates: accuracy falls
-4.0~pp under one weak peer, with a correct-to-incorrect flip rate of
-17.2\% under two.
-Confidence-weighted peer filtering fails as a mitigation because weak
-agents over-report certainty in 99.5\% of trials.
-Debate protocols should weight peers by verifiable accuracy, not
-self-reported confidence.
+another, with reported aggregate gains on reasoning tasks.
+We measure what happens when one strong focal agent is exposed to a
+controlled number of capability-weaker peers in a five-condition design
+across 7{,}300 trials on 300 \textit{MMLU-Pro} and \textit{GSM8K}
+questions, using \textit{DeepSeek-v4-flash} as the primary focal agent
+(1{,}500 trials per condition) and \textit{GPT-4o-mini} as a cross-model
+comparison (250 trials per condition).
+The two focal models diverge under the same protocol:
+\textit{DeepSeek-v4-flash} Round~1 accuracy rises from 76.2\% solo to
+84.1\% with two weak peers ($+$7.9~pp), while \textit{GPT-4o-mini} loses
+4.0~pp under one weak peer.
+The aggregate gain for \textit{DeepSeek-v4-flash} hides a per-question
+regression: 33 of 300 items regress in the maximum-weak-peer condition
+against only 12 that improve (McNemar $p = 0.017$, Holm-corrected).
+A self-consistency-of-three baseline derived from the same Round~0
+samples used in the three-smart-agent condition shows that debate adds
+$+$1.9~pp on top of sample aggregation, so the headline lift is a mixture
+of real revision and multi-sample noise reduction.
+A confidence-weighted peer filter strips 100\% of peer messages because
+weak agents report confidence at or above the filtering threshold on
+99.5\% of trials regardless of correctness, demonstrating that
+self-reported confidence cannot identify weak peers in mixed-capability
+ensembles.
+Aggregate accuracy in multi-agent debate evaluations hides
+deployment-relevant subset regressions; confidence-based peer weighting is
+not a viable mitigation when peer capability varies.
 \end{abstract}
 
 \end{frontmatter}
@@ -133,17 +138,26 @@ answer quality, sycophantic drift, and conformity in a strong focal agent.
 
 The specific contributions of this work are as follows.
 \begin{enumerate}
-    \item A controlled three-point peer-count gradient measurement of
-          focal-agent accuracy and correct-to-incorrect flip rate in a
-          strong LLM reasoner exposed to up to two weak peers.
-    \item A bias-theoretic decomposition into correction (I\textrightarrow{}C)
-          and corruption (C\textrightarrow{}I) signals, with an explicit
-          design-limit discussion of bandwagon attribution under
-          unanimous-wrong peer conditions.
-    \item A cross-model comparison with \textit{GPT-4o-mini} showing that
-          the corruption signal dominates in a weaker focal model, and an
-          empirical confirmation that confidence-weighted peer filtering fails
-          when weak agents over-report certainty.
+    \item A controlled three-point peer-count measurement of focal-agent
+          accuracy and flip rates across 7{,}300 trials, with effect
+          sizes, GEE-clustered logistic regression, and trial-level
+          paired McNemar comparisons.
+    \item A hidden-subset-regression result for the stronger focal model:
+          \textit{DeepSeek-v4-flash}'s aggregate $+$7.9~pp Round~1 gain
+          in C4 hides per-question regression in 33 of 300 items against
+          improvement in 12 (Holm-corrected $p = 0.017$), surfaced only
+          when paired trial-level comparisons replace single-number
+          accuracy reporting.
+    \item A self-consistency-of-three baseline derived from the same
+          Round~0 samples used in the three-smart-agent condition,
+          separating real debate revision from multi-sample noise
+          reduction; 1.9 of the 2.5~pp C2 lift is revision-driven, the
+          remainder is sample aggregation.
+    \item An empirical demonstration that confidence-weighted peer
+          filtering is unavailable as a mitigation under capability
+          asymmetry, with a calibration-gate pre-flight test that
+          predicts the filter failure deterministically from weak-agent
+          confidence distributions in C3 and C4.
 \end{enumerate}
 
 %% ═════════════════════════════════════════════════════════════════════════
@@ -586,30 +600,45 @@ representation level.
 \label{sec:conclusion}
 %% ═════════════════════════════════════════════════════════════════════════
 
-A controlled five-condition experiment with 7{,}300 debate trials isolates
-the effect of increasing weak-peer count on a strong focal agent's reasoning.
-For \textit{DeepSeek-v4-flash}, the net accuracy gain in C4 masks a
-significant question-level regression ($p = 0.0025$, McNemar;
-Bonferroni-corrected $p = 0.017$) and a monotone rise in the
-correct-to-incorrect flip rate from 5.0\% to 6.5\% across conditions.
-For \textit{GPT-4o-mini}, the degradation is unambiguous: accuracy falls
-4.0 percentage points in C3 and the C$\rightarrow$I flip rate reaches
-17.2\% in C4, nearly three times the value observed in the stronger model.
-The sycophancy and bandwagon mechanisms documented for single-agent settings
-therefore transfer to multi-agent debate when capability asymmetry is large.
-C5 confirms that weak agents over-report certainty in 99.5\% of trials;
-confidence-weighted peer filtering is better described as a demonstration
-of weak-agent miscalibration than as a failed mitigation design.
+A controlled five-condition experiment with 7{,}300 debate trials measures
+how a strong focal agent's reasoning changes under increasing weak-peer
+count.
+The two focal models produce opposite-signed net outcomes under the same
+protocol: \textit{DeepSeek-v4-flash} gains 7.9 percentage points in C4
+while \textit{GPT-4o-mini} loses 4.0 percentage points in C3.
+The headline gain for \textit{DeepSeek-v4-flash} is not uniform across the
+question pool: a paired trial-level McNemar comparing C1 and C4 shows a
+question-level regression in 33 of 300 items against improvement in 12
+(Holm-corrected $p = 0.017$), and a free self-consistency-of-three
+baseline derived from the same Round~0 samples used for C2 shows that
+1.9 of C2's 2.5-point trial-level lift is debate-driven revision while the
+remainder is sample aggregation.
+The correct-to-incorrect flip rate rises in the predicted direction with
+weak-peer count (5.0\% in C2 to 6.5\% in C4 for \textit{DeepSeek-v4-flash};
+5.8\% to 17.2\% for \textit{GPT-4o-mini}), but the change is detected at
+significance only in the weaker focal model; the dose-response in the
+stronger model survives mainly through the rise in beneficial
+incorrect-to-correct flips (27.5\% to 55.8\%).
+C5 functions as an empirical validation of the calibration gate
+(Section~\ref{sub:protocol}): the gate predicted that confidence-weighted
+filtering would not be informative because weak agents report confidence
+above the filtering threshold on 99.5\% of trials, and the C5 run
+confirms this empirically by stripping 100\% of peer messages.
 
-These findings limit the conditions under which mixed-capability debate
-can be recommended.
-Debate groups that include agents with substantially lower baseline accuracy
-should not rely on self-reported confidence as a proxy for peer quality.
-Future work should evaluate whether architecturally distinct judge models
-or externally verified calibration records can provide the capability signal
-that self-report cannot, and should extend the three-point peer-count
-gradient measurement to open-ended tasks where binary correctness is
-not available.
+These findings have two implications for multi-agent debate deployments.
+First, single-number accuracy reporting hides per-question regressions
+that matter for high-reliability use cases; paired trial-level comparisons
+should be reported alongside aggregate accuracy.
+Second, confidence-based peer weighting is unavailable as a mitigation in
+mixed-capability ensembles, because weak agents do not produce a usable
+confidence signal.
+Mitigations that rely on externally verifiable peer accuracy, rather than
+self-reported confidence, are required.
+Future work should run a heterogeneous-smart-agent control and a
+split-peer condition to separate debate-based revision from sample
+aggregation and to isolate unanimity-driven conformity from generic
+distractor pressure, and should extend the design to open-ended tasks
+where binary correctness is not available.
 
 %% ─────────────────────────────────────────────────────────────────────────
 \section*{Acknowledgements}
