@@ -773,8 +773,10 @@ cross-validation), confirming that three temperature-0.7 samples from one
 strong model produce highly correlated error patterns and that C2's
 "three independent agents" are not statistically independent.
 This is consistent with the modest SC3 gain over the C1 baseline reported
-in Table~\ref{tab:conditions}: at $\kappa \approx 0.72$ the three samples
-behave roughly like 1.5 effective independent draws.
+in Table~\ref{tab:conditions}: under the correlated-rater
+approximation $\mathrm{ESS} = k / [1 + (k-1)\rho]$ with $k = 3$ and
+$\rho \approx 0.72$, the three samples behave like
+$\mathrm{ESS} \approx 1.2$ effective independent draws.
 Pairwise $\kappa$ values involving a dumb agent are uninformative under
 this design because dumb-agent Round-0 correctness is constant zero
 (the wrong-anchored persona has no variance to correlate with);

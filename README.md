@@ -7,12 +7,14 @@ peer-filtering rule is available as a mitigation.
 
 Named after Plato's ship-of-state metaphor: do unskilled crew members
 drag down a skilled navigator? The empirical answer reported in the
-accompanying paper is **focal-model-dependent** — DeepSeek-v4-flash
-gains +7.9 pp Round-1 accuracy under two weak peers while GPT-4o-mini
-loses 4.0 pp under one. The gain for DeepSeek is also not uniform: 33
-of 300 questions regress at the question level even as the aggregate
-rises. Confidence-weighted filtering is unavailable as a mitigation
-because weak agents emit no usable confidence signal.
+accompanying paper is **focal-model-dependent on flip dynamics, not
+on net accuracy** — DeepSeek-v4-flash gains +7.9 pp Round-1 accuracy
+under two adversarially-anchored weak peers (paired trial-level and
+question-level McNemar agree), while GPT-4o-mini's net accuracy is
+not statistically affected but its correct-to-incorrect flip rate
+rises threefold (5.8% to 17.2%) with weak-peer count.
+Confidence-weighted filtering is unavailable as a mitigation because
+weak agents emit no usable confidence signal.
 
 The paper accompanying this repository (`Submission/CSR_Paper.tex` +
 `Submission/CSR_Supplement.tex`) targets ACL ARR; the prior CSR
@@ -22,16 +24,23 @@ formatting is retained.
 
 - **Trial total:** 7,300 across 5 conditions and 2 focal models.
   Dataset: 200 MMLU-Pro + 100 GSM8K = 300 questions.
-- **DeepSeek-v4-flash, C4 (1 smart + 2 weak peers):** Round-1 accuracy
-  rises from 76.2% solo to 84.1% (+7.9 pp). The +7.9 pp average hides
-  a per-question regression: paired McNemar shows 33 questions
-  regress vs 12 improve (Holm-corrected p = 0.017).
-- **GPT-4o-mini, C3 (1 weak peer):** accuracy drops 4.0 pp. C→I flip
-  rate reaches 17.2% in C4, ~3× DeepSeek's.
-- **Self-consistency-of-3 baseline (free from C2's R0 samples):** debate
-  adds +1.9 pp over sample aggregation; the three smart agents in C2
-  are highly correlated (Cohen's κ = 0.72), so SC-3 is roughly 1.5
-  effective independent draws.
+- **DeepSeek-v4-flash, C4 (1 smart + 2 adversarial wrong-peer
+  distractors):** Round-1 accuracy rises from 76.2% solo to 84.1%
+  (+7.9 pp). Trial-level and question-level paired McNemar tests
+  agree: 33 questions move from incorrect in C1 to correct in C4
+  against 12 moving the other way (Holm-corrected p = 0.017). No
+  hidden subset regression.
+- **GPT-4o-mini cross-validation:** net accuracy effect is not
+  statistically detectable at n=250 per condition (C3 vs C1
+  Δ = −4.0 pp, 95% bootstrap CI [−12.4, +4.4]). The C→I flip rate,
+  however, rises significantly from 5.8% in C2 to 17.2% in C4
+  (Cohen's h = 0.30, p = 0.001, power 0.91), ~3× DeepSeek's.
+- **Self-consistency-of-3 baseline (free from C2's R0 samples):** the
+  C2 lift over the SC-3 baseline is +1.9 pp but is **not
+  statistically detectable** at n=1,500 (p = 0.22, h = 0.045). The
+  three smart agents in C2 are highly correlated (Cohen's κ = 0.72),
+  so by the correlated-rater approximation ESS = k/(1+(k-1)ρ) the
+  three samples behave like ~1.2 effective independent draws.
 - **C5 confidence-weighted filter strips 100% of peers** in every
   trial. Two failure modes: (a) dumb agents emit no confidence
   integer under the persona-anchored Round-0 prompt (0 of 5,850 R0
@@ -514,7 +523,7 @@ committed snapshot of the May 2026 experiment lives in
 | final_answers.parquet | (question, condition, trial, focal) | Analysis view (7,300 rows) |
 | completed_trials.parquet | Trial tuple | Resume checkpoint |
 | metrics_summary.parquet | (condition, focal) | Accuracy, flip rates, CIs |
-| statistical_tests.parquet | Condition pair | McNemar + Bonferroni |
+| statistical_tests.parquet | Condition pair | McNemar (paired) + Holm-Bonferroni |
 | calibration_gate_report.parquet | Gate run | P(loud-and-wrong) + decision |
 | mitigation_summary.parquet | C4 vs C5 | Filter outcome (100% peer removal) |
 | experiment_metadata.json | Run | Full provenance |
