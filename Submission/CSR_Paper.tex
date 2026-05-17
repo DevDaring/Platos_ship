@@ -639,12 +639,44 @@ models.
 \subsection{Cross-model comparison and subject-level variation}
 \label{sub:crossmodel}
 
-The \textit{GPT-4o-mini} results confirm that the corruption signal dominates
-in a weaker focal model: Round~1 accuracy falls 4.0~pp in C3 and the
-C$\rightarrow$I flip rate reaches 17.2\% in C4, nearly three times the
-value for \textit{DeepSeek-v4-flash}.
-Subject-domain flip-rate variation for \textit{DeepSeek-v4-flash} is
-reported in Supplementary~S8.
+The \textit{GPT-4o-mini} results confirm that the qualitative outcome
+of weak-peer exposure depends on focal-model strength: Round~1 accuracy
+falls 4.0~pp in C3 for the weaker focal model and the C$\rightarrow$I
+flip rate reaches 17.2\% in C4, nearly three times the value for
+\textit{DeepSeek-v4-flash}.
+
+The \textit{DeepSeek-v4-flash} headline gain in C4 is not uniform across
+the question pool.
+Split by source dataset, the C4 Round-1 accuracy is 79.9\% on the 200
+MMLU-Pro multiple-choice items (vs.\ 76.0\% in C1, $+$3.9~pp) and 92.6\%
+on the 100 GSM8K free-form math problems (vs.\ 76.6\% in C1, $+$16.0~pp).
+The C4 gain is therefore concentrated on GSM8K: weak-peer messages on
+numeric word problems supply the focal agent with alternative working
+that can be re-checked arithmetically, even when the peers themselves
+give wrong answers, while ten-option multiple choice gives a smaller
+margin for the same mechanism.
+Split by per-question difficulty (a zero-shot probe stratifies each
+MMLU-Pro subject 50/50 into easier and harder halves), the C4 Round-1
+accuracy reaches 92.2\% on probe-easy items ($+$6.0~pp over C1) and
+76.3\% on probe-hard items ($+$9.9~pp over C1).
+The larger gain on hard items reflects an I$\rightarrow$C flip rate of
+16.7\% on probe-hard items versus 10.9\% on probe-easy items: weak-peer
+exposure is most beneficial precisely where the focal agent's solo
+accuracy is lowest, consistent with the correction-signal
+interpretation in Section~\ref{sub:accuracy}.
+
+The C$\rightarrow$I flip rate shows the complementary pattern.
+The C4 C$\rightarrow$I rate is 6.4\% on MMLU-Pro items but only 1.8\%
+on GSM8K items; weak-peer revision pressure operates most strongly
+where the answer space is small and a wrong peer answer is structurally
+plausible (one of ten options) rather than arithmetically refutable.
+Subject-level variation within MMLU-Pro is wide: physics and law show
+C$\rightarrow$I flip rates above 20\% in C4, while biology and history
+fall below 4\% (full breakdown in Supplementary~S8).
+These subject-level differences are not predicted by the
+correction/corruption decomposition in
+Section~\ref{sub:accuracy} and motivate a follow-up study targeting
+domain-specific vulnerability.
 
 %% ── 4.5 ──────────────────────────────────────────────────────────────────
 \subsection{Inter-agent dependence and confidence diagnostic}
