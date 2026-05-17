@@ -64,13 +64,16 @@ The two focal models diverge under the same protocol:
 \textit{DeepSeek-v4-flash} Round~1 accuracy rises from 76.2\% solo to
 84.1\% with two weak peers ($+$7.9~pp), while \textit{GPT-4o-mini} loses
 4.0~pp under one weak peer.
-The aggregate gain for \textit{DeepSeek-v4-flash} hides a per-question
-regression: 33 of 300 items regress in the maximum-weak-peer condition
-against only 12 that improve (McNemar $p = 0.017$, Holm-corrected).
-A self-consistency-of-three baseline derived from the same Round~0
-samples used in the three-smart-agent condition shows that debate adds
-$+$1.9~pp on top of sample aggregation, so the headline lift is a mixture
-of real revision and multi-sample noise reduction.
+The trial-level and question-level paired comparisons agree:
+$33$ of $300$ items move from incorrect in C1 to correct in C4 against
+only $12$ that move the other way (McNemar $p = 0.017$, Holm-corrected),
+a $+7.0$~pp net question-level gain that mirrors the $+7.9$~pp
+trial-level result.
+A self-consistency-of-three baseline derived from C2's Round-0 samples
+shows that the C2 lift is consistent with sample aggregation: the
+$+1.9$~pp difference between C2's Round-1 accuracy and the SC-3
+baseline is not statistically detectable at $n=1{,}500$
+($p = 0.22$, Cohen's $h = 0.05$).
 A confidence-weighted peer filter strips 100\% of peer messages: weak
 agents emit no confidence integer in the persona-anchored Round-0 prompt
 (0 of 5{,}850 Round-0 responses parse successfully), and in Round-1
@@ -79,9 +82,15 @@ $P(\text{conf}\geq 60 \mid \text{wrong}) = 0.995$ and
 $P(\text{conf}\geq 60 \mid \text{correct}) = 0.998$ differ by less than
 0.5~pp, so confidence cannot discriminate weak peers from correct ones
 even when it is present.
-Aggregate accuracy in multi-agent debate evaluations hides
-deployment-relevant subset regressions; confidence-based peer weighting is
-not a viable mitigation when peer capability varies.
+The two focal models diverge on flip dynamics rather than on net
+accuracy: \textit{DeepSeek-v4-flash} converts weak-peer exposure into
+I$\rightarrow$C corrections ($55.8\%$ in C4 vs $27.5\%$ in C2),
+while \textit{GPT-4o-mini}'s C$\rightarrow$I conformity-revision rate
+rises threefold ($5.8\%$ to $17.2\%$, $p = 0.001$, $h = 0.30$) and
+the I$\rightarrow$C and C$\rightarrow$I responses cancel in net
+accuracy.
+Confidence-based peer weighting is not a viable mitigation when peer
+capability varies.
 \end{abstract}
 
 \end{frontmatter}
@@ -147,17 +156,19 @@ The specific contributions of this work are as follows.
           accuracy and flip rates across 7{,}300 trials, with effect
           sizes, GEE-clustered logistic regression, and trial-level
           paired McNemar comparisons.
-    \item A hidden-subset-regression result for the stronger focal model:
-          \textit{DeepSeek-v4-flash}'s aggregate $+$7.9~pp Round~1 gain
-          in C4 hides per-question regression in 33 of 300 items against
-          improvement in 12 (Holm-corrected $p = 0.017$), surfaced only
-          when paired trial-level comparisons replace single-number
-          accuracy reporting.
-    \item A self-consistency-of-three baseline derived from the same
-          Round~0 samples used in the three-smart-agent condition,
-          separating real debate revision from multi-sample noise
-          reduction; 1.9 of the 2.5~pp C2 lift is revision-driven, the
-          remainder is sample aggregation.
+    \item Paired trial-level and question-level McNemar comparisons
+          agreeing in direction and magnitude: for
+          \textit{DeepSeek-v4-flash}, $33$ questions move from incorrect
+          in C1 to correct in C4 against $12$ moving the other way
+          (Holm-corrected $p = 0.017$), and $187$ paired trials improve
+          against $68$ that regress; the aggregate metric does not
+          hide a subset regression.
+    \item A self-consistency-of-three baseline derived from C2's
+          Round-0 samples that shows the C2 lift over C1 is consistent
+          with sample aggregation at the current sample size; the
+          $+1.9$~pp gap between C2's Round-1 accuracy and the SC-3
+          baseline is not statistically detectable ($p = 0.22$,
+          Cohen's $h = 0.05$).
     \item An empirical demonstration that confidence-weighted peer
           filtering is unavailable as a mitigation under capability
           asymmetry, with a calibration-gate pre-flight test that
@@ -442,28 +453,40 @@ A free self-consistency-of-three baseline (row SC3 in
 Table~\ref{tab:conditions}) — per-trial majority vote of the three smart
 agents' Round~0 answers in C2, before any debate exchange — attains 76.8\%
 accuracy.
-The 1.9-percentage-point gap between C2's Round~1 result (78.7\%) and this
-SC3 baseline isolates the benefit of the debate exchange itself from the
-benefit of simply aggregating three samples; about three-quarters of C2's
-gain over the solo baseline is therefore debate-driven revision and the
-remaining quarter is multi-sample noise reduction.
+The $1.9$~pp gap between C2's Round~1 accuracy ($78.7\%$) and the SC-3
+baseline ($76.8\%$) is not statistically detectable at this sample size
+(two-proportion $z$-test, $p = 0.22$, Cohen's $h = 0.045$, post-hoc
+power $0.23$, $95\%$ CI $[-1.1, +4.8]$~pp); the SC-3 baseline against
+solo C1 is also not detectable ($+0.60$~pp, $p = 0.70$).
+At $n = 1{,}500$ trials per condition this design cannot distinguish a
+genuine debate-driven revision benefit from the gain attainable by
+multi-sample aggregation alone.
 Inter-agent Cohen's $\kappa$ on the three smart agents' Round-0
-correctness is $0.72$ (Section~\ref{sub:dependence}), so the three samples
-are far from statistically independent; the SC3 baseline therefore reflects
-roughly 1.5 effective draws, and any larger SC-style gain over C1 would
-require non-trivial decorrelation across smart-agent seeds.
-The much larger net gain in C4 ($+$7.9 percentage points) is driven almost
-entirely by the I$\rightarrow$C flip rate, which jumps from 27.5\% in C2 to
-55.8\% in C4: the weak peers' Round~0 answers contain enough signal about
-the questions the focal agent missed to produce a substantial correction
-effect, even when many of the peers' own answers are wrong.
-At the question level, however, the McNemar test comparing C1 and C4 is
-statistically significant in the \textit{negative} direction
-($p = 0.0025$, Bonferroni-corrected $p = 0.017$, contingency matrix:
-218 stable correct, 12 newly correct, 33 newly wrong, 37 stable wrong).
-Thirty-three questions regressed (correct in C1, wrong in C4) against only
-12 that improved, a net question-level loss of 21 items (7.0 percentage
-points).
+correctness is $0.72$ (Section~\ref{sub:dependence}); using the
+correlated-rater approximation $\mathrm{ESS} = k / [1 + (k-1)\rho]$
+gives an effective sample size of about $1.2$ independent draws,
+which limits how much an SC-style procedure can extract from C2's
+Round-0 distribution.
+The much larger net gain in C4 ($+7.9$~pp at trial level, $+7.0$~pp at
+question level) is driven almost entirely by the I$\rightarrow$C flip
+rate, which jumps from $27.5\%$ in C2 to $55.8\%$ in C4: the weak
+peers' Round-0 answers contain enough signal about the questions the
+focal agent missed to produce a substantial correction effect, even
+when many of the peers' own answers are wrong.
+Paired trial-level and question-level McNemar tests both confirm the
+C4 gain: at the question level, $33$ of $300$ items move from
+incorrect in C1 to correct in C4 against only $12$ that move the
+other way ($\chi^2 = 8.9$, $p = 0.0025$, Holm-corrected $p = 0.017$;
+contingency $[[218, 12], [33, 37]]$ with rows indexing C1 status and
+columns indexing C4 status, so the off-diagonal entry $b = 12$
+counts regressions and $c = 33$ counts improvements); at the trial
+level (paired by question and replication index), $187$ of $1{,}500$
+trials improve against $68$ that regress (net $+119$ trials, McNemar
+$p \ll 0.001$).
+A separate analysis stratified by zero-shot probe difficulty shows
+that the question-level gain is larger on probe-hard items ($+14$
+questions net of $152$) than on probe-easy items ($+7$ of $148$),
+consistent with the correction-signal interpretation.
 The C$\rightarrow$I flip rate rises in the predicted direction from
 5.0\% in C2 to 6.5\% in C4, but the effect size is small (Cohen's
 $h = 0.05$ on the C2-vs-C4 contrast, two-proportion $p = 0.15$,
@@ -476,24 +499,26 @@ $> 0.99$), so the C4 net gain is dominated by the correction signal
 even when the conformity signal is also active in the predicted
 direction.
 
-These two aggregations measure different objects.
-The trial-level R1 accuracy (84.1\%) reflects per-trial correctness across
-1{,}500 trials; the McNemar test uses per-question majority-vote correctness
-across 300 questions.
-The contrast---a net trial-level gain alongside a net question-level
-loss---indicates that the C4 gains concentrate on a subset of questions
-while a different subset regresses, and that the question-level result is
-sensitive to majority-vote aggregation over five replications.
-The trial-level figure is treated as the primary outcome and the McNemar
-result as a robustness check that surfaces question-level heterogeneity.
-
-For \textit{GPT-4o-mini} the degradation is unambiguous.
-Round~1 accuracy falls from 66.8\% in C2 to 60.8\% in C3,
-a loss of 4.0~pp below the solo baseline of 64.8\%.
-The C$\rightarrow$I flip rate for \textit{GPT-4o-mini} reaches 11.5\% in
-C3 and 17.2\% in C4---nearly three times the value observed for
-\textit{DeepSeek-v4-flash}---confirming that a weaker focal model is
-substantially more vulnerable to peer-induced error.
+For \textit{GPT-4o-mini} the net Round-1 accuracy result is
+inconclusive at the cross-validation sample size.
+Round-1 accuracy falls from $64.8\%$ in C1 to $60.8\%$ in C3
+($-4.0$~pp, bootstrap $95\%$ CI $[-12.4, +4.4]$~pp, $n = 250$
+trials), and the C4 contrast is essentially null ($+0.4$~pp, CI
+$[-8.0, +8.8]$~pp); both CIs overlap zero, so the accuracy-level
+"opposite-signed outcome" is not statistically established for
+\textit{GPT-4o-mini}.
+The flip-rate response, by contrast, is unambiguous: the
+C$\rightarrow$I flip rate rises from $5.8\%$ in C2 to $11.5\%$ in C3
+and $17.2\%$ in C4 (C2-vs-C4 contrast: Cohen's $h = 0.30$,
+$p = 0.001$, post-hoc power $0.91$), a roughly three-fold increase
+in conformity-revision pressure relative to
+\textit{DeepSeek-v4-flash}.
+The two focal models therefore diverge on flip dynamics rather than
+on net accuracy: under maximum weak-peer exposure
+\textit{DeepSeek-v4-flash} converts most of its peer exposure into
+beneficial I$\rightarrow$C flips, while \textit{GPT-4o-mini}'s
+C$\rightarrow$I and I$\rightarrow$C rates rise in tandem and the net
+cancels.
 The confidence-weighted condition C5 yields accuracy 1.6~pp below C4
 on the matched 100-question subset ($p = 0.453$, McNemar; not
 significant).
@@ -760,25 +785,31 @@ models, are required.
 \label{sec:conclusion}
 %% ═════════════════════════════════════════════════════════════════════════
 
-A controlled five-condition experiment with 7{,}300 debate trials measures
-how a strong focal agent's reasoning changes under increasing weak-peer
-count.
-The two focal models produce opposite-signed net outcomes under the same
-protocol: \textit{DeepSeek-v4-flash} gains 7.9 percentage points in C4
-while \textit{GPT-4o-mini} loses 4.0 percentage points in C3.
-The headline gain for \textit{DeepSeek-v4-flash} is not uniform across the
-question pool: a paired trial-level McNemar comparing C1 and C4 shows a
-question-level regression in 33 of 300 items against improvement in 12
-(Holm-corrected $p = 0.017$), and a free self-consistency-of-three
-baseline derived from the same Round~0 samples used for C2 shows that
-1.9 of C2's 2.5-point trial-level lift is debate-driven revision while the
-remainder is sample aggregation.
-The correct-to-incorrect flip rate rises in the predicted direction with
-weak-peer count (5.0\% in C2 to 6.5\% in C4 for \textit{DeepSeek-v4-flash};
-5.8\% to 17.2\% for \textit{GPT-4o-mini}), but the change is detected at
-significance only in the weaker focal model; the dose-response in the
-stronger model survives mainly through the rise in beneficial
-incorrect-to-correct flips (27.5\% to 55.8\%).
+A controlled five-condition experiment with $7{,}300$ debate trials
+measures how a strong focal agent's reasoning changes under increasing
+adversarial wrong-peer exposure.
+For \textit{DeepSeek-v4-flash}, the C4 condition (one focal, two
+wrong-peer distractors) raises Round-1 accuracy by $+7.9$~pp at the
+trial level and by $+7.0$~pp at the question level; trial-level and
+question-level paired McNemar tests agree in direction and magnitude
+($33$ questions move from incorrect in C1 to correct in C4 against
+$12$ moving the other way; Holm-corrected $p = 0.017$).
+A free self-consistency-of-three baseline derived from C2's Round-0
+samples shows that the C2 lift over C1 is consistent with sample
+aggregation: the $1.9$~pp gap between C2's Round-1 accuracy and the
+SC-3 baseline is not statistically detectable at $n = 1{,}500$
+($p = 0.22$, Cohen's $h = 0.05$).
+For \textit{GPT-4o-mini} the cross-validation sample ($n = 250$ per
+condition) is too small to establish a net accuracy effect (C3 vs C1
+$\Delta = -4.0$~pp, $95\%$ CI $[-12.4, +4.4]$~pp), but the
+C$\rightarrow$I flip rate rises significantly from $5.8\%$ in C2 to
+$17.2\%$ in C4 (C2-vs-C4 contrast: $h = 0.30$, $p = 0.001$, power
+$0.91$).
+The two focal models therefore diverge on flip dynamics rather than
+on net accuracy: \textit{DeepSeek-v4-flash} extracts I$\rightarrow$C
+corrections from peer exposure ($55.8\%$ in C4 vs $27.5\%$ in C2),
+while \textit{GPT-4o-mini}'s I$\rightarrow$C and C$\rightarrow$I rates
+rise together and the net cancels.
 C5 surfaces two methodological observations about confidence-based
 filtering in mixed-capability ensembles.
 First, weak agents do not emit a confidence integer under the
@@ -795,14 +826,21 @@ better-specified gate must test the difference between the
 right-and-loud and wrong-and-loud rates.
 
 These findings have two implications for multi-agent debate deployments.
-First, single-number accuracy reporting hides per-question regressions
-that matter for high-reliability use cases; paired trial-level comparisons
-should be reported alongside aggregate accuracy.
-Second, confidence-based peer weighting is unavailable as a mitigation in
-mixed-capability ensembles, because weak agents do not produce a usable
-confidence signal.
-Mitigations that rely on externally verifiable peer accuracy, rather than
-self-reported confidence, are required.
+First, the net accuracy gain reported under wrong-peer exposure is a
+function of focal-model capability: a stronger model can convert wrong
+peer signals into useful corrections, but the conformity-revision rate
+(C$\rightarrow$I) still rises monotonically with weak-peer count and
+becomes the dominant outcome in a weaker focal model.
+Both flip-direction rates should be reported alongside aggregate
+accuracy to disclose this trade-off.
+Second, confidence-based peer weighting is unavailable as a mitigation
+in mixed-capability ensembles, because weak agents do not produce a
+usable confidence signal: their persona-anchored Round-0 prompts elicit
+no confidence integer, and their Round-1 confidence distributions are
+statistically identical for correct and incorrect answers
+(discriminative gap $-0.003$).
+Mitigations that rely on externally verifiable peer accuracy, rather
+than self-reported confidence, are required.
 Future work should run a heterogeneous-smart-agent control and a
 split-peer condition to separate debate-based revision from sample
 aggregation and to isolate unanimity-driven conformity from generic

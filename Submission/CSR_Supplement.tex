@@ -93,28 +93,35 @@ accuracy as the baseline.}
 
 The McNemar test comparing C1 and C4 at the question level uses the
 contingency matrix below, derived from 300 questions ($\times$~5
-replications, majority-vote per question):
+replications, majority-vote per question, for the focal
+\textit{DeepSeek-v4-flash}):
 
 \[
-\begin{pmatrix}
-\text{C4 correct} & \text{C4 wrong} \\
-218 & 33 \\
-12  & 37
-\end{pmatrix}
-\quad
-\begin{array}{l}
-\text{(C1 correct, rows)} \\
-\text{(C1 wrong, rows)}
+\begin{array}{l|cc}
+                & \text{C4 correct} & \text{C4 wrong} \\
+\hline
+\text{C1 correct} & 218 & 12 \\
+\text{C1 wrong}   & 33  & 37
 \end{array}
 \]
 
-The off-diagonal counts are $b = 33$ (correct in C1, wrong in C4) and
-$c = 12$ (wrong in C1, correct in C4).
+The off-diagonal counts are $b = 12$ (correct in C1, wrong in C4;
+$=$~regressed questions) and $c = 33$ (wrong in C1, correct in C4;
+$=$~improved questions).
 McNemar's statistic gives $\chi^2 = (|b - c| - 1)^2 / (b + c) = 8.9$ on
 1 degree of freedom, yielding $p = 0.0025$ (unadjusted) and
-Bonferroni-adjusted $p = 0.017$ (five comparisons, $\alpha = 0.05$).
-The test confirms a significant net regression of question-level correctness
-under maximal dumb-peer exposure.
+Holm-corrected $p = 0.017$ (within a family of six C1--C4 pairwise
+comparisons for this focal agent at $\alpha = 0.05$).
+The test confirms a significant net \emph{improvement} of
+question-level correctness under maximal adversarial wrong-peer
+exposure, in agreement with the trial-level paired McNemar
+($187$ of $1{,}500$ trials improve against $68$ that regress; net
+$+119$ trials).
+An earlier draft of this manuscript reported the off-diagonal
+labels reversed (treating $b = 33$ as regressions and $c = 12$ as
+improvements); both the contingency matrix and the corrected labels
+above match \texttt{statistical\_tests.parquet} row
+\texttt{C1\_smart\_solo\_vs\_C4\_one\_smart\_two\_dumb}.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section*{S3. Calibration gate details}
