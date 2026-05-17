@@ -268,7 +268,7 @@ filtering):
 \textbf{C2}: three smart agents, zero dumb; nominally a homogeneous
 debate control, but the three temperature-$0.7$ samples turn out to be
 highly correlated (pairwise Cohen's $\kappa \approx 0.72$,
-Section~\ref{sub:dependence}, $\mathrm{ESS} \approx 1.2$ effective
+Appendix~\ref{ssec:dependence_app}, $\mathrm{ESS} \approx 1.2$ effective
 draws), so C2 functions empirically as a homogeneous-sampling control
 more than as a debate test. \\
 \textbf{C3}: two smart and one dumb agent. \\
@@ -490,7 +490,7 @@ At $n = 1{,}500$ trials per condition this design cannot distinguish a
 genuine debate-driven revision benefit from the gain attainable by
 multi-sample aggregation alone.
 Inter-agent Cohen's $\kappa$ on the three smart agents' Round-0
-correctness is $0.72$ (Section~\ref{sub:dependence}); using the
+correctness is $0.72$ (Appendix~\ref{ssec:dependence_app}); using the
 correlated-rater approximation $\mathrm{ESS} = k / [1 + (k-1)\rho]$
 gives an effective sample size of about $1.2$ independent draws,
 which limits how much an SC-style procedure can extract from C2's
@@ -548,7 +548,7 @@ $p = 0.001$, post-hoc power $0.91$), a roughly three-fold increase
 in conformity-revision pressure relative to
 \textit{DeepSeek-v4-flash}, whose C$\rightarrow$I rate stays in
 $[5.0\%, 6.5\%]$ across C2--C4 with overlapping CIs (Section
-\ref{sub:dependence}, Table~\ref{tab:conditions}).
+\ref{ssec:dependence_app}, Table~\ref{tab:conditions}).
 The two focal models therefore diverge on flip dynamics rather than
 on net accuracy: under maximum weak-peer exposure
 \textit{DeepSeek-v4-flash} converts most of its peer exposure into
@@ -640,18 +640,17 @@ exposure depends on whether the focal model can evaluate peer reasoning
 critically: a stronger model absorbs correct signal from even weak peers,
 whereas a weaker model is overcome by the noise they introduce.
 
-\begin{figure*}[t]
+\begin{figure}[t]
   \centering
-  \includegraphics[width=0.6\textwidth]
+  \includegraphics[width=\linewidth]
     {images/figure1_bandwagon_dose_response.png}
-  \caption{Round-1 accuracy (\%) of the focal agent versus the number of
-  weak (dumb) peers in the debate group.
-  Blue circles: \textit{DeepSeek-v4-flash} ($N=1{,}500$ trials per
-  condition; 95\% bootstrap CI).
-  Red squares: \textit{GPT-4o-mini} ($N=250$ per condition).
-  Dotted horizontal lines indicate the respective C1 (solo) baseline.
+  \caption{Round-1 accuracy (\%) of the focal agent versus the
+  number of weak (dumb) peers. Blue circles:
+  \textit{DeepSeek-v4-flash} ($N{=}1{,}500$/condition; 95\% CI).
+  Red squares: \textit{GPT-4o-mini} ($N{=}250$/condition). Dotted
+  lines: respective C1 (solo) baseline.
   \label{fig:doseresponse}}
-\end{figure*}
+\end{figure}
 
 %% ── 4.3 ──────────────────────────────────────────────────────────────────
 \subsection{Conformity signatures and a design limit}
@@ -689,7 +688,7 @@ mechanisms that could account for the rise: sycophancy
 majorities \citep{asch1951effects,bond1996culture,koo2024benchmarking}.
 The present data are consistent with both being active but cannot
 distinguish them.
-Figure~\ref{fig:asch} displays the flip rate by condition for both
+Appendix~\ref{fig:asch} plots the flip rate by condition for both
 models.
 A complementary view of error structure: the C4 C$\rightarrow$I flips
 in \textit{DeepSeek-v4-flash} concentrate on discourse-heavy subjects
@@ -715,17 +714,6 @@ would require harmonising the peer-construction protocol; we report
 the within-study peer-count gradient as the primary quantitative
 contribution and leave cross-benchmark harmonisation to future work.
 
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=0.6\textwidth]
-    {images/figure2_asch_conformity.png}
-  \caption{Correct-to-incorrect (C$\to$I) flip rate by debate
-  condition (C2: zero weak peers; C3: one; C4: two).
-  All dumb-peer signals were unanimously wrong in every eligible trial.
-  Blue bars: \textit{DeepSeek-v4-flash}; red bars: \textit{GPT-4o-mini};
-  error bars: 95\% bootstrap CI.
-  \label{fig:asch}}
-\end{figure*}
 
 %% ── 4.4 ──────────────────────────────────────────────────────────────────
 \subsection{Cross-model comparison and subject-level variation}
@@ -784,72 +772,19 @@ whereas on multi-option MCQ the focal can still land on a wrong
 option even when it ignores the peers.
 Subject-level variation within MMLU-Pro is wide: physics and law show
 C$\rightarrow$I flip rates above $20\%$ in C4, while biology and
-history fall below $4\%$ (full breakdown in Appendix~S8).
-The per-subject $95\%$ bootstrap CIs are wide ($\pm 8$ to $\pm 10$~pp
-at $n \approx 70$ R0-correct trials per subject) and we do not run
-pairwise between-subject contrasts; with ten subjects the
-Holm-corrected family-wise alpha after $\binom{10}{2} = 45$
-comparisons would require effect sizes well above those observed
-here to detect any single pair as different.
-The subject-level breakdown is therefore reported as descriptive and
-motivates a follow-up study targeting domain-specific vulnerability
-at higher per-subject power.
+history fall below $4\%$ (Appendix~S8 gives the full breakdown with
+$95\%$ CIs and the multiple-testing caveat; per-subject $n \approx 70$
+makes pairwise between-subject contrasts undetectable after
+Holm correction, so the breakdown is descriptive).
 
-%% ── 4.5 ──────────────────────────────────────────────────────────────────
-\subsection{Inter-agent dependence and confidence diagnostic}
-\label{sub:dependence}
-
-Two auxiliary analyses sharpen the interpretation of the headline results.
-
-Cohen's $\kappa$ on Round-0 correctness, computed pairwise within each
-condition over the same (question, replication) trials, quantifies whether
-peer agents supply independent or correlated signal about question
-correctness.
-In C2 (three \textit{DeepSeek-v4-flash} instances), the three pairwise
-values are tightly clustered: for \textit{DeepSeek-v4-flash} the three
-pair-$\kappa$ values are $0.73$, $0.72$, $0.71$ ($95\%$ bootstrap CIs
-all contained in $[0.66, 0.77]$); for the \textit{GPT-4o-mini}
-cross-validation the three values are $0.78$, $0.74$, $0.75$
-($95\%$ CIs in $[0.65, 0.85]$, $n = 250$ trials each).
-This confirms that three temperature-$0.7$ samples from one strong
-model produce highly correlated error patterns and that C2's ``three
-independent agents'' are not statistically independent.
-This is consistent with the modest SC3 gain over the C1 baseline reported
-in Table~\ref{tab:conditions}: under the correlated-rater
-approximation $\mathrm{ESS} = k / [1 + (k-1)\rho]$ with $k = 3$ and
-$\rho \approx 0.72$, the three samples behave like
-$\mathrm{ESS} \approx 1.2$ effective independent draws.
-Pairwise $\kappa$ values involving a dumb agent are uninformative under
-this design because dumb-agent Round-0 correctness is constant zero
-(the wrong-anchored persona has no variance to correlate with);
-this limit is itself a design observation and motivates a future
-heterogeneous-smart-agent control.
-
-The second auxiliary analysis turns to the confidence signal.
-AUROC of self-reported confidence against per-trial correctness checks
-whether confidence is usable as a peer-quality score.
-For the dumb models in Round-1, AUROC is $0.61$ ($95\%$ CI
-$[0.58, 0.63]$, Gemma, $n = 2{,}206$) and $0.65$ ($[0.63, 0.67]$,
-Llama, $n = 2{,}400$), with mean confidence on correct versus wrong
-responses of $98.6/97.3$ and $96.5/92.3$ respectively---the gap between
-conditional means is 1.3 to 4.2 points on a 0-to-100 scale.
-For the smart focal agents, AUROC is $0.60$ ($[0.59, 0.62]$,
-\textit{DeepSeek-v4-flash}~R1) and $0.67$ ($[0.62, 0.71]$,
-\textit{GPT-4o-mini}~R1), also near chance.
-Confidence carries some weak signal across all models, but the gap
-is too small to drive a binary filter at any threshold.
-A direct test sweeps the confidence threshold from $0$ to $100$ in
-steps of $5$ and records the maximum $F_1$ for predicting per-trial
-correctness; for every (model, round) combination the improvement
-over the always-predict-correct baseline is between $0.000$ and
-$0.007$ (the largest improvement is $+0.007$ for
-\textit{GPT-4o-mini} Round-0 at threshold $85$, against a baseline
-$F_1$ of $0.779$).
-No choice of threshold on these distributions yields a meaningful
-separation between right and wrong responses, which is what the
-calibration gate would have detected had it tested the discriminative
-quantity rather than the absolute high-confidence rate
-(Section~\ref{sub:protocol}).
+Two auxiliary analyses in
+Appendix~\ref{ssec:dependence_app}---pairwise Cohen's $\kappa$ on
+Round-0 correctness and AUROC of confidence-against-correctness with
+max-$F_1$ across thresholds---establish the two facts used elsewhere
+in this section: pairwise $\kappa$ on the three smart agents' Round-0
+correctness is $0.72$ ($\mathrm{ESS}\approx 1.2$ effective draws), and
+no confidence threshold separates correct from incorrect responses in
+any (model, round) combination.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Discussion}
@@ -857,31 +792,25 @@ quantity rather than the absolute high-confidence rate
 %% ═════════════════════════════════════════════════════════════════════════
 
 The \textit{DeepSeek-v4-flash} result runs against the dominant
-expectation of the prior multi-agent debate literature.
+prediction of the prior multi-agent debate literature.
 \citet{du2023improving} report homogeneous-peer debate gains on
-factuality benchmarks where revision is driven by
-independently-derived evidence; the mechanism there is aggregation of
-correct peer arguments.
-\citet{koo2024benchmarking} and \citet{sharma2023towards} document
-conformity-and-sycophancy susceptibility in single-agent
-prompt-injection setups, where wrong stated positions reliably move
-the model toward incorrect answers.
-A natural prediction from these prior strands is that exposing a
-strong focal model to confidently-wrong peer messages should degrade
-its accuracy.
-The present experiment shows that, for a sufficiently strong focal
-model, the opposite holds: the correction signal carried by
-wrong-anchored peer Round-0 messages (the I$\rightarrow$C rate of
-$55.8\%$ in C4) outweighs the conformity-revision signal (the $6.5\%$
-C$\rightarrow$I rate).
+factuality benchmarks driven by aggregation of correct peer
+arguments; \citet{koo2024benchmarking} and \citet{sharma2023towards}
+document conformity-and-sycophancy susceptibility under single-agent
+wrong-position prompting.
+The natural prediction is that confidently-wrong peer messages
+should degrade focal accuracy.
+The opposite holds here for the stronger focal model: the
+I$\rightarrow$C signal carried by wrong-anchored peer Round-0
+messages ($55.8\%$ in C4) outweighs the C$\rightarrow$I conformity
+signal ($6.5\%$).
 The mechanism is not generic ``peer wisdom'': it operates via
-arithmetic recomputation on GSM8K (Section~\ref{sub:crossmodel}), so
-a disciplined reading is that wrong peers cue the focal agent toward
-questions where its Round-0 answer was incorrect and where the answer
-space supports fresh recomputation, rather than that wrong peers
-carry useful task signal in general.
-Direct numerical comparison with prior debate gains is not possible
-without harmonising the peer-construction protocol; we report the
+arithmetic recomputation on GSM8K
+(Section~\ref{sub:crossmodel})---wrong peers cue the focal toward
+questions it answered incorrectly in Round-0 where the answer space
+supports fresh recomputation.
+Direct numerical comparison with prior debate gains would require
+harmonising the peer-construction protocol; we report the
 within-study peer-count gradient as the primary quantitative claim.
 
 In contrast, \textit{GPT-4o-mini} fits the prior literature more
@@ -899,7 +828,7 @@ The mitigation question follows the same direction: confidence-weighted
 peer filtering is unavailable in this setting.
 Weak agents emit no confidence integer in the persona-anchored Round-0
 prompt and produce non-discriminative confidence distributions in
-Round-1 (Section~\ref{sub:protocol}, Section~\ref{sub:dependence}); a
+Round-1 (Section~\ref{sub:protocol}, Appendix~\ref{ssec:dependence_app}); a
 filter operating on either round therefore lacks usable signal.
 Mitigations that depend on externally verified peer accuracy, such as
 held-out calibration sets or architecturally distinct verifier
@@ -949,7 +878,7 @@ generation tasks.
 \paragraph{C2 is empirically a sampling control, not a debate test.}
 All three smart agents in C2 (and the two smart agents in C3) are
 \textit{DeepSeek-v4-flash} instances; pairwise Cohen's $\kappa$ on
-their Round-0 correctness is $0.72$ (Section~\ref{sub:dependence}),
+their Round-0 correctness is $0.72$ (Appendix~\ref{ssec:dependence_app}),
 so C2 conflates debate-based revision with intra-model
 self-consistency on highly correlated samples.
 The SC3 baseline in Table~\ref{tab:conditions} reuses C2's system
@@ -1606,6 +1535,90 @@ distinguishable as drivers of focal-agent C$\rightarrow$I flips in
 this study, which we read as a positive sanity check on the design:
 the aggregate C$\rightarrow$I rate is not an artefact of any single
 persona choice.
+
+%% ═════════════════════════════════════════════════════════════════════════
+\section*{S11. Inter-agent dependence and confidence diagnostic}
+\label{ssec:dependence_app}
+%% ═════════════════════════════════════════════════════════════════════════
+
+Two auxiliary analyses sharpen the interpretation of the headline
+results in Section~\ref{sub:accuracy}: Cohen's $\kappa$ on Round-0
+correctness across smart-agent pairs (which quantifies whether peer
+samples are statistically independent), and AUROC of self-reported
+confidence against per-trial correctness (which checks whether
+confidence is usable as a peer-quality score).
+
+\paragraph{Inter-agent $\kappa$.}
+Cohen's $\kappa$ on Round-0 correctness, computed pairwise within
+each condition over the same (question, replication) trials,
+quantifies whether peer agents supply independent or correlated
+signal about question correctness.
+In C2 (three \textit{DeepSeek-v4-flash} instances), the three
+pairwise $\kappa$ values are tightly clustered around $0.72$:
+$0.73$, $0.72$, $0.71$ ($95\%$ bootstrap CIs all contained in
+$[0.66, 0.77]$).
+For the \textit{GPT-4o-mini} cross-validation the three values are
+$0.78$, $0.74$, $0.75$ ($95\%$ CIs in $[0.65, 0.85]$,
+$n = 250$ trials each).
+Three temperature-$0.7$ samples from one strong model produce highly
+correlated error patterns; C2's ``three independent agents'' are not
+statistically independent.
+Under the correlated-rater approximation
+$\mathrm{ESS} = k / [1 + (k-1)\rho]$ with $k = 3$ and
+$\rho \approx 0.72$, the three samples behave like
+$\mathrm{ESS} \approx 1.2$ effective independent draws, which limits
+how much an SC-style procedure can extract from C2's Round-0
+distribution.
+Pairwise $\kappa$ values involving a dumb agent are uninformative
+under this design because dumb-agent Round-0 correctness is constant
+zero (the wrong-anchored persona has no variance to correlate with);
+this limit is itself a design observation and motivates a future
+heterogeneous-smart-agent control.
+
+\paragraph{Confidence as a classifier of correctness.}
+AUROC of self-reported confidence against per-trial correctness
+checks whether confidence is usable as a peer-quality score.
+For the dumb models in Round-1, AUROC is $0.61$ ($95\%$ CI
+$[0.58, 0.63]$, Gemma, $n = 2{,}206$) and $0.65$ ($[0.63, 0.67]$,
+Llama, $n = 2{,}400$), with mean confidence on correct versus wrong
+responses of $98.6/97.3$ and $96.5/92.3$ respectively---the gap
+between conditional means is 1.3 to 4.2 points on a 0-to-100 scale.
+For the smart focal agents, AUROC is $0.60$ ($[0.59, 0.62]$,
+\textit{DeepSeek-v4-flash}~R1) and $0.67$ ($[0.62, 0.71]$,
+\textit{GPT-4o-mini}~R1), also near chance.
+Confidence carries some weak signal across all models, but the gap
+is too small to drive a binary filter at any threshold.
+A direct test sweeps the confidence threshold from $0$ to $100$ in
+steps of $5$ and records the maximum $F_1$ for predicting per-trial
+correctness; for every (model, round) combination the improvement
+over the always-predict-correct baseline is between $0.000$ and
+$0.007$ (the largest improvement is $+0.007$ for
+\textit{GPT-4o-mini} Round-0 at threshold $85$, against a baseline
+$F_1$ of $0.779$).
+No choice of threshold on these distributions yields a meaningful
+separation between right and wrong responses, which is what the
+calibration gate would have detected had it tested the
+discriminative quantity rather than the absolute high-confidence
+rate (Section~\ref{sub:protocol}).
+
+\paragraph{Conformity signature by condition.}
+Figure~\ref{fig:asch} plots the C$\rightarrow$I flip rate by debate
+condition for both focal models, with $95\%$ bootstrap CIs.
+The figure is referenced from Section~\ref{sub:asch} of the main
+text.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]
+    {images/figure2_asch_conformity.png}
+  \caption{Correct-to-incorrect (C$\to$I) flip rate by debate
+  condition (C2: zero weak peers; C3: one; C4: two).
+  All dumb-peer signals were unanimously wrong in every eligible
+  trial.
+  Blue bars: \textit{DeepSeek-v4-flash}; red bars:
+  \textit{GPT-4o-mini}; error bars: 95\% bootstrap CI.
+  \label{fig:asch}}
+\end{figure}
 
 
 \end{document}
