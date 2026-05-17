@@ -486,51 +486,33 @@ baseline ($76.8\%$) is not statistically detectable at this sample size
 (two-proportion $z$-test, $p = 0.22$, Cohen's $h = 0.045$, post-hoc
 power $0.23$, $95\%$ CI $[-1.1, +4.8]$~pp); the SC-3 baseline against
 solo C1 is also not detectable ($+0.60$~pp, $p = 0.70$).
-At $n = 1{,}500$ trials per condition this design cannot distinguish a
-genuine debate-driven revision benefit from the gain attainable by
-multi-sample aggregation alone.
-Inter-agent Cohen's $\kappa$ on the three smart agents' Round-0
-correctness is $0.72$ (Appendix~\ref{ssec:dependence_app}); using the
-correlated-rater approximation $\mathrm{ESS} = k / [1 + (k-1)\rho]$
-gives an effective sample size of about $1.2$ independent draws,
-which limits how much an SC-style procedure can extract from C2's
-Round-0 distribution.
+At $n = 1{,}500$, the design cannot distinguish a debate-driven
+revision benefit from multi-sample aggregation; pairwise $\kappa$ on
+the three C2 agents is $0.72$
+(Appendix~\ref{ssec:dependence_app}), corresponding to
+$\mathrm{ESS} \approx 1.2$ effective draws.
 
-The C4 result is qualitatively different.
-The much larger net gain in C4 ($+7.9$~pp at trial level, $+7.0$~pp
-at question level) is driven almost entirely by the I$\rightarrow$C
-flip rate, which jumps from $27.5\%$ in C2 to $55.8\%$ in C4: the
-weak peers' Round-0 answers contain enough signal about the questions
-the focal agent missed to roughly double the I$\rightarrow$C rate,
-even when many of the peers' own answers are wrong.
-Paired trial-level and question-level McNemar tests both confirm the
-C4 gain: at the question level, $33$ of $300$ items move from
-incorrect in C1 to correct in C4 against only $12$ that move the
-other way ($\chi^2 = 8.9$, $p = 0.0025$, Holm-corrected $p = 0.017$;
-contingency $[[218, 12], [33, 37]]$ with rows indexing C1 status and
-columns indexing C4 status, so the off-diagonal entry $b = 12$
-counts regressions and $c = 33$ counts improvements); at the trial
-level (paired by question and replication index), $187$ of $1{,}500$
-trials improve against $68$ that regress (net $+119$ trials, McNemar
-$p \ll 0.001$).
-A separate analysis stratified by zero-shot probe difficulty shows
-that the question-level gain is larger on probe-hard items ($+14$
-questions net of $152$) than on probe-easy items ($+7$ of $148$),
+C4 is qualitatively different.
+The $+7.9$~pp trial-level gain (and $+7.0$~pp at question level) is
+driven by an I$\rightarrow$C flip rate jumping from $27.5\%$ in C2 to
+$55.8\%$ in C4: weak peers' Round-0 answers carry enough signal about
+the focal's missed questions to roughly double the I$\rightarrow$C
+rate, even when many peer answers are wrong.
+Paired McNemar tests at trial and question levels agree on the
+direction: at the question level, $33$ of $300$ items move from
+incorrect (C1) to correct (C4) against $12$ moving the other way
+($\chi^2 = 8.9$, Holm-corrected $p = 0.017$); at the trial level,
+$187$ of $1{,}500$ trials improve against $68$ that regress
+($p \ll 0.001$).
+The question-level gain is larger on probe-hard items
+($+14$ of $152$) than on probe-easy items ($+7$ of $148$),
 consistent with the correction-signal interpretation.
-
-Decomposing the C4 outcome into its two flip components clarifies the
-mechanism.
-The C$\rightarrow$I flip rate rises in the predicted direction from
-$5.0\%$ in C2 to $6.5\%$ in C4, but the effect size is small (Cohen's
-$h = 0.05$ on the C2-vs-C4 contrast, two-proportion $p = 0.15$,
-post-hoc power $0.30$); the gap is consistent with a monotone rise
-but is underpowered for detection at the current sample size and
-should be read as suggestive, not statistically established.
-The corresponding I$\rightarrow$C flip rate change from $27.5\%$ in
-C2 to $55.8\%$ in C4 is large (Cohen's $h = 0.58$, $p < 0.001$, power
-$> 0.99$), so the C4 net gain is dominated by the correction signal
-even when the conformity signal is also active in the predicted
-direction.
+Decomposing the C4 result into its two flip components: C$\rightarrow$I
+rises only modestly from $5.0\%$ to $6.5\%$ (Cohen's $h = 0.05$,
+$p = 0.15$, power $0.30$---underpowered, suggestive only), whereas
+I$\rightarrow$C rises from $27.5\%$ to $55.8\%$ ($h = 0.58$,
+$p < 0.001$, power $> 0.99$); the C4 net gain is dominated by the
+correction signal.
 
 For \textit{GPT-4o-mini} the net Round-1 accuracy result is
 inconclusive at the cross-validation sample size.
@@ -622,23 +604,15 @@ The peer-count trend for \textit{DeepSeek-v4-flash} is non-monotone
 in the accuracy dimension but strictly monotone in the
 C$\rightarrow$I flip dimension.
 A GEE logistic regression of Round-1 correctness on weak-peer count
-across conditions C2--C4 ($n = 4{,}500$ trials nested in 300 question
-clusters) yields an odds ratio of $1.19$ (95\% CI $[1.08, 1.31]$,
-$p = 6 \times 10^{-4}$) for the per-peer increment for
-\textit{DeepSeek-v4-flash}; each additional weak peer multiplies the
-odds of a correct Round-1 answer by 19\%, indicating that the
-I$\rightarrow$C correction mechanism dominates for this model.
-Question-level clustering moves the raw $p$-value from $1.68 \times
-10^{-4}$ (naive logit) to $6 \times 10^{-4}$ (GEE), so the finding
-survives proper accounting for within-question correlation.
-The same regression for \textit{GPT-4o-mini} yields an odds ratio of
-$0.97$ ($[0.80, 1.16]$, $p = 0.71$, $n = 750$): the point estimate is
-below one, consistent with the C3 accuracy drop, but the cross-validation
-sample is too small to establish a dose-response trend for this model.
-Together, the two patterns indicate that the net accuracy outcome of peer
-exposure depends on whether the focal model can evaluate peer reasoning
-critically: a stronger model absorbs correct signal from even weak peers,
-whereas a weaker model is overcome by the noise they introduce.
+across C2--C4 ($n = 4{,}500$ trials in 300 question clusters) yields
+an odds ratio of $1.19$ ($[1.08, 1.31]$, $p = 6 \times 10^{-4}$) for
+\textit{DeepSeek-v4-flash}: each weak peer multiplies the odds of a
+correct Round-1 answer by $19\%$, the I$\rightarrow$C correction
+mechanism dominating.
+For \textit{GPT-4o-mini}, the same regression gives
+$\mathrm{OR} = 0.97$ ($[0.80, 1.16]$, $p = 0.71$, $n = 750$): the
+point estimate is below one but the cross-validation sample is too
+small to establish a dose-response.
 
 \begin{figure}[t]
   \centering
@@ -760,16 +734,13 @@ The C4 C$\rightarrow$I rate is 6.4\% on MMLU-Pro items but only 1.8\%
 on GSM8K items; weak-peer revision pressure operates most strongly
 where the answer space is small and a wrong peer answer is structurally
 plausible (one of ten options) rather than arithmetically refutable.
-A direct probe of the recomputation behaviour supports this reading:
-on $98.0\%$ of C4 GSM8K trials and $95.6\%$ of C4 MMLU-Pro trials the
-focal agent's Round-1 answer does not match either peer's Round-0
-answer (i.e.\ the focal produces a fresh answer rather than echoing a
-peer), and within these fresh-recompute trials the focal-agent
-accuracy is $94.5\%$ on GSM8K versus $83.6\%$ on MMLU-Pro---the
-larger absolute accuracy and the larger gain in C4 on GSM8K reflect
-that fresh recomputation on arithmetic problems yields ground truth,
-whereas on multi-option MCQ the focal can still land on a wrong
-option even when it ignores the peers.
+In C4, the focal Round-1 answer does not match either peer's
+Round-0 answer in $98.0\%$ of GSM8K trials and $95.6\%$ of MMLU-Pro
+trials (the focal produces a fresh answer rather than echoing a
+peer); within these fresh-recompute trials, focal accuracy is
+$94.5\%$ on GSM8K versus $83.6\%$ on MMLU-Pro---arithmetic
+recomputation yields ground truth on math whereas MCQ leaves room to
+land on a wrong option.
 Subject-level variation within MMLU-Pro is wide: physics and law show
 C$\rightarrow$I flip rates above $20\%$ in C4, while biology and
 history fall below $4\%$ (Appendix~S8 gives the full breakdown with
@@ -793,83 +764,54 @@ any (model, round) combination.
 
 The \textit{DeepSeek-v4-flash} result runs against the dominant
 prediction of the prior multi-agent debate literature.
-\citet{du2023improving} report homogeneous-peer debate gains on
-factuality benchmarks driven by aggregation of correct peer
-arguments; \citet{koo2024benchmarking} and \citet{sharma2023towards}
-document conformity-and-sycophancy susceptibility under single-agent
-wrong-position prompting.
+\citet{du2023improving} report debate gains under homogeneous peers
+driven by aggregation of correct arguments;
+\citet{koo2024benchmarking,sharma2023towards} document conformity and
+sycophancy under single-agent wrong-position prompting.
 The natural prediction is that confidently-wrong peer messages
-should degrade focal accuracy.
+degrade focal accuracy.
 The opposite holds here for the stronger focal model: the
-I$\rightarrow$C signal carried by wrong-anchored peer Round-0
-messages ($55.8\%$ in C4) outweighs the C$\rightarrow$I conformity
-signal ($6.5\%$).
+I$\rightarrow$C signal from wrong-anchored peer Round-0 messages
+($55.8\%$ in C4) outweighs the C$\rightarrow$I conformity signal
+($6.5\%$).
 The mechanism is not generic ``peer wisdom'': it operates via
 arithmetic recomputation on GSM8K
-(Section~\ref{sub:crossmodel})---wrong peers cue the focal toward
-questions it answered incorrectly in Round-0 where the answer space
-supports fresh recomputation.
-Direct numerical comparison with prior debate gains would require
-harmonising the peer-construction protocol; we report the
-within-study peer-count gradient as the primary quantitative claim.
+(Section~\ref{sub:crossmodel}), so wrong peers cue the focal toward
+its R0-incorrect questions where fresh recomputation can land on the
+correct answer.
 
-In contrast, \textit{GPT-4o-mini} fits the prior literature more
-conventionally.
-Its C$\rightarrow$I rate of $17.2\%$ ($[11.7, 23.3]$ 95\% CI) under
-two wrong peers is one in six of the $163$ R0-correct trials, and the
-net accuracy outcome is neutral to negative.
-The divergence between the two focal models is consistent with a
-focal-strength-dependent threshold, but $n = 2$ focal models is too
-narrow a basis from which to establish such a threshold and the
-relationship between baseline accuracy, recomputation capacity, and
-C$\rightarrow$I susceptibility is left to follow-up work.
+\textit{GPT-4o-mini} fits the prior literature more conventionally:
+its C$\rightarrow$I rate of $17.2\%$ in C4 is roughly one in six of
+its R0-correct trials and the net accuracy effect is null.
+The divergence is consistent with a focal-strength-dependent
+threshold, but $n = 2$ focal models is too narrow to establish one.
 
-The mitigation question follows the same direction: confidence-weighted
-peer filtering is unavailable in this setting.
-Weak agents emit no confidence integer in the persona-anchored Round-0
-prompt and produce non-discriminative confidence distributions in
-Round-1 (Section~\ref{sub:protocol}, Appendix~\ref{ssec:dependence_app}); a
-filter operating on either round therefore lacks usable signal.
-Mitigations that depend on externally verified peer accuracy, such as
-held-out calibration sets or architecturally distinct verifier
-models, are required.
+On mitigation, confidence-weighted peer filtering is unavailable: a
+filter on either round lacks usable signal (weak agents emit no
+Round-0 confidence integer; Round-1 distributions are
+non-discriminative, Section~\ref{sub:protocol},
+Appendix~\ref{ssec:dependence_app}).
+Mitigations depending on externally verified peer accuracy---held-out
+calibration sets or architecturally distinct verifier models---are
+required instead.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Conclusion}
 \label{sec:conclusion}
 %% ═════════════════════════════════════════════════════════════════════════
 
-This work measures how a strong focal LLM's reasoning changes under
-controlled exposure to adversarially anchored wrong-peer messages.
-For \textit{DeepSeek-v4-flash}, the maximum-weak-peer condition raises
-Round-1 accuracy by $+7.9$~pp at trial level and $+7.0$~pp at
-question level (Holm-corrected $p = 0.017$); the gain is concentrated
-on GSM8K (interaction $\mathrm{OR} = 1.61$, $p \approx 10^{-5}$) and
-reflects fresh arithmetic recomputation.
-For \textit{GPT-4o-mini} the net accuracy effect is not detectable at
-$n = 250$, but the C$\rightarrow$I flip rate rises from $5.8\%$ in C2
-to $17.2\%$ in C4 ($h = 0.30$, $p = 0.001$).
-A self-consistency-of-three baseline from C2's Round-0 samples shows
-the C2 lift over solo is not detectable at $n = 1{,}500$ ($p = 0.22$),
-so the homogeneous-debate condition is empirically a sampling control.
-A confidence-weighted peer filter (C5) strips all peer messages: weak
-agents emit no confidence integer under the persona-anchored Round-0
-prompt, and their Round-1 confidence distributions for correct and
-incorrect answers differ by $-0.003$.
-The calibration gate originally specified for this filter tests the
-absolute high-confidence rate and passes; a corrected gate based on
-the discriminative gap predicts the C5 null deterministically.
-
-Two limitations bound these claims: $n = 2$ focal models cannot
-establish the focal-strength-dependent threshold the data are
-consistent with, and the weak peers are adversarial distractors
-anchored to specific wrong answers rather than natural
-low-capability outputs.
-Future work should run a heterogeneous-smart-agent control and a
-split-peer condition, evaluate the corrected gate on alternative
-filtering rules such as held-out benchmark accuracy or
-logit-margin-based confidence, and extend the design to open-ended
-generation tasks.
+In a controlled exposure of a strong focal LLM to adversarially
+anchored wrong-peer messages, \textit{DeepSeek-v4-flash} gains
+$+7.9$~pp in C4 (Holm $p = 0.017$), concentrated on GSM8K
+($\mathrm{OR}_{\text{int.}} = 1.61$, $p \approx 10^{-5}$) and driven
+by fresh arithmetic recomputation; \textit{GPT-4o-mini}'s
+C$\rightarrow$I rate triples ($5.8\%\!\to\!17.2\%$) without a
+detectable accuracy effect.
+C2's homogeneous-debate lift is not detectable above multi-sample
+aggregation (SC-3, $p = 0.22$).
+The C5 filter strips all peer messages; the originally specified
+calibration gate is misspecified, and a corrected gate based on the
+discriminative gap predicts the C5 null deterministically.
 
 %% ─────────────────────────────────────────────────────────────────────────
 \section*{Limitations}
