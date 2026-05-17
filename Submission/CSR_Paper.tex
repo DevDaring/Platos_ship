@@ -122,7 +122,7 @@ capability-asymmetric multi-agent conditions.
 This study fills that gap through a fully instrumented five-condition
 experiment run on 300 \textit{MMLU-Pro}~\citep{wang2024mmlupro} and
 \textit{GSM8K}~\citep{cobbe2021training} questions, with five replications
-per question, covering 8{,}500 trials across five conditions.
+per question, covering 7{,}300 trials across five conditions.
 The primary focal agent is \textit{DeepSeek-v4-flash}; the weak peers are
 \textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3} (29.2\% accuracy) and
 \textit{Gemma~3~4B Instruct}~\citep{gemma2025technical} (31.7\% accuracy).
@@ -278,17 +278,24 @@ the \textit{DeepSeek-V3} technical report~\citep{deepseekai2024v3}.
 \label{sub:data}
 
 Questions are drawn from two benchmarks.
-\textit{MMLU-Pro}~\citep{wang2024mmlupro} contributes 250 questions spanning
-ten subject categories (biology, business, chemistry, computer science,
-economics, engineering, health, history, law, and psychology).
-\textit{GSM8K}~\citep{cobbe2021training} contributes 50 mathematical word
-problems.
+\textit{MMLU-Pro}~\citep{wang2024mmlupro} contributes 200 questions spanning
+ten subject categories (biology, chemistry, computer science, economics,
+history, law, mathematics, philosophy, physics, and psychology) with
+20 questions per subject, stratified 50/50 into easier and harder halves by
+a zero-shot accuracy probe.
+\textit{GSM8K}~\citep{cobbe2021training} contributes 100 grade-school
+mathematical word problems.
 The resulting 300-question pool is answered five times independently per
-condition, yielding 1,500 trials per condition for the primary experiment
-and 250 trials per condition for the cross-validation.
-Each agent in conditions C2--C5 adopts one of four rhetorically distinct
-personas (analytical, sceptical, diplomatic, assertive); details of the
-generation and validation pipeline are given in Supplementary~S5.
+condition for C1--C4, yielding 1{,}500 trials per condition for the
+primary focal agent and 250 trials per condition (50-question subset
+$\times$ 5 replications) for the cross-validation focal agent.
+Condition C5 is restricted to a 100-question stratified subset with three
+replications, giving 300 trials. The total trial count across all
+conditions and both focal agents is 7{,}300.
+Each dumb agent response embeds one of four wrong-reasoning style
+personas (\textit{surface keyword match}, \textit{false analogy},
+\textit{overconfident assertion}, \textit{misapplied rule}); generation
+and validation details are given in Supplementary~S5.
 Persona assignment is randomised over replications so that persona effects
 do not confound the condition comparison.
 
@@ -409,6 +416,9 @@ Flip C$\rightarrow$I = fraction of R0-correct trials that become
 R1-incorrect.
 ``---''~= not applicable (no peer debate in C1, or metric not computed).
 S = smart agent; D = weak (dumb) agent.
+\textsuperscript{$\dagger$}C5 was run on a 100-question stratified subset
+($\times$ 3 replications, $N = 300$); all other rows use the full
+300-question pool ($\times$ 5 replications, $N$ in column header).
 \label{tab:conditions}}
 \begin{tabular}{@{}lllllll@{}}
 \toprule
@@ -422,7 +432,7 @@ C1 & Solo        & 76.2 & --- & ---  & 64.8 & ---  \\
 C2 & 3S + 0D     & 78.7 & $+$2.5 & 5.0  & 66.8 & ---  \\
 C3 & 2S + 1D     & 78.3 & $+$2.1 & 6.0  & 60.8 & 11.5 \\
 C4 & 1S + 2D     & 84.1 & $+$7.9 & 6.5  & 65.2 & 17.2 \\
-C5 & 1S + 2D + filter & 82.5 & $+$6.3 & ---  & ---  & ---  \\
+C5\textsuperscript{$\dagger$} & 1S + 2D + filter & 78.0 & $+$1.8 & ---  & ---  & ---  \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -576,7 +586,7 @@ representation level.
 \label{sec:conclusion}
 %% ═════════════════════════════════════════════════════════════════════════
 
-A controlled five-condition experiment with 8{,}500 debate trials isolates
+A controlled five-condition experiment with 7{,}300 debate trials isolates
 the effect of increasing weak-peer count on a strong focal agent's reasoning.
 For \textit{DeepSeek-v4-flash}, the net accuracy gain in C4 masks a
 significant question-level regression ($p = 0.0025$, McNemar;
