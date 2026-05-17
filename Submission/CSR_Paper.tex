@@ -55,11 +55,13 @@ large language models \sep bandwagon effect
 Multi-agent debate frameworks let language models critique and revise one
 another, with reported aggregate gains on reasoning tasks.
 We measure what happens when one strong focal agent is exposed to a
-controlled number of capability-weaker peers in a five-condition design
-across 7{,}300 trials on 300 \textit{MMLU-Pro} and \textit{GSM8K}
-questions, using \textit{DeepSeek-v4-flash} as the primary focal agent
-(1{,}500 trials per condition) and \textit{GPT-4o-mini} as a cross-model
-comparison (250 trials per condition).
+controlled number of capability-weaker peers that have been adversarially
+anchored to confidently-wrong personas (Section~\ref{sub:data}), in a
+five-condition design across 7{,}300 trials on 300 \textit{MMLU-Pro}
+and \textit{GSM8K} questions, using \textit{DeepSeek-v4-flash} as the
+primary focal agent (1{,}500 trials per condition) and
+\textit{GPT-4o-mini} as a cross-model comparison (250 trials per
+condition).
 The two focal models diverge under the same protocol:
 \textit{DeepSeek-v4-flash} Round~1 accuracy rises from 76.2\% solo to
 84.1\% with two weak peers ($+$7.9~pp), while \textit{GPT-4o-mini} loses
@@ -140,12 +142,17 @@ This study fills that gap through a fully instrumented five-condition
 experiment run on 300 \textit{MMLU-Pro}~\citep{wang2024mmlupro} and
 \textit{GSM8K}~\citep{cobbe2021training} questions, with five replications
 per question, covering 7{,}300 trials across five conditions.
-The primary focal agent is \textit{DeepSeek-v4-flash}; the weak peers are
-\textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3} and \textit{Gemma~3~4B
-Instruct}~\citep{gemma2025technical}, anchored to assigned wrong answers
-via a persona pipeline (Section~\ref{sub:data}) so that their Round-0
-responses act as adversarial distractors rather than as natural
-low-capability outputs.
+The primary focal agent is \textit{DeepSeek-v4-flash}; the weak peers
+are \textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3} and
+\textit{Gemma~3~4B Instruct}~\citep{gemma2025technical}, anchored to
+assigned wrong answers via a persona pipeline
+(Section~\ref{sub:data}) so that their Round-0 responses act as
+\textbf{adversarial distractors} rather than as natural low-capability
+outputs.
+We use the phrase ``weak peers'' for brevity throughout, but the
+findings transfer to debate with deliberately-wrong distractor peers
+constructed from weak models, not to debate with honest weak peers
+in the wild.
 A three-stage judge cascade resolves ambiguous answers.
 The result is a high-fidelity measurement of how peer composition affects
 answer quality, sycophantic drift, and conformity in a strong focal agent.
@@ -519,9 +526,10 @@ on net accuracy: under maximum weak-peer exposure
 beneficial I$\rightarrow$C flips, while \textit{GPT-4o-mini}'s
 C$\rightarrow$I and I$\rightarrow$C rates rise in tandem and the net
 cancels.
-The confidence-weighted condition C5 yields accuracy 1.6~pp below C4
-on the matched 100-question subset ($p = 0.453$, McNemar; not
-significant).
+The confidence-weighted condition C5 yields accuracy $1.6$~pp below
+C4 on the matched 100-question subset ($n = 300$ trials, $95\%$
+bootstrap CI $[-7.5, +4.0]$~pp, $p = 0.453$ McNemar; the CI overlaps
+zero by a wide margin and the null is far from definitive).
 Every peer message is excluded by the Round-0 confidence filter in 100\%
 of C5 trials (Section~\ref{sub:protocol}), so the contrast is between
 C4 (one smart focal agent visible to two weak peers' Round-0 messages)
@@ -695,6 +703,16 @@ The C4 C$\rightarrow$I rate is 6.4\% on MMLU-Pro items but only 1.8\%
 on GSM8K items; weak-peer revision pressure operates most strongly
 where the answer space is small and a wrong peer answer is structurally
 plausible (one of ten options) rather than arithmetically refutable.
+A direct probe of the recomputation behaviour supports this reading:
+on $98.0\%$ of C4 GSM8K trials and $95.6\%$ of C4 MMLU-Pro trials the
+focal agent's Round-1 answer does not match either peer's Round-0
+answer (i.e.\ the focal produces a fresh answer rather than echoing a
+peer), and within these fresh-recompute trials the focal-agent
+accuracy is $94.5\%$ on GSM8K versus $83.6\%$ on MMLU-Pro---the
+larger absolute accuracy and the larger gain in C4 on GSM8K reflect
+that fresh recomputation on arithmetic problems yields ground truth,
+whereas on multi-option MCQ the focal can still land on a wrong
+option even when it ignores the peers.
 Subject-level variation within MMLU-Pro is wide: physics and law show
 C$\rightarrow$I flip rates above 20\% in C4, while biology and history
 fall below 4\% (full breakdown in Supplementary~S8).
@@ -737,12 +755,20 @@ means is 1.3 to 4.2 points on a 0-to-100 scale.
 For the smart focal agents, AUROC is $0.60$
 (\textit{DeepSeek-v4-flash}~R1) and $0.67$ (\textit{GPT-4o-mini}~R1),
 also near chance.
-Confidence carries some weak signal across all models, but the gap is
-too small to drive a binary filter at any threshold: no choice of
-threshold on these distributions yields a meaningful separation between
-right and wrong responses, which is what the calibration gate would have
-detected had it tested the discriminative quantity rather than the
-absolute high-confidence rate (Section~\ref{sub:protocol}).
+Confidence carries some weak signal across all models, but the gap
+is too small to drive a binary filter at any threshold.
+A direct test sweeps the confidence threshold from $0$ to $100$ in
+steps of $5$ and records the maximum $F_1$ for predicting per-trial
+correctness; for every (model, round) combination the improvement
+over the always-predict-correct baseline is between $0.000$ and
+$0.007$ (the largest improvement is $+0.007$ for
+\textit{GPT-4o-mini} Round-0 at threshold $85$, against a baseline
+$F_1$ of $0.779$).
+No choice of threshold on these distributions yields a meaningful
+separation between right and wrong responses, which is what the
+calibration gate would have detected had it tested the discriminative
+quantity rather than the absolute high-confidence rate
+(Section~\ref{sub:protocol}).
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Discussion}
