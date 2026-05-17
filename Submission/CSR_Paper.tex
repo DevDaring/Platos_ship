@@ -52,47 +52,43 @@ large language models \sep bandwagon effect
 
 %% ── Abstract ─────────────────────────────────────────────────────────────
 \begin{abstract}
-Multi-agent debate frameworks let language models critique and revise one
-another, with reported aggregate gains on reasoning tasks.
-We measure what happens when one strong focal agent is exposed to a
-controlled number of capability-weaker peers that have been adversarially
-anchored to confidently-wrong personas (Section~\ref{sub:data}), in a
-five-condition design across 7{,}300 trials on 300 \textit{MMLU-Pro}
-and \textit{GSM8K} questions, using \textit{DeepSeek-v4-flash} as the
-primary focal agent (1{,}500 trials per condition) and
-\textit{GPT-4o-mini} as a cross-model comparison (250 trials per
-condition).
-The two focal models diverge under the same protocol:
-\textit{DeepSeek-v4-flash} Round~1 accuracy rises from 76.2\% solo to
-84.1\% with two weak peers ($+$7.9~pp), while \textit{GPT-4o-mini} loses
-4.0~pp under one weak peer.
-The trial-level and question-level paired comparisons agree:
-$33$ of $300$ items move from incorrect in C1 to correct in C4 against
-only $12$ that move the other way (McNemar $p = 0.017$, Holm-corrected),
-a $+7.0$~pp net question-level gain that mirrors the $+7.9$~pp
-trial-level result.
-A self-consistency-of-three baseline derived from C2's Round-0 samples
-shows that the C2 lift is consistent with sample aggregation: the
-$+1.9$~pp difference between C2's Round-1 accuracy and the SC-3
-baseline is not statistically detectable at $n=1{,}500$
-($p = 0.22$, Cohen's $h = 0.05$).
-A confidence-weighted peer filter strips 100\% of peer messages: weak
-agents emit no confidence integer in the persona-anchored Round-0 prompt
-(0 of 5{,}850 Round-0 responses parse successfully), and in Round-1
-responses where they do emit one, the conditional rates
-$P(\text{conf}\geq 60 \mid \text{wrong}) = 0.995$ and
-$P(\text{conf}\geq 60 \mid \text{correct}) = 0.998$ differ by less than
-0.5~pp, so confidence cannot discriminate weak peers from correct ones
-even when it is present.
-The two focal models diverge on flip dynamics rather than on net
-accuracy: \textit{DeepSeek-v4-flash} converts weak-peer exposure into
-I$\rightarrow$C corrections ($55.8\%$ in C4 vs $27.5\%$ in C2),
-while \textit{GPT-4o-mini}'s C$\rightarrow$I conformity-revision rate
-rises threefold ($5.8\%$ to $17.2\%$, $p = 0.001$, $h = 0.30$) and
-the I$\rightarrow$C and C$\rightarrow$I responses cancel in net
-accuracy.
-Confidence-based peer weighting is not a viable mitigation when peer
-capability varies.
+Multi-agent debate (MAD) reports aggregate gains that depend on which
+focal model is run.
+In a controlled five-condition design of 7{,}300 trials on 300
+\textit{MMLU-Pro} and \textit{GSM8K} questions, we measure how a
+strong focal LLM's Round-1 accuracy and flip-rate dynamics change
+under increasing exposure to capability-weaker peers that are
+adversarially anchored to confidently-wrong personas
+(Section~\ref{sub:data}).
+The two focal models diverge: \textit{DeepSeek-v4-flash} gains
+$+7.9$~pp at trial level ($+7.0$~pp at question level) under two
+weak peers, driven by an incorrect-to-correct flip rate of $55.8\%$
+($95\%$ CI $[50.7, 60.6]$) in C4 vs $27.5\%$ in C2; this gain is
+concentrated on GSM8K (interaction $\mathrm{OR} = 1.61$,
+$p \approx 10^{-5}$) and reflects fresh arithmetic recomputation
+rather than peer-answer copying.
+\textit{GPT-4o-mini} shows no detectable net accuracy effect at
+$n = 250$ per condition (C3 vs C1 $\Delta = -4.0$~pp,
+$95\%$ CI $[-12.4, +4.4]$), yet its correct-to-incorrect flip rate
+rises from $5.8\%$ to $17.2\%$ (Cohen's $h = 0.30$, $p = 0.001$,
+power $0.91$).
+A free self-consistency-of-three baseline from C2's Round-0 samples
+shows C2's homogeneous-debate lift over solo is not detectable
+at $n = 1{,}500$ ($p = 0.22$); pairwise $\kappa = 0.72$ among the
+three smart agents makes C2 a $\sim 1.2$-effective-draw sampling
+control, not a debate test.
+A confidence-weighted peer filter (C5) strips $100\%$ of peer
+messages: weak agents emit no confidence integer under the
+persona-anchored Round-0 prompt, and Round-1 confidence distributions
+for correct and incorrect answers differ by only $-0.003$.
+The originally specified calibration gate tests the absolute
+high-confidence rate $P(\text{loud}\mid\text{wrong}) \geq \tau$ and
+passes; we show that the discriminative gap
+$P(\text{loud}\mid\text{wrong}) - P(\text{loud}\mid\text{correct})$
+is the quantity actually relevant for filter feasibility, and
+propose a corrected gate.
+Confidence-based peer weighting is not a viable mitigation in
+mixed-capability ensembles.
 \end{abstract}
 
 \end{frontmatter}
@@ -159,28 +155,43 @@ answer quality, sycophantic drift, and conformity in a strong focal agent.
 
 The specific contributions of this work are as follows.
 \begin{enumerate}
-    \item A controlled three-point peer-count measurement of focal-agent
-          accuracy and flip rates across 7{,}300 trials, with effect
-          sizes, GEE-clustered logistic regression, and trial-level
-          paired McNemar comparisons.
-    \item Paired trial-level and question-level McNemar comparisons
-          agreeing in direction and magnitude: for
-          \textit{DeepSeek-v4-flash}, $33$ questions move from incorrect
-          in C1 to correct in C4 against $12$ moving the other way
-          (Holm-corrected $p = 0.017$), and $187$ paired trials improve
-          against $68$ that regress; the aggregate metric does not
-          hide a subset regression.
-    \item A self-consistency-of-three baseline derived from C2's
-          Round-0 samples that shows the C2 lift over C1 is consistent
-          with sample aggregation at the current sample size; the
-          $+1.9$~pp gap between C2's Round-1 accuracy and the SC-3
-          baseline is not statistically detectable ($p = 0.22$,
-          Cohen's $h = 0.05$).
-    \item An empirical demonstration that confidence-weighted peer
-          filtering is unavailable as a mitigation under capability
-          asymmetry, with a calibration-gate pre-flight test that
-          predicts the filter failure deterministically from weak-agent
-          confidence distributions in C3 and C4.
+    \item \textbf{(Methodological.)} A misspecification result for
+          confidence-weighted peer filtering: a gate that tests only
+          the absolute high-confidence rate
+          $P(\text{loud}\mid\text{wrong}) \geq \tau$ can pass while
+          the discriminative quantity
+          $P(\text{loud}\mid\text{wrong}) - P(\text{loud}\mid\text{correct})$
+          is near zero. We provide an empirical instance (gate value
+          $0.995 \gg 0.40$ but discriminative gap $-0.003$),
+          document two associated Round-0 elicitation failure modes
+          in persona-anchored small-model peers, and propose a
+          corrected gate.
+    \item \textbf{(Empirical.)} A focal-model-dependent flip-dynamics
+          result under adversarial wrong-peer exposure:
+          \textit{DeepSeek-v4-flash} converts wrong-peer signals into
+          incorrect-to-correct corrections ($55.8\%$ in C4 vs $27.5\%$
+          in C2) while \textit{GPT-4o-mini}'s correct-to-incorrect
+          conformity-revision rate rises threefold ($5.8\%$ to
+          $17.2\%$, Cohen's $h = 0.30$, $p = 0.001$, power $0.91$).
+          The two focal models diverge on flip dynamics rather than
+          on net accuracy.
+    \item \textbf{(Empirical.)} A statistically significant source
+          $\times$ condition interaction
+          ($\mathrm{OR} = 1.61$, $p \approx 10^{-5}$) showing that
+          \textit{DeepSeek-v4-flash}'s headline $+7.9$~pp gain in C4 is
+          concentrated on GSM8K and operates via fresh arithmetic
+          recomputation: in $98\%$ of C4 GSM8K trials the focal
+          Round-1 answer does not match either peer's Round-0 answer.
+          On MMLU-Pro the per-peer main effect is statistically null
+          when source is controlled.
+    \item \textbf{(Methodological / empirical.)} A free
+          self-consistency-of-three baseline derived from C2's Round-0
+          samples that shows the C2 lift over solo is not detectable
+          above sample-aggregation noise at $n = 1{,}500$
+          ($p = 0.22$, Cohen's $h = 0.045$); pairwise Cohen's
+          $\kappa = 0.72$ among the three smart agents makes C2 a
+          $\sim 1.2$-effective-draw sampling control rather than a
+          debate test.
 \end{enumerate}
 
 %% ═════════════════════════════════════════════════════════════════════════
@@ -470,9 +481,15 @@ Supplementary~S4.
 
 Accuracy and flip-rate outcomes across all five conditions and both focal
 agents are reported in Table~\ref{tab:conditions}.
-For \textit{DeepSeek-v4-flash}, Round~1 accuracy rises from 78.7\% in C2
-to 78.3\% in C3 and then to 84.1\% in C4, against a solo baseline of 76.2\%
-in C1.
+For \textit{DeepSeek-v4-flash}, Round~1 accuracy is $78.7\%$ in C2,
+$78.3\%$ in C3, and $84.1\%$ in C4, against a solo baseline of
+$76.2\%$ in C1.
+At $n = 1{,}500$ trials per condition, the C2 and C3 contrasts against
+C1 are not statistically detectable (C2 vs C1 $\Delta = +2.47$~pp,
+$95\%$ CI $[-0.5, +5.5]$, $p = 0.11$; C3 vs C1 $\Delta = +2.13$~pp,
+$95\%$ CI $[-0.9, +5.1]$, $p = 0.16$); only the C4 contrast against C1
+is detectable ($\Delta = +7.93$~pp, $95\%$ CI $[+5.1, +10.8]$,
+$p < 10^{-4}$).
 A free self-consistency-of-three baseline (row SC3 in
 Table~\ref{tab:conditions}) — per-trial majority vote of the three smart
 agents' Round~0 answers in C2, before any debate exchange — attains 76.8\%
@@ -564,9 +581,14 @@ C$\to$I = fraction of R0-correct trials that become R1-incorrect.
 I$\to$C = fraction of R0-incorrect trials that become R1-correct.
 ``---''~= not applicable (no peer debate in C1, or metric not computed).
 S = smart agent; D = weak (dumb) agent.
-\textsuperscript{$\dagger$}C5 was run on a 100-question stratified subset
-($\times$ 3 replications, $N = 300$); all other rows use the full
-300-question pool ($\times$ 5 replications, $N$ in column header).
+\textsuperscript{$\dagger$}C5 was run on a 100-question stratified
+subset ($\times$ 3 replications, $N = 300$); all other rows use the
+full 300-question pool ($\times$ 5 replications, $N$ in column
+header). For C5 the $\Delta$ column reports C5 minus C4 on the
+matched 100-question subset ($-1.6$~pp, $95\%$ bootstrap CI $[-7.5,
++4.0]$, McNemar $p = 0.453$) rather than C5 minus C1 on the full
+pool, because C5 was not run on the 200 questions outside the
+mitigation subset; the C5 minus C1 comparison would mix pools.
 \textsuperscript{$\ddagger$}SC3 is a free self-consistency baseline:
 per-trial majority vote of the three independent Round-0 answers
 already produced by the three smart agents in C2, before any debate
@@ -587,7 +609,7 @@ SC3\textsuperscript{$\ddagger$} & C2 R0 majority-vote-of-3 & 76.8 & $+$0.6 & ---
 C2 & 3S + 0D     & 78.7 & $+$2.5 & 5.0  & 27.5 & 66.8 & 5.8  & 21.3 \\
 C3 & 2S + 1D     & 78.3 & $+$2.1 & 6.0  & 28.5 & 60.8 & 11.5 & 14.0 \\
 C4 & 1S + 2D     & 84.1 & $+$7.9 & 6.5  & 55.8 & 65.2 & 17.2 & 32.2 \\
-C5\textsuperscript{$\dagger$} & 1S + 2D + filter & 78.0 & $+$1.8 & 10.1 & 40.3 & ---  & ---  & ---  \\
+C5\textsuperscript{$\dagger$} & 1S + 2D + filter & 78.0 & $-$1.6\textsuperscript{$\dagger$} & 10.1 & 40.3 & ---  & ---  & ---  \\
 \bottomrule
 \end{tabular}
 \end{table}
