@@ -38,3 +38,13 @@ Thumbs.db
 
 # ── HuggingFace cache ────────────────────────────────────────
 *.cache/
+
+# ── LaTeX build artefacts ────────────────────────────────────
+Submission/.build/
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc

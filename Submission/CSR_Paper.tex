@@ -14,6 +14,7 @@
 \journal{Cognitive Systems Research}
 
 %% Packages
+\usepackage{lmodern}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -1064,18 +1065,19 @@ model identifiers and package versions, and two analysis scripts
 this paper from those parquet files.
 
 \paragraph{Models and snapshots.}
-Smart focal: \textit{DeepSeek-v4-flash} via the DeepSeek direct API
-(runtime alias \texttt{deepseek-chat}).
-Cross-validation focal: \textit{GPT-4o-mini} via OpenRouter
-(\texttt{openai/gpt-4o-mini}).
-Dumb agents: \textit{Llama~3.1~8B Instruct}
-(\texttt{meta-llama/llama-3.1-8b-instruct}) and \textit{Gemma~3~4B
-Instruct} (\texttt{google/gemma-3-4b-it}) via OpenRouter.
-Judge cascade: \textit{Gemini~2.0~Flash} (primary, 4-key round-robin),
-\textit{Mistral~Small} (secondary), \textit{DeepSeek-v4-flash}
-(tertiary).
-Model snapshots are aliases served by the respective APIs at the time
-of the experiment (2026-05-03 to 2026-05-04 UTC);
+The smart focal agent is \textit{DeepSeek-v4-flash} served under the
+\texttt{deepseek-chat} alias by the DeepSeek direct API; the
+cross-validation focal agent is \textit{GPT-4o-mini} served as
+\texttt{openai/\allowbreak gpt-4o-mini} via OpenRouter.
+The dumb agents are \textit{Llama~3.1~8B Instruct}
+(\texttt{meta-llama/\allowbreak llama-3.1-8b-instruct}) and
+\textit{Gemma~3~4B Instruct}
+(\texttt{google/\allowbreak gemma-3-4b-it}), both via OpenRouter.
+The answer-extraction judge cascade uses \textit{Gemini~2.0~Flash}
+(primary, 4-key round-robin), \textit{Mistral~Small} (secondary),
+and \textit{DeepSeek-v4-flash} (tertiary).
+Model snapshots are aliases served by the respective APIs at the
+time of the experiment (2026-05-03 to 2026-05-04 UTC);
 \texttt{experiment\_metadata.json} records the served model strings
 returned by each provider call.
 
