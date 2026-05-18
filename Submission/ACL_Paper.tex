@@ -36,40 +36,27 @@ Wrong-Peer Exposure}
 \maketitle
 
 \begin{abstract}
-Multi-agent debate among large language models---where several
-instances answer a question, share their answers, and then
-revise---has been reported to improve aggregate reasoning accuracy.
-We ask what happens when the peers in such a debate are deliberately
-weaker than the focal agent, and when those weaker peers are
-anchored to confidently-wrong answers by a persona prompt.
-Across $7{,}300$ trials on $300$ questions drawn from MMLU-Pro and
-GSM8K, two focal models respond very differently to the same
-protocol.
-\textit{DeepSeek-v4-flash} gains $7.9$ percentage points in
-post-debate accuracy under two such wrong peers, but the gain is
-concentrated on grade-school math, where the focal agent can
-recompute the answer from scratch rather than echo a peer; on
-multiple-choice items the per-peer effect is statistically null
-once source is controlled.
-\textit{GPT-4o-mini} shows no detectable accuracy change but its
-rate of flipping a correct answer to an incorrect one nearly triples
-($5.8\%$ to $17.2\%$) under the same protocol.
-A free self-consistency baseline derived from the three samples of
-the homogeneous-debate condition shows that homogeneous debate is
-not statistically distinguishable from averaging three independent
-samples, since the three samples are highly correlated; the
-homogeneous condition is empirically a sampling control rather than
-a debate test.
-A confidence-weighted peer filter, proposed as a mitigation in
-mixed-capability ensembles, removes all peer messages here because
-weak peers do not produce a usable confidence signal: they emit no
-confidence value when prompted with a persona, and their later-round
-confidence distributions do not separate correct from incorrect
-responses.
-The originally proposed pre-flight test for this mitigation passes
-on these data despite the filter failing; we show that the test is
-misspecified and propose a corrected formulation that predicts the
-filter failure in advance.
+Multi-agent debate among large language models (LLMs) can improve
+aggregate reasoning accuracy.
+Whether this benefit holds when agents differ markedly in capability
+has not been tested at scale.
+Under capability asymmetry, a strong focal model receives peer reasoning
+of unknown quality, with potentially opposing effects on accuracy and
+answer stability.
+This study examines $7{,}300$ trials on $300$ questions from MMLU-Pro
+and GSM8K, testing two focal models against systematically varied numbers
+of confidently-wrong peer agents. \textit{DeepSeek-v4-flash} gains $7.9$ percentage points post-debate on
+GSM8K arithmetic but shows no reliable accuracy change on MMLU-Pro
+multiple-choice items once peer source is controlled.
+\textit{GPT-4o-mini} shows no net accuracy change; its correct-to-incorrect
+flip rate nearly triples, from $5.8\%$ to $17.2\%$, under two wrong peers. Two structural findings extend these results.
+Homogeneous debate is statistically indistinguishable from averaging three
+independent samples of the same model; the homogeneous condition therefore
+functions as a sampling control rather than a genuine debate test.
+A confidence-weighted peer filter, proposed for mixed-capability ensembles,
+fails here entirely because wrong-peer personas suppress the confidence signal.
+The standard pre-flight test for this filter passes despite the failure;
+a corrected formulation is proposed that detects filter failure before deployment.
 \end{abstract}
 
 \section{Introduction}
@@ -223,12 +210,7 @@ mechanism mapping, and cross-model comparison.
 \begin{table*}[t]
 \centering
 \small
-\caption{Comparison of closely related studies on multi-agent debate and
-conformity bias. ``Het.''\ = capability heterogeneity explicitly controlled;
-``Bias mech.''\ = bias mechanism mapped to sycophancy or bandwagon effect;
-``Cross-model''\ = results compared with more than one focal model.
-Tick ($\checkmark$) = feature present; dash ($-$) = absent.
-\label{tab:relwork}}
+\caption{Related-work comparison. Het.\ = capability heterogeneity; Bias mech.\ = named mechanism; Cross-model\ = multiple focal models. $\checkmark$ = present; $-$ = absent.\label{tab:relwork}}
 \begin{tabular}{@{}lllll@{}}
 \toprule
 Study & Setting & Het. & Bias mech. & Cross-model \\
@@ -454,119 +436,29 @@ Appendix~S4.
 \label{sec:results}
 %% ═════════════════════════════════════════════════════════════════════════
 
+Table~\ref{tab:conditions} summarises accuracy and flip-rate outcomes across all five conditions and both focal agents.
+
 %% ── 4.1 ──────────────────────────────────────────────────────────────────
 \subsection{Accuracy and flip rates across conditions}
 \label{sub:accuracy}
 
-Accuracy and flip-rate outcomes across all five conditions and both focal
-agents are reported in Table~\ref{tab:conditions}.
-For \textit{DeepSeek-v4-flash}, Round-1 accuracy is $78.7\%$ in C2,
-$78.3\%$ in C3, and $84.1\%$ in C4, against a solo baseline of
-$76.2\%$ in C1.
-At $n = 1{,}500$ trials per condition, the C2 and C3 contrasts against
-C1 are not statistically detectable (C2 vs C1 $\Delta = +2.47$~pp,
-$95\%$ CI $[-0.5, +5.5]$, $p = 0.11$; C3 vs C1 $\Delta = +2.13$~pp,
-$95\%$ CI $[-0.9, +5.1]$, $p = 0.16$); only the C4 contrast against C1
-is detectable ($\Delta = +7.93$~pp, $95\%$ CI $[+5.1, +10.8]$,
-$p < 10^{-4}$).
+For \textit{DeepSeek-v4-flash}, Round-1 accuracy reaches $84.1\%$ in C4, a gain of $+7.9$~pp over the $76.2\%$ solo baseline ($95\%$ CI $[+5.1, +10.8]$~pp, $p < 10^{-4}$); the C2 ($78.7\%$) and C3 ($78.3\%$) gains are not detectable at $n = 1{,}500$ trials per condition.
 
-To separate debate revision from sample aggregation, a free
-self-consistency-of-three baseline (row SC3 in
-Table~\ref{tab:conditions}) — per-trial majority vote of the three
-smart agents' Round-0 answers in C2, before any debate exchange —
-attains $76.8\%$ accuracy.
-The $1.9$~pp gap between C2's Round-1 accuracy ($78.7\%$) and the SC-3
-baseline ($76.8\%$) is not statistically detectable at this sample size
-(two-proportion $z$-test, $p = 0.22$, Cohen's $h = 0.045$, post-hoc
-power $0.23$, $95\%$ CI $[-1.1, +4.8]$~pp); the SC-3 baseline against
-solo C1 is also not detectable ($+0.60$~pp, $p = 0.70$).
-At $n = 1{,}500$, the design cannot distinguish a debate-driven
-revision benefit from multi-sample aggregation; pairwise $\kappa$ on
-the three C2 agents is $0.72$
-(Appendix~\ref{ssec:dependence_app}), corresponding to
-$\mathrm{ESS} \approx 1.2$ effective draws.
+A self-consistency-of-three baseline (SC3: per-trial majority vote of the three C2 Round-0 answers before debate exchange) attains $76.8\%$ accuracy; the $1.9$~pp gap between C2's Round-1 ($78.7\%$) and SC3 is not detectable ($p = 0.22$).
+Pairwise $\kappa$ on the three smart agents' Round-0 correctness is $0.72$ (Appendix~\ref{ssec:dependence_app}), indicating near-homogeneous draws; the design cannot distinguish a debate-driven revision benefit from multi-sample aggregation at $n = 1{,}500$.
 
 C4 is qualitatively different.
-The $+7.9$~pp trial-level gain (and $+7.0$~pp at question level) is
-driven by an I$\rightarrow$C flip rate jumping from $27.5\%$ in C2 to
-$55.8\%$ in C4: weak peers' Round-0 answers carry enough signal about
-the focal's missed questions to roughly double the I$\rightarrow$C
-rate, even when many peer answers are wrong.
-Paired McNemar tests at trial and question levels agree on the
-direction: at the question level, $33$ of $300$ items move from
-incorrect (C1) to correct (C4) against $12$ moving the other way
-($\chi^2 = 8.9$, Holm-corrected $p = 0.017$); at the trial level,
-$187$ of $1{,}500$ trials improve against $68$ that regress
-($p \ll 0.001$).
-The question-level gain is larger on probe-hard items
-($+14$ of $152$) than on probe-easy items ($+7$ of $148$),
-consistent with the correction-signal interpretation.
-Decomposing the C4 result into its two flip components: C$\rightarrow$I
-rises only modestly from $5.0\%$ to $6.5\%$ (Cohen's $h = 0.05$,
-$p = 0.15$, power $0.30$---underpowered, suggestive only), whereas
-I$\rightarrow$C rises from $27.5\%$ to $55.8\%$ ($h = 0.58$,
-$p < 0.001$, power $> 0.99$); the C4 net gain is dominated by the
-correction signal.
+The $+7.9$~pp gain is driven by the I$\rightarrow$C flip rate jumping from $27.5\%$ in C2 to $55.8\%$ in C4, while C$\rightarrow$I rises only modestly ($5.0\%$ to $6.5\%$; underpowered, $p = 0.15$).
+At the question level, $33$ of $300$ items move correct in C4 that were incorrect in C1, against $12$ moving the other way (Holm-corrected $p = 0.017$): the net C4 gain is dominated by the I$\rightarrow$C correction signal.
 
-For \textit{GPT-4o-mini} the net Round-1 accuracy result is
-inconclusive at the cross-validation sample size.
-Round-1 accuracy falls from $64.8\%$ in C1 to $60.8\%$ in C3
-($-4.0$~pp, bootstrap $95\%$ CI $[-12.4, +4.4]$~pp, $n = 250$
-trials), and the C4 contrast is essentially null ($+0.4$~pp, CI
-$[-8.0, +8.8]$~pp); both CIs overlap zero, so the accuracy-level
-"opposite-signed outcome" is not statistically established for
-\textit{GPT-4o-mini}.
-The flip-rate response, by contrast, is unambiguous.
-The C$\rightarrow$I flip rate rises from $5.8\%$ ($95\%$ CI
-$[2.6, 9.6]$) in C2 to $11.5\%$ ($[7.0, 16.6]$) in C3 and $17.2\%$
-($[11.7, 23.3]$) in C4 (C2-vs-C4 contrast: Cohen's $h = 0.30$,
-$p = 0.001$, post-hoc power $0.91$), a roughly three-fold increase
-in conformity-revision pressure relative to
-\textit{DeepSeek-v4-flash}, whose C$\rightarrow$I rate stays in
-$[5.0\%, 6.5\%]$ across C2--C4 with overlapping CIs (Section
-\ref{ssec:dependence_app}, Table~\ref{tab:conditions}).
-The two focal models therefore diverge on flip dynamics rather than
-on net accuracy: under maximum weak-peer exposure
-\textit{DeepSeek-v4-flash} converts most of its peer exposure into
-beneficial I$\rightarrow$C flips, while \textit{GPT-4o-mini}'s
-C$\rightarrow$I and I$\rightarrow$C rates rise in tandem and the net
-cancels.
-The confidence-weighted condition C5 yields accuracy $1.6$~pp below
-C4 on the matched 100-question subset ($n = 300$ trials, $95\%$
-bootstrap CI $[-7.5, +4.0]$~pp, $p = 0.453$ McNemar; the CI overlaps
-zero by a wide margin and the null is far from definitive).
-Every peer message is excluded by the Round-0 confidence filter in 100\%
-of C5 trials (Section~\ref{sub:protocol}), so the contrast is between
-C4 (one smart focal agent visible to two weak peers' Round-0 messages)
-and a solo-equivalent setting.
-C5 therefore neither validates nor refutes confidence-weighted filtering
-as a mechanism; it documents that the protocol as configured strips its
-own input.
+For \textit{GPT-4o-mini}, net Round-1 accuracy is null at the cross-validation sample size ($n = 250$; both C3 and C4 contrasts have CIs overlapping zero).
+The C$\rightarrow$I flip rate rises clearly from $5.8\%$ in C2 to $17.2\%$ in C4 ($p = 0.001$, post-hoc power $0.91$): the two models diverge on flip dynamics, with \textit{GPT-4o-mini} showing a roughly three-fold increase in conformity-revision pressure whereas \textit{DeepSeek-v4-flash}'s C$\rightarrow$I rate stays within $[5.0\%, 6.5\%]$ across C2--C4.
+C5 yields accuracy $1.6$~pp below C4 on the matched 100-question subset ($p = 0.453$ McNemar, $n = 300$ trials): every peer message is excluded by the Round-0 confidence filter in $100\%$ of trials, rendering C5 functionally a solo condition; the protocol as configured strips its own input.
 
 \begin{table*}[t]
 \centering
 \small
-\caption{Per-condition accuracy and flip rates for both focal agents.
-$\Delta$ = Round-1 accuracy change relative to C1 (solo baseline).
-C$\to$I = fraction of R0-correct trials that become R1-incorrect.
-I$\to$C = fraction of R0-incorrect trials that become R1-correct.
-``---''~= not applicable (no peer debate in C1, or metric not computed).
-S = smart agent; D = weak (dumb) agent.
-\textsuperscript{$\dagger$}C5 was run on a 100-question stratified
-subset ($\times$ 3 replications, $N = 300$); all other rows use the
-full 300-question pool ($\times$ 5 replications, $N$ in column
-header). For C5 the $\Delta$ column reports C5 minus C4 on the
-matched 100-question subset ($-1.6$~pp, $95\%$ bootstrap CI $[-7.5,
-+4.0]$, McNemar $p = 0.453$) rather than C5 minus C1 on the full
-pool, because C5 was not run on the 200 questions outside the
-mitigation subset; the C5 minus C1 comparison would mix pools.
-\textsuperscript{$\ddagger$}SC3 is a free self-consistency baseline:
-per-trial majority vote of the three independent Round-0 answers
-already produced by the three smart agents in C2, before any debate
-exchange. Comparing C2's Round-1 accuracy ($78.7\%$) to SC3 ($76.8\%$)
-isolates debate-induced revision from multi-sample noise reduction
-(Section~\ref{sub:accuracy}).
-\label{tab:conditions}}
+\caption{Per-condition accuracy and flip rates. $\Delta$ = Round-1 vs.\ C1 solo; C$\to$I = harmful-flip rate; I$\to$C = correction rate; S = smart; D = weak (dumb) agent.\label{tab:conditions}}
 \begin{tabular}{@{}llllllllll@{}}
 \toprule
  & & \multicolumn{4}{c}{\textit{DeepSeek-v4-flash} ($N=1{,}500$)} &
@@ -583,6 +475,11 @@ C4 & 1S + 2D     & 84.1 & $+$7.9 & 6.5  & 55.8 & 65.2 & 17.2 & 32.2 \\
 C5\textsuperscript{$\dagger$} & 1S + 2D + filter & 78.0 & $-$1.6\textsuperscript{$\dagger$} & 10.1 & 40.3 & ---  & ---  & ---  \\
 \bottomrule
 \end{tabular}
+\par\smallskip
+{\footnotesize
+$^{\dagger}$C5: 100-question stratified subset $\times$ 3 replications ($N=300$); $\Delta$ = C5 vs.\ C4 on the matched subset, not C5 vs.\ C1.\\
+$^{\ddagger}$SC3: per-trial majority vote of the three C2 Round-0 answers before debate exchange; isolates debate revision from multi-sample aggregation.
+}
 \end{table*}
 
 %% ── 4.2 ──────────────────────────────────────────────────────────────────
@@ -612,12 +509,7 @@ small to establish a dose-response.
   \centering
   \includegraphics[width=\linewidth]
     {images/figure1_bandwagon_dose_response.png}
-  \caption{Round-1 accuracy (\%) of the focal agent versus the
-  number of weak (dumb) peers. Blue circles:
-  \textit{DeepSeek-v4-flash} ($N{=}1{,}500$/condition; 95\% CI).
-  Red squares: \textit{GPT-4o-mini} ($N{=}250$/condition). Dotted
-  lines: respective C1 (solo) baseline.
-  \label{fig:doseresponse}}
+  \caption{Round-1 accuracy vs.\ weak-peer count. Blue: \textit{DeepSeek-v4-flash} ($N{=}1{,}500$, 95\% CI); red: \textit{GPT-4o-mini} ($N{=}250$); dotted: C1 baselines.\label{fig:doseresponse}}
 \end{figure}
 
 %% ── 4.3 ──────────────────────────────────────────────────────────────────
@@ -665,22 +557,8 @@ items with arithmetic refutability (GSM8K at 2.4\%, biology at 1.1\%);
 Appendix~S9 reproduces two example trials (one resists the wrong
 peers, one succumbs) to make the per-trial mechanism inspectable.
 
-Numerical comparison to existing conformity benchmarks is not direct.
-CoBBLEr~\citep{koo2024benchmarking} measures bandwagon susceptibility
-by injecting a stated majority opinion into a single-agent prompt and
-counting how often the agent changes its answer; the metric is a
-single-agent susceptibility score, not a multi-agent debate outcome.
-BENCHFORM~\citep{weng2025benchform} reports a debate-level conformity
-rate but with a varying number of \emph{honestly answering} peers
-rather than an adversarial wrong-anchored persona pipeline.
-SYCON-Bench~\citep{hong2025sycon} measures sycophancy in multi-turn
-user-model dialogues with explicit user pressure.
-The present C$\rightarrow$I rate is therefore a debate-specific
-operationalisation of revision pressure under adversarial wrong-peer
-exposure, and a direct numerical comparison with these benchmarks
-would require harmonising the peer-construction protocol; we report
-the within-study peer-count gradient as the primary quantitative
-contribution and leave cross-benchmark harmonisation to future work.
+Direct numerical comparison with single-agent conformity benchmarks (CoBBLEr~\citep{koo2024benchmarking}, BenchForm~\citep{weng2025benchform}, SYCON-Bench~\citep{hong2025sycon}) is not straightforward: these benchmarks use honest peers or single-agent prompts, not adversarial wrong-anchored personas.
+The within-study peer-count gradient is the primary quantitative contribution; cross-benchmark harmonisation is deferred to future work.
 
 
 %% ── 4.4 ──────────────────────────────────────────────────────────────────
@@ -709,38 +587,8 @@ The main effect of \texttt{dumb\_count} on MMLU-Pro alone (i.e. the
 \texttt{dumb\_count} coefficient at $\text{is\_gsm8k} = 0$) is
 $\mathrm{OR} = 1.03$ ($[0.94, 1.13]$, $p = 0.56$): when source is
 controlled, the per-peer effect on multiple-choice items is
-statistically null. Weak-peer messages on numeric word problems
-supply the focal agent with alternative working that can be
-re-checked arithmetically, while ten-option multiple choice gives a
-smaller margin for the same mechanism.
-Split by per-question difficulty (a zero-shot probe stratifies each
-MMLU-Pro subject 50/50 into easier and harder halves), the C4 Round-1
-accuracy reaches 92.2\% on probe-easy items ($+$6.0~pp over C1) and
-76.3\% on probe-hard items ($+$9.9~pp over C1).
-The larger gain on hard items reflects an I$\rightarrow$C flip rate of
-16.7\% on probe-hard items versus 10.9\% on probe-easy items: weak-peer
-exposure is most beneficial precisely where the focal agent's solo
-accuracy is lowest, consistent with the correction-signal
-interpretation in Section~\ref{sub:accuracy}.
-
-The C$\rightarrow$I flip rate shows the complementary pattern.
-The C4 C$\rightarrow$I rate is 6.4\% on MMLU-Pro items but only 1.8\%
-on GSM8K items; weak-peer revision pressure operates most strongly
-where the answer space is small and a wrong peer answer is structurally
-plausible (one of ten options) rather than arithmetically refutable.
-In C4, the focal Round-1 answer does not match either peer's
-Round-0 answer in $98.0\%$ of GSM8K trials and $95.6\%$ of MMLU-Pro
-trials (the focal produces a fresh answer rather than echoing a
-peer); within these fresh-recompute trials, focal accuracy is
-$94.5\%$ on GSM8K versus $83.6\%$ on MMLU-Pro---arithmetic
-recomputation yields ground truth on math whereas MCQ leaves room to
-land on a wrong option.
-Subject-level variation within MMLU-Pro is wide: physics and law show
-C$\rightarrow$I flip rates above $20\%$ in C4, while biology and
-history fall below $4\%$ (Appendix~S8 gives the full breakdown with
-$95\%$ CIs and the multiple-testing caveat; per-subject $n \approx 70$
-makes pairwise between-subject contrasts undetectable after
-Holm correction, so the breakdown is descriptive).
+statistically null. Weak-peer messages on numeric word problems supply the focal agent with alternative working that can be re-checked arithmetically, while ten-option multiple choice gives a smaller margin for the same mechanism.
+The C$\rightarrow$I flip rate is $6.4\%$ on MMLU-Pro items but only $1.8\%$ on GSM8K items; subject-level variation within MMLU-Pro is wide, with physics and law above $20\%$ and biology below $4\%$ (Appendix~S8, with the multiple-testing caveat noted there).
 
 Two auxiliary analyses in
 Appendix~\ref{ssec:dependence_app}---pairwise Cohen's $\kappa$ on
@@ -863,7 +711,7 @@ processes requires either probing of open-weights focal models or
 the split-peer design noted above.
 
 %% ─────────────────────────────────────────────────────────────────────────
-\section*{Ethics Statement}
+\section*{Ethical Considerations}
 \label{sec:ethics}
 
 This study uses publicly available large language models accessed via
@@ -887,60 +735,8 @@ the carbon impact is correspondingly small.
 \section*{Reproducibility}
 \label{sec:repro}
 
-The experiment pipeline, configuration files, parquet artefacts, and
-the analysis scripts producing every numerical claim in this paper
-will be released as an anonymised repository for the review period and
-deposited at Zenodo upon acceptance.
-The released artefacts include the per-trial log
-(\texttt{trial\_log.parquet}, 35{,}050 rows), the consolidated
-final-answers table (\texttt{final\_answers.parquet}, 7{,}300 rows),
-the metrics summary, the statistical-test outputs, the
-calibration-gate report, the question pool, the generated dumb-agent
-personas, an \texttt{experiment\_metadata.json} listing actual served
-model identifiers and package versions, and two analysis scripts
-(\texttt{free\_analyses.py},
-\texttt{inter\_agent\_dependence.py}) that produce every number in
-this paper from those parquet files.
-
-\paragraph{Models and snapshots.}
-The smart focal agent is \textit{DeepSeek-v4-flash} served under the
-\texttt{deepseek-chat} alias by the DeepSeek direct API; the
-cross-validation focal agent is \textit{GPT-4o-mini} served as
-\texttt{openai/\allowbreak gpt-4o-mini} via OpenRouter.
-The dumb agents are \textit{Llama~3.1~8B Instruct}
-(\texttt{meta-llama/\allowbreak llama-3.1-8b-instruct}) and
-\textit{Gemma~3~4B Instruct}
-(\texttt{google/\allowbreak gemma-3-4b-it}), both via OpenRouter.
-The answer-extraction judge cascade uses \textit{Gemini~2.0~Flash}
-(primary, 4-key round-robin), \textit{Mistral~Small} (secondary),
-and \textit{DeepSeek-v4-flash} (tertiary).
-Model snapshots are aliases served by the respective APIs at the
-time of the experiment (2026-05-03 to 2026-05-04 UTC);
-\texttt{experiment\_metadata.json} records the served model strings
-returned by each provider call.
-
-\paragraph{Random seeds.}
-The master seed is $20{,}260{,}502$.
-Per-trial seeds for peer-message ordering and persona-variant sampling
-are derived deterministically from the master seed, the question
-index, and the trial-replication index; the mitigation-subset
-selection seed is master seed $+1$.
-
-\paragraph{Answer and confidence extraction.}
-Regex captures 91.4\% of trial-log rows; a three-tier judge cascade
-recovers 7.8\% more; 0.9\% are unrecovered parse failures.
-Confidence extraction uses a separate regex; null-confidence cases are
-flagged in the \texttt{confidence\_parse\_status} column of
-\texttt{trial\_log.parquet}.
-
-\paragraph{Compute and cost.}
-Inference is API-bound; no GPU is required.
-Stage~1 (C1--C4 for both focal agents, $7{,}000$ trials) ran in
-23~h~46~min of wall-clock against four commercial APIs on a single
-CPU VM; Stage~3 (C5, 300~trials) added 1~h~52~min.
-Aggregate API spend over the full experiment was \$10--\$15 across
-DeepSeek, OpenRouter, Gemini, and Mistral; per-trial median latency
-was approximately 7~seconds.
+All experimental artefacts---per-trial log (\texttt{trial\_log.parquet}, 35{,}050~rows), consolidated answers (\texttt{final\_answers.parquet}, 7{,}300~rows), the question pool, persona files, and two analysis scripts that reproduce every reported number---will be released as an anonymised repository for review and deposited at Zenodo on acceptance.
+Full model snapshots, random seeds, answer-extraction details, and compute cost are in Appendix~\ref{ssec:repro_app}.
 
 %% ─────────────────────────────────────────────────────────────────────────
 % Acknowledgements are typically redacted in the anonymous review version.
@@ -1301,11 +1097,7 @@ immediately verifiable from first principles.
   \centering
   \includegraphics[width=0.72\linewidth]
     {images/figure3_subject_flip_rate.png}
-  \caption{Correct-to-incorrect flip rate in C4 across MMLU-Pro subject
-  categories and GSM8K, for \textit{DeepSeek-v4-flash}.
-  Dashed vertical line: mean across subjects.
-  Error bars: 95\% bootstrap CI.
-  \label{sfig:subjects}}
+  \caption{C$\to$I flip rate by MMLU-Pro subject and GSM8K in C4 (\textit{DeepSeek-v4-flash}); error bars: 95\% bootstrap CI.\label{sfig:subjects}}
 \end{figure}
 
 %% ═════════════════════════════════════════════════════════════════════════
@@ -1546,15 +1338,53 @@ text.
   \centering
   \includegraphics[width=\linewidth]
     {images/figure2_asch_conformity.png}
-  \caption{Correct-to-incorrect (C$\to$I) flip rate by debate
-  condition (C2: zero weak peers; C3: one; C4: two).
-  All dumb-peer signals were unanimously wrong in every eligible
-  trial.
-  Blue bars: \textit{DeepSeek-v4-flash}; red bars:
-  \textit{GPT-4o-mini}; error bars: 95\% bootstrap CI.
-  \label{fig:asch}}
+  \caption{C$\to$I flip rate by condition for both focal models; error bars: 95\% bootstrap CI.\label{fig:asch}}
 \end{figure}
 
+%% ═════════════════════════════════════════════════════════════════════════
+\section*{S12. Reproducibility details}
+\label{ssec:repro_app}
+%% ═════════════════════════════════════════════════════════════════════════
+
+\paragraph{Models and snapshots.}
+The smart focal agent is \textit{DeepSeek-v4-flash} served under the
+\texttt{deepseek-chat} alias by the DeepSeek direct API; the
+cross-validation focal agent is \textit{GPT-4o-mini} served as
+\texttt{openai/\allowbreak gpt-4o-mini} via OpenRouter.
+The dumb agents are \textit{Llama~3.1~8B Instruct}
+(\texttt{meta-llama/\allowbreak llama-3.1-8b-instruct}) and
+\textit{Gemma~3~4B Instruct}
+(\texttt{google/\allowbreak gemma-3-4b-it}), both via OpenRouter.
+The answer-extraction judge cascade uses \textit{Gemini~2.0~Flash}
+(primary, 4-key round-robin), \textit{Mistral~Small} (secondary),
+and \textit{DeepSeek-v4-flash} (tertiary).
+Model snapshots are aliases served by the respective APIs at the
+time of the experiment (2026-05-03 to 2026-05-04 UTC);
+\texttt{experiment\_metadata.json} records the served model strings
+returned by each provider call.
+
+\paragraph{Random seeds.}
+The master seed is $20{,}260{,}502$.
+Per-trial seeds for peer-message ordering and persona-variant sampling
+are derived deterministically from the master seed, the question
+index, and the trial-replication index; the mitigation-subset
+selection seed is master seed $+1$.
+
+\paragraph{Answer and confidence extraction.}
+Regex captures 91.4\% of trial-log rows; a three-tier judge cascade
+recovers 7.8\% more; 0.9\% are unrecovered parse failures.
+Confidence extraction uses a separate regex; null-confidence cases are
+flagged in the \texttt{confidence\_parse\_status} column of
+\texttt{trial\_log.parquet}.
+
+\paragraph{Compute and cost.}
+Inference is API-bound; no GPU is required.
+Stage~1 (C1--C4 for both focal agents, $7{,}000$ trials) ran in
+23~h~46~min of wall-clock against four commercial APIs on a single
+CPU VM; Stage~3 (C5, 300~trials) added 1~h~52~min.
+Aggregate API spend over the full experiment was \$10--\$15 across
+DeepSeek, OpenRouter, Gemini, and Mistral; per-trial median latency
+was approximately 7~seconds.
 
 \end{document}
 
