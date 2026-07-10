@@ -12,7 +12,7 @@ from typing import Dict, Any, Tuple
 
 import yaml
 
-from .agent_wrappers.openai_compatible_agent import build_agent_from_config
+from .agent_wrappers.openai_compatible_agent import build_agent_from_config, FallbackAgent
 from .agent_wrappers.judge_agent import JudgeCascade
 
 logger = logging.getLogger("platos_ship.phase2_agents")
@@ -34,19 +34,35 @@ def _build_block(
     providers = models_config["providers"]
     defaults = _defaults(models_config)
     out = {}
+    backoff = defaults.get("retry_backoff_seconds", [2, 4, 8, 16, 32])
+    timeout = defaults.get("request_timeout_seconds", 120)
     for key, spec in (models_config.get(block_name) or {}).items():
         if spec.get("enabled") is False:
             continue
         try:
-            out[key] = build_agent_from_config(
-                agent_name=key,
-                provider_key=spec["provider"],
-                model_slug=spec["model_slug"],
-                providers_config=providers,
-                max_retries=defaults.get("maximum_retry_attempts", 5),
-                retry_backoff_seconds=defaults.get("retry_backoff_seconds", [2, 4, 8, 16, 32]),
-                timeout_seconds=defaults.get("request_timeout_seconds", 120),
+            fallbacks = spec.get("fallbacks") or []
+            # With a fallback chain, cap per-provider retries so failover is
+            # timely (primary tries 3, then each fallback tries 3).
+            primary_retries = 2 if fallbacks else defaults.get("maximum_retry_attempts", 5)
+            primary = build_agent_from_config(
+                agent_name=key, provider_key=spec["provider"], model_slug=spec["model_slug"],
+                providers_config=providers, max_retries=primary_retries,
+                retry_backoff_seconds=backoff, timeout_seconds=timeout,
             )
+            if fallbacks:
+                fb_agents = [
+                    build_agent_from_config(
+                        agent_name=f"{key}_fb{i+1}", provider_key=fb["provider"],
+                        model_slug=fb["model_slug"], providers_config=providers,
+                        max_retries=2, retry_backoff_seconds=backoff, timeout_seconds=timeout,
+                    )
+                    for i, fb in enumerate(fallbacks)
+                ]
+                out[key] = FallbackAgent(agent_name=key, primary=primary, fallbacks=fb_agents)
+                logger.info(f"'{key}' fallback chain: {spec['provider']} -> "
+                            + " -> ".join(fb["provider"] for fb in fallbacks))
+            else:
+                out[key] = primary
         except Exception as e:
             logger.error(f"Could not build agent '{key}' in block '{block_name}': {e}")
             raise

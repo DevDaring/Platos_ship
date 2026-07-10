@@ -68,9 +68,16 @@ smart_agents:
   gpt4o_mini:
     # LinkAPI azureopenai group: ¥0.075/¥0.3 per 1M (~$0.011/$0.042) — ~10x
     # cheaper than OpenRouter's $0.15/$0.60. Key is group-scoped (AZUREOPENAI_LINKAPI_KEY).
+    # LinkAPI is a single account and can rate-limit (429) under E5's sustained
+    # load, so nano-gpt is an automatic fallback (then OpenRouter as last resort).
     provider: linkapi
     model_slug: gpt-4o-mini
     role_class: smart
+    fallbacks:
+      - provider: nanogpt
+        model_slug: gpt-4o-mini
+      - provider: openrouter
+        model_slug: openai/gpt-4o-mini
 
 # ── Weak (dumb) peers — persona-anchored or honest ─────────────────────────
 dumb_agents:

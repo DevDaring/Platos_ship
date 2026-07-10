@@ -177,6 +177,51 @@ class OpenAICompatibleAgent(BaseAgent):
         return self._key_manager.usage_stats
 
 
+class FallbackAgent(BaseAgent):
+    """
+    Tries a primary agent, then falls back to alternates on failure.
+
+    Used when a model is served by a single-account provider that can rate-limit
+    (e.g. gpt-4o-mini on LinkAPI). If the primary returns a failure after its own
+    retries, the same request is transparently reissued on the next provider
+    (e.g. nano-gpt). Result is identical either way — only the route changes.
+    """
+
+    def __init__(self, agent_name: str, primary: OpenAICompatibleAgent,
+                 fallbacks: List[OpenAICompatibleAgent]):
+        super().__init__(agent_name=agent_name, provider=f"{primary.provider}+fallback")
+        self.primary = primary
+        self.fallbacks = fallbacks or []
+        self.model_name = primary.model_name  # for provenance/labelling
+        self._chain = [primary] + self.fallbacks
+
+    def generate_response(
+        self, system_prompt: str, user_prompt: str, temperature: float,
+        maximum_output_tokens: int, request_metadata: Optional[Dict[str, Any]] = None,
+    ) -> AgentResponse:
+        last = None
+        for i, agent in enumerate(self._chain):
+            resp = agent.generate_response(
+                system_prompt, user_prompt, temperature, maximum_output_tokens, request_metadata,
+            )
+            if resp.error_status != "failure" and (resp.raw_text_output or "").strip():
+                if i > 0:
+                    resp.error_status = "api_error_recovered"  # a fallback provider served it
+                    logger.info(f"{self.agent_name}: primary failed, recovered via fallback #{i} ({agent.provider})")
+                return resp
+            last = resp
+        api_failure_logger.error(
+            f"{self.agent_name}: all {len(self._chain)} providers failed "
+            f"({', '.join(a.provider for a in self._chain)})"
+        )
+        return last if last is not None else AgentResponse(error_status="failure",
+                                                           model_name_returned_by_provider=self.model_name)
+
+    @property
+    def key_usage_stats(self) -> Dict[int, int]:
+        return self.primary.key_usage_stats
+
+
 # ─────────────────────────────────────────────────────────────────────────
 # Provider registry helpers
 # ─────────────────────────────────────────────────────────────────────────
