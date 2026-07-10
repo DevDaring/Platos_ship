@@ -109,10 +109,30 @@ class OpenAICompatibleAgent(BaseAgent):
                     temperature=temperature,
                     max_tokens=maximum_output_tokens,
                 )
+                # Guard: providers/aggregators can transiently return a 200 with
+                # null/empty choices (upstream provider error, moderation, or a
+                # timeout wrapped as 200). Indexing choices[0] would crash; treat
+                # this as a RETRYABLE condition so the next attempt (a rotated
+                # key) can recover, exactly like an API error.
+                choices = getattr(response, "choices", None)
+                message = choices[0].message if choices else None
+                if message is None:
+                    err_payload = getattr(response, "error", None)
+                    last_error = f"malformed response: empty choices (payload: {str(err_payload)[:200]})"
+                    api_failure_logger.warning(
+                        f"{self.provider} malformed response (attempt {attempt + 1}/{self.max_retries + 1}): "
+                        f"{last_error}, model={self.model_name}, meta={metadata}"
+                    )
+                    if attempt < self.max_retries:
+                        delay = self.retry_backoff[min(attempt, len(self.retry_backoff) - 1)]
+                        time.sleep(delay + random.uniform(0, 1))
+                        continue
+                    break  # retries exhausted -> fall through to failure result
+
                 elapsed = time.time() - start_time
                 usage = response.usage
                 result = AgentResponse(
-                    raw_text_output=response.choices[0].message.content or "",
+                    raw_text_output=message.content or "",
                     wall_clock_latency_seconds=elapsed,
                     total_input_tokens=usage.prompt_tokens if usage else 0,
                     total_output_tokens=usage.completion_tokens if usage else 0,

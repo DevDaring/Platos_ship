@@ -69,9 +69,19 @@ def validate_and_regenerate(
     questions_df: pd.DataFrame,
     max_regeneration_attempts: int = 3,
     project_root: Optional[Path] = None,
+    output_path_key: str = "dumb_personas_file",
+    include_confidence_line: bool = False,
+    anchor_mode: str = "wrong",
 ) -> pd.DataFrame:
     """
     Validate all personas and regenerate failed ones up to max_regeneration_attempts.
+
+    output_path_key selects WHICH pool file the validated result is saved to
+    (dumb_personas_file / confidence_personas_file / correct_anchored_personas_file).
+    Phase 1 hardcoded dumb_personas_file, which silently overwrote the main pool
+    when validating a secondary pool — the Phase 2 root-cause fix is this param.
+    include_confidence_line / anchor_mode are passed through to regeneration so
+    regenerated personas match the pool's prompt format.
     """
     from .persona_generator import generate_personas_for_question
 
@@ -109,6 +119,8 @@ def validate_and_regenerate(
                 new_personas = generate_personas_for_question(
                     question, llama_agent, num_variants=1,
                     seed=hash(f"{qid}_{persona_dict['persona_variant_index']}_{attempt}") % (2**31),
+                    include_confidence_line=include_confidence_line,
+                    anchor_mode=anchor_mode,
                 )
 
                 if new_personas:
@@ -163,11 +175,11 @@ def validate_and_regenerate(
                 f.write(f"  {reason}: {count}\n")
         logger.info(f"Validation report written to {report_path}")
 
-    # Save validated personas
+    # Save validated personas to the pool's OWN file (not always the main pool)
     if project_root:
         with open(project_root / "config" / "paths.yaml") as fp:
             paths = yaml.safe_load(fp)
-        output_path = paths["dumb_personas_file"]
+        output_path = paths[output_path_key]
         if not Path(output_path).is_absolute():
             output_path = project_root / output_path
         result_df.to_parquet(str(output_path), index=False)

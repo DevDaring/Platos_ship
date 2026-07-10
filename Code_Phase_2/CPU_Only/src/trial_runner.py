@@ -14,6 +14,8 @@ import asyncio
 import logging
 import hashlib
 import datetime
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
@@ -86,6 +88,13 @@ class TrialRunner:
         self.final_answer_rows = []
         self._completed_set = set()
         self._flush_counter = 0
+
+        # Concurrency: API calls are I/O-bound, so run trials in a thread pool.
+        # Results/checkpoint mutations are guarded by _results_lock. Trial seeds
+        # are deterministic per (question, trial_index), so results are identical
+        # to sequential execution — only speed changes (symmetry preserved).
+        self._results_lock = threading.Lock()
+        self._max_workers = int(os.getenv("PHASE2_CONCURRENCY", "10"))
 
         # Stats
         self._total_trials = 0
@@ -322,6 +331,10 @@ class TrialRunner:
         correct_answer = str(question["correct_answer"]).strip()
         agents = self._build_agents_for_condition(condition_id, question, trial_index, focal_agent_name)
 
+        # Thread-local accumulators; merged into shared state under lock at the end.
+        _trial_rows_local = []
+        _final_rows_local = []
+
         try:
             # Round 0
             r0_responses = run_round0(agents, question, self.judge_cascade)
@@ -357,7 +370,7 @@ class TrialRunner:
                     if a["identifier"] == r["agent_identifier"] and a["role"] == "dumb":
                         persona_id = f"{question['question_identifier']}_persona_{trial_index % 5}"
 
-                self.trial_rows.append({
+                _trial_rows_local.append({
                     "trial_universal_unique_identifier": trial_uuid,
                     "question_identifier": question["question_identifier"],
                     "condition_identifier": condition_id,
@@ -390,7 +403,7 @@ class TrialRunner:
 
             for r in r1_responses:
                 answer_correct = str(r["extracted_final_answer"]).strip().upper() == correct_answer.upper()
-                self.trial_rows.append({
+                _trial_rows_local.append({
                     "trial_universal_unique_identifier": trial_uuid,
                     "question_identifier": question["question_identifier"],
                     "condition_identifier": condition_id,
@@ -455,7 +468,7 @@ class TrialRunner:
                     else:
                         consensus = "split"
 
-                self.final_answer_rows.append({
+                _final_rows_local.append({
                     "question_identifier": question["question_identifier"],
                     "condition_identifier": condition_id,
                     "trial_replication_index": trial_index,
@@ -474,23 +487,26 @@ class TrialRunner:
                     "c5_count_of_peer_messages_filtered_out": filtered_out_count,
                 })
 
-            # Update tracking
-            self._total_trials += 1
-            key = (question["question_identifier"], condition_id, trial_index, focal_agent_name)
-            self._completed_set.add(key)
-
-            # Periodic checkpoint
-            self._flush_counter += 1
-            if self._flush_counter >= 50:
-                self._save_checkpoint()
-                self._flush_counter = 0
+            # Merge thread-local rows into shared state + checkpoint under lock.
+            # (All slow API calls already happened above, outside the lock.)
+            with self._results_lock:
+                self.trial_rows.extend(_trial_rows_local)
+                self.final_answer_rows.extend(_final_rows_local)
+                self._total_trials += 1
+                key = (question["question_identifier"], condition_id, trial_index, focal_agent_name)
+                self._completed_set.add(key)
+                self._flush_counter += 1
+                if self._flush_counter >= 50:
+                    self._save_checkpoint()
+                    self._flush_counter = 0
 
             return True
 
         except Exception as e:
             logger.error(f"Trial failed: {condition_id}/{question['question_identifier']}/{trial_index}: {e}",
                         exc_info=True)
-            self._api_failures += 1
+            with self._results_lock:
+                self._api_failures += 1
             return False
 
     def run_conditions(
@@ -523,38 +539,50 @@ class TrialRunner:
 
         completed_before = len(self._completed_set)
 
-        with tqdm(total=total_planned, desc=f"Stage: {stage_name}") as pbar:
-            for _, q_row in questions.iterrows():
-                question = q_row.to_dict()
+        # Build the list of pending (question, condition, trial) tasks (skip done).
+        pending = []
+        skipped = 0
+        for _, q_row in questions.iterrows():
+            question = q_row.to_dict()
+            for condition_id in conditions:
+                for trial_idx in range(trials_per_question):
+                    key = (question["question_identifier"], condition_id, trial_idx, focal_agent_name)
+                    if key in self._completed_set:
+                        skipped += 1
+                        continue
+                    pending.append((question, condition_id, trial_idx))
 
-                for condition_id in conditions:
-                    for trial_idx in range(trials_per_question):
-                        key = (question["question_identifier"], condition_id, trial_idx, focal_agent_name)
-                        if key in self._completed_set:
-                            pbar.update(1)
-                            continue
+        workers = 1 if self.dry_run else max(1, self._max_workers)
+        logger.info(f"Stage '{stage_name}': {len(pending)} pending trials, {skipped} already done, "
+                    f"{workers} concurrent workers")
 
-                        success = self._run_single_trial(
-                            question, condition_id, trial_idx, focal_agent_name
-                        )
-
+        with tqdm(total=total_planned, initial=skipped, desc=f"Stage: {stage_name}") as pbar:
+            if workers == 1:
+                for question, condition_id, trial_idx in pending:
+                    if _SHUTDOWN_REQUESTED:
+                        break
+                    self._run_single_trial(question, condition_id, trial_idx, focal_agent_name)
+                    pbar.update(1)
+            else:
+                with ThreadPoolExecutor(max_workers=workers) as ex:
+                    futures = [
+                        ex.submit(self._run_single_trial, q, c, t, focal_agent_name)
+                        for (q, c, t) in pending
+                    ]
+                    for fut in as_completed(futures):
+                        try:
+                            fut.result()
+                        except Exception as e:
+                            logger.error(f"Worker error in stage {stage_name}: {e}")
                         pbar.update(1)
-
-                        # Update progress bar description
-                        if self._total_trials > 0 and self._total_trials % 100 == 0:
-                            pbar.set_postfix({
-                                "done": self._total_trials,
-                                "fails": self._api_failures,
-                                "stage": stage_name,
-                            })
-
+                        if self._total_trials % 100 == 0:
+                            pbar.set_postfix({"done": self._total_trials, "fails": self._api_failures})
                         if _SHUTDOWN_REQUESTED:
-                            logger.warning("Shutdown: flushing and exiting")
-                            self._save_checkpoint()
-                            return self._total_trials
+                            break
 
-        # Final flush
-        self._save_checkpoint()
+        # Final flush (thread-safe)
+        with self._results_lock:
+            self._save_checkpoint()
 
         completed_after = len(self._completed_set)
         new_completed = completed_after - completed_before

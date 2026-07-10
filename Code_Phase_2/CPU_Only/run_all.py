@@ -189,10 +189,25 @@ def run(project_root: Path, selected: Optional[List[str]], priorities: Optional[
     questions_df = build_question_pool(project_root, probe_agent=weak_probe, dry_run=dry_run)
 
     personas_df = generate_all_personas(project_root, weak_probe, dry_run=dry_run)
-    personas_df = validate_and_regenerate(
-        personas_df, weak_probe, questions_df,
-        max_regeneration_attempts=1 if dry_run else 3, project_root=project_root,
+    # Validate only if the pool still has UNVALIDATED ("pending") personas.
+    # A pool loaded from the pristine Phase-1 cache is already validated (its
+    # rows are "passed" or the known "failed" cases; _get_persona falls back to
+    # passed variants), so re-validating would waste weak-model calls and drift
+    # the few hardest personas away from the published pool.
+    _needs_validation = (
+        dry_run
+        or "validation_pass_status" not in personas_df.columns
+        or (personas_df["validation_pass_status"] == "pending").any()
     )
+    if not _needs_validation:
+        _npass = int((personas_df["validation_pass_status"] == "passed").sum())
+        logger.info(f"Main persona pool already validated ({_npass}/{len(personas_df)} passed) — skipping re-validation.")
+    else:
+        personas_df = validate_and_regenerate(
+            personas_df, weak_probe, questions_df,
+            max_regeneration_attempts=1 if dry_run else 3, project_root=project_root,
+            output_path_key="dumb_personas_file", include_confidence_line=False, anchor_mode="wrong",
+        )
 
     correct_personas_df = None
     if need_split:
@@ -200,6 +215,12 @@ def run(project_root: Path, selected: Optional[List[str]], priorities: Optional[
             project_root, weak_probe, dry_run=dry_run,
             anchor_mode="correct", output_path_key="correct_anchored_personas_file",
             questions_df=questions_df,
+        )
+        correct_personas_df = validate_and_regenerate(
+            correct_personas_df, weak_probe, questions_df,
+            max_regeneration_attempts=1 if dry_run else 3, project_root=project_root,
+            output_path_key="correct_anchored_personas_file",
+            include_confidence_line=False, anchor_mode="correct",
         )
 
     # E3 confidence pool — SEPARATE from the Phase-1-symmetric main pool
@@ -213,6 +234,8 @@ def run(project_root: Path, selected: Optional[List[str]], priorities: Optional[
         confidence_personas_df = validate_and_regenerate(
             confidence_personas_df, weak_probe, questions_df,
             max_regeneration_attempts=1 if dry_run else 3, project_root=project_root,
+            output_path_key="confidence_personas_file",   # <-- was silently overwriting the main pool
+            include_confidence_line=True, anchor_mode="wrong",
         )
 
     if need_perturbed and not analyse_only:
