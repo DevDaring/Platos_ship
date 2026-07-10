@@ -1,0 +1,17 @@
+# Phase 2 GPU_Only — mechanistic logprob probe (Experiment E9)
+# Only needed on the GPU box. Everything else (E1–E8) is API-only (see ../CPU_Only).
+#
+# Tested target: 1x RTX 4090 (24 GB), CUDA 12.x, Llama-3.1-8B-Instruct in bf16.
+#   python3 -m venv ~/venv_gpu && source ~/venv_gpu/bin/activate
+#   pip install -r requirements_gpu.txt
+#
+# vLLM pulls a matching torch build; pin vllm and let it resolve torch/CUDA.
+
+vllm==0.6.3            # serves the focal locally; provides next-token logprobs
+transformers>=4.45.0
+pandas==2.2.2
+pyarrow==17.0.0
+pyyaml==6.0.2
+python-dotenv==1.0.0
+huggingface_hub
+# torch is installed transitively by vllm with the correct CUDA wheels.

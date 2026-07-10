@@ -1,0 +1,252 @@
+# ============================================================================
+# Phase 2 experiment.yaml — reviewer-driven follow-up experiments (E1–E9)
+# ============================================================================
+# Backward compatible with Phase 1: main_conditions C1–C4 and mitigation C5
+# are preserved. Phase 2 adds new conditions (peer_mode + solo_reanswer +
+# heterogeneous debate) and an `experiments:` block that run_all.py iterates.
+# ============================================================================
+
+random_seed: 20260502
+total_questions_in_pool: 300
+mmlu_pro_question_count: 200
+gsm8k_question_count: 100
+mmlu_pro_subject_count: 10
+questions_per_subject: 20
+trials_per_question_main_conditions: 5
+trials_per_question_mitigation_condition: 3
+debate_rounds: 1
+peer_message_ordering: randomized_per_trial
+
+reasoning_styles:
+  - surface_keyword_match
+  - false_analogy
+  - overconfident_assertion
+  - misapplied_rule
+
+dumb_persona_variants_per_question: 5
+
+# SYMMETRY WITH PHASE 1: the MAIN persona pool must stay identical to Phase 1
+# (no Confidence line) so that C4 in the sweep (E4) and C4split (E7) use peers
+# whose format matches the published C3/C4. Only E3's C5R uses a SEPARATE
+# confidence-bearing pool (persona_pool: confidence). Keep this false.
+persona_prompt_includes_confidence_line: false
+
+# ── Condition catalogue ────────────────────────────────────────────────────
+# peer_mode:
+#   anchored               = weak peers use wrong-anchored persona text (Phase 1)
+#   honest                 = weak peers answer naturally with the standard prompt
+#   split                  = one wrong-anchored + one correct-anchored peer
+#   none                   = no peers
+# aggregation_rule:
+#   none | solo_reanswer | standard_debate | confidence_weighted
+main_conditions:
+  C1_smart_solo:
+    smart_agent_count: 1
+    dumb_agent_count: 0
+    peer_mode: none
+    aggregation_rule: none
+    description: Single smart agent answers alone, no debate
+  C2_three_smart:
+    smart_agent_count: 3
+    dumb_agent_count: 0
+    peer_mode: none
+    aggregation_rule: standard_debate
+    description: Three smart agents debate, capability-homogeneous control
+  C3_two_smart_one_dumb:
+    smart_agent_count: 2
+    dumb_agent_count: 1
+    peer_mode: anchored
+    aggregation_rule: standard_debate
+    description: Two smart plus one wrong-anchored dumb peer
+  C4_one_smart_two_dumb:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    peer_mode: anchored
+    aggregation_rule: standard_debate
+    description: One smart plus two wrong-anchored dumb peers (capability collapse)
+
+# ── Phase 2 new conditions ─────────────────────────────────────────────────
+phase2_conditions:
+  # E1 — solo re-answering control (sTG4's requested baseline)
+  C1R_solo_reanswer:
+    smart_agent_count: 1
+    dumb_agent_count: 0
+    peer_mode: none
+    aggregation_rule: solo_reanswer
+    description: Focal re-answers with the Round-1 instruction but NO peer messages
+  # E2 — honest (non-anchored) weak peers
+  C3H_two_smart_one_honest:
+    smart_agent_count: 2
+    dumb_agent_count: 1
+    peer_mode: honest
+    aggregation_rule: standard_debate
+    description: Two smart plus one HONEST weak peer (natural answer)
+  C4H_one_smart_two_honest:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    peer_mode: honest
+    aggregation_rule: standard_debate
+    description: One smart plus two HONEST weak peers (natural answers)
+  # E3 — confidence filter re-run with confidence actually elicited
+  C5R_anchored_with_confidence_filter:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    peer_mode: anchored
+    persona_pool: confidence          # uses the SEPARATE confidence-bearing pool
+    aggregation_rule: confidence_weighted
+    confidence_threshold_for_filtering: 60
+    filter_operates_on_round: 0        # peers now emit R0 confidence, so R0 filter has signal
+    description: C4 wrong-anchored peers WITH confidence line, confidence filter applied
+  C5H_honest_with_confidence_filter:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    peer_mode: honest
+    aggregation_rule: confidence_weighted
+    confidence_threshold_for_filtering: 60
+    filter_operates_on_round: 1
+    description: C4 honest weak peers, confidence filter applied (real confidence variation)
+  # E7 — split-peer control (isolates unanimity from distractor effect)
+  C4split_one_wrong_one_correct:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    peer_mode: split
+    aggregation_rule: standard_debate
+    description: One smart plus one wrong-anchored and one correct-anchored peer
+  # E8 — heterogeneous-smart debate control (breaks the kappa=0.72 correlation)
+  C2het_three_distinct_smart:
+    smart_agent_count: 3
+    dumb_agent_count: 0
+    peer_mode: none
+    aggregation_rule: standard_debate
+    heterogeneous_smart_agent_keys:
+      - het_deepseek
+      - het_llama_70b
+      - het_qwen_72b
+    description: Three DISTINCT strong models debate (not three DeepSeek instances)
+
+mitigation_condition:
+  C5_one_smart_two_dumb_confidence_weighted:
+    smart_agent_count: 1
+    dumb_agent_count: 2
+    peer_mode: anchored
+    aggregation_rule: confidence_weighted
+    description: Phase 1 C5 reproduction (persona without confidence, R0 filter)
+    questions_subset_size: 100
+    questions_sampling_strategy: stratified_random_from_full_pool
+    trials_per_question: 3
+    confidence_threshold_for_filtering: 60
+    filter_operates_on_round: 0
+    confidence_weight_function: linear_above_threshold
+    runs_only_if_calibration_gate_passes: true
+
+focal_smart_agent_assignment: deepseek_primary
+cross_model_validation_subset_size: 50
+cross_model_validation_focal_agent: gpt4o_mini
+
+answer_extraction_strategy: regex_first_then_judge_fallback
+parse_failure_retry_attempts: 1
+
+# ── Calibration gate (original + corrected discriminative-gap gate, E3) ─────
+calibration_gate:
+  description: Decides whether a confidence filter has usable signal.
+  condition_subset_to_analyse:
+    - C3_two_smart_one_dumb
+    - C4_one_smart_two_dumb
+  agent_role_to_analyse: dumb
+  high_confidence_threshold: 60
+  # Original (misspecified) rule — kept for the paper's comparison
+  precondition_metric_name: probability_high_confidence_given_wrong_answer
+  precondition_metric_threshold: 0.40
+  decision_rule: run_C5_if_precondition_metric_is_at_or_above_threshold
+  # Corrected rule (E3): gate on the DISCRIMINATIVE gap
+  corrected_gate:
+    metric_name: loud_when_wrong_minus_loud_when_correct
+    discriminative_gap_threshold: 0.10   # gap must exceed +0.10 to pass
+    also_require_auroc_above: 0.60
+
+# ── Perturbed-GSM8K contamination probe (E6) ───────────────────────────────
+perturbed_gsm8k:
+  source: gsm8k_100_from_main_pool
+  perturbation: numeric_operand_shift    # rewrite numbers, recompute answers
+  perturb_seed_offset: 7
+  questions_count: 100
+  conditions: [C1_smart_solo, C4_one_smart_two_dumb]
+  trials_per_question: 5
+
+# ── Experiment plan (run_all.py iterates this) ─────────────────────────────
+# priority: P0 (must), P1 (recommended), P2 (optional)
+# focal: config key(s) in models.yaml, or the literal "SWEEP" / "HET"
+# subset: full300 | crossval50 | crossval300 | mitigation100 | perturbed100
+experiments:
+  E1_solo_reanswer:
+    priority: P0
+    enabled: true
+    description: Solo re-answering control; isolates second-chance reasoning from peer effect
+    focal: [deepseek_primary, gpt4o_mini]
+    conditions: [C1R_solo_reanswer]
+    subset: full300
+    trials_per_question: 5
+  E2_honest_peers:
+    priority: P0
+    enabled: true
+    description: Honest (non-anchored) weak peers; anchored-vs-honest contrast
+    focal: [deepseek_primary]
+    conditions: [C3H_two_smart_one_honest, C4H_one_smart_two_honest]
+    subset: full300
+    trials_per_question: 5
+  E3_confidence_filter_rerun:
+    priority: P0
+    enabled: true
+    description: Confidence filter with confidence actually elicited (anchored + honest)
+    focal: [deepseek_primary]
+    conditions: [C5R_anchored_with_confidence_filter, C5H_honest_with_confidence_filter]
+    subset: mitigation100
+    trials_per_question: 3
+  E4_focal_sweep:
+    priority: P0
+    enabled: true
+    description: Focal-model sweep; capability metric vs debate outcome across 8 models
+    focal: SWEEP           # iterates sweep_focal_agents
+    conditions: [C1_smart_solo, C2_three_smart, C4_one_smart_two_dumb]
+    subset: full300
+    trials_per_question: 3
+  E5_gpt4o_full_pool:
+    priority: P1
+    enabled: true
+    description: Extend GPT-4o-mini from 50 to 300 questions for C1–C4
+    focal: [gpt4o_mini]
+    conditions: [C1_smart_solo, C2_three_smart, C3_two_smart_one_dumb, C4_one_smart_two_dumb]
+    subset: crossval300
+    trials_per_question: 5
+  E6_perturbed_gsm8k:
+    priority: P1
+    enabled: true
+    description: Contamination probe on numerically perturbed GSM8K
+    focal: [deepseek_primary]
+    conditions: [C1_smart_solo, C4_one_smart_two_dumb]
+    subset: perturbed100
+    trials_per_question: 5
+  E7_split_peer:
+    priority: P2
+    enabled: false
+    description: One wrong + one correct peer; isolates unanimity pressure
+    focal: [deepseek_primary]
+    conditions: [C4split_one_wrong_one_correct]
+    subset: full300
+    trials_per_question: 5
+  E8_heterogeneous_smart:
+    priority: P2
+    enabled: false
+    description: Three distinct strong models debate (breaks self-consistency confound)
+    focal: HET             # uses heterogeneous_smart_agent_keys
+    conditions: [C2het_three_distinct_smart]
+    subset: full300
+    trials_per_question: 3
+  E9_mechanistic_probe:
+    priority: P2
+    enabled: false
+    description: GPU-only logprob probe; lives in GPU_Only/, NOT run by CPU run_all.py
+    focal: [gpu_local_llama_3_1_8b]
+    conditions: [C1_smart_solo, C2_three_smart, C4_one_smart_two_dumb]
+    subset: full300
+    trials_per_question: 3

@@ -1,0 +1,172 @@
+# ============================================================================
+# Phase 2 models.yaml — multi-provider, cheapest-source routing
+# ============================================================================
+# Every model below names a `provider` (a key in the `providers:` registry).
+# To route a model to a cheaper source, change ONLY its `provider:` and
+# `model_slug:` — no code change. Slugs differ across aggregators, so each
+# provider block documents the slug to use.
+#
+# NO FREE TIER: judges and weak peers are on PAID endpoints to avoid the
+# rate-limits/blocks that free Gemini/Mistral tiers imposed in Phase 1.
+#
+# The `provider:` values here are SENSIBLE DEFAULTS. See API_AND_RECHARGE.md
+# for the current cheapest-provider-per-model table (from a live price sweep)
+# and override the `provider:`/`model_slug:` fields accordingly.
+# ============================================================================
+
+# ── Provider registry: base URL + keys + headers per provider ──────────────
+# All are OpenAI-Chat-Completions compatible.
+providers:
+  openrouter:
+    base_url_env: OPENROUTER_API_BASE_URL
+    base_url_default: https://openrouter.ai/api/v1
+    api_key_envs: [OPENROUTER_API_KEY_1, OPENROUTER_API_KEY_2]
+    default_headers: openrouter
+  deepseek:
+    base_url_env: DEEPSEEK_API_BASE_URL
+    base_url_default: https://api.deepseek.com/v1
+    api_key_envs: [DEEPSEEK_API_KEY_1, DEEPSEEK_API_KEY_2]
+  mistral:
+    # Mistral La Plateforme (user's platform keys) — OpenAI-compatible at /v1
+    base_url_env: MISTRAL_API_BASE_URL
+    base_url_default: https://api.mistral.ai/v1
+    api_key_envs: [MISTRAL_API_KEY_1, Mistral_API_Key_2]
+  linkapi:
+    # LinkAPI (OpenAI/Azure-OpenAI compatible). Single key in .env.
+    base_url_env: LINKAPI_API_BASE_URL
+    base_url_default: https://api.linkapi.ai/v1
+    api_key_envs: [AZUREOPENAI_LINKAPI_KEY]
+  nanogpt:
+    base_url_env: Nano_GPT_Base_URL
+    base_url_default: https://nano-gpt.com/api/v1
+    api_key_envs: [Nano_GPT_API_KEY]
+  gcp_vertex:
+    # Vertex AI OpenAI-compat endpoint (region + project baked into base URL).
+    base_url_env: GCP_VERTEX_OPENAI_BASE_URL
+    base_url_default: ""
+    api_key_envs: [GCP_VERTEX_ACCESS_TOKEN]
+
+# ── Shared request defaults ────────────────────────────────────────────────
+request_defaults:
+  smart_temperature: 0.7
+  weak_temperature: 0.9
+  smart_max_output_tokens: 600
+  weak_max_output_tokens: 350
+  request_timeout_seconds: 120
+  maximum_retry_attempts: 5
+  retry_backoff_seconds: [2, 4, 8, 16, 32]
+
+# ── Primary focal agent (Phase 1 headline model) ───────────────────────────
+smart_agents:
+  deepseek_primary:
+    provider: deepseek            # cheapest for the focal model is DeepSeek direct
+    # WARNING: the `deepseek-chat` alias RETIRES 2026-07-24. It currently routes
+    # to DeepSeek V4-Flash (what the paper calls "DeepSeek-v4-flash"). Pin to
+    # `deepseek-v4-flash` for runs on/after 2026-07-24 — same model, reproducible.
+    model_slug: deepseek-chat     # -> switch to: deepseek-v4-flash
+    role_class: smart
+  gpt4o_mini:
+    # LinkAPI azureopenai group: ¥0.075/¥0.3 per 1M (~$0.011/$0.042) — ~10x
+    # cheaper than OpenRouter's $0.15/$0.60. Key is group-scoped (AZUREOPENAI_LINKAPI_KEY).
+    provider: linkapi
+    model_slug: gpt-4o-mini
+    role_class: smart
+
+# ── Weak (dumb) peers — persona-anchored or honest ─────────────────────────
+dumb_agents:
+  llama_3_1_8b_instruct:
+    provider: openrouter          # tiny models are cheapest on aggregators
+    model_slug: meta-llama/llama-3.1-8b-instruct
+    role_class: weak
+  gemma_3_4b_instruct:
+    provider: openrouter
+    model_slug: google/gemma-3-4b-it
+    role_class: weak
+
+# ── Focal-model sweep (Experiment E4): 6 extra open-weight focals ──────────
+# Reduced protocol per model (C1, C2, C4). Route each to its cheapest source.
+sweep_focal_agents:
+  sweep_llama_3_1_70b:
+    provider: openrouter
+    model_slug: meta-llama/llama-3.1-70b-instruct
+    capability_class: strong
+    role_class: smart
+  sweep_qwen_2_5_72b:
+    provider: openrouter
+    model_slug: qwen/qwen-2.5-72b-instruct
+    capability_class: strong
+    role_class: smart
+  sweep_gemma_3_27b:
+    provider: openrouter
+    model_slug: google/gemma-3-27b-it
+    capability_class: mid
+    role_class: smart
+  sweep_mistral_small:
+    # Price sweep 2026-07-10: OpenRouter's 3.2-24B endpoint ($0.075/$0.20) is
+    # ~2x cheaper than Mistral direct's `-latest` (now Small 4, $0.15/$0.60).
+    provider: openrouter
+    model_slug: mistralai/mistral-small-3.2-24b-instruct
+    capability_class: mid
+    role_class: smart
+  sweep_llama_3_1_8b_focal:
+    provider: openrouter
+    model_slug: meta-llama/llama-3.1-8b-instruct
+    capability_class: weak
+    role_class: smart
+  sweep_gemma_3_4b_focal:
+    provider: openrouter
+    model_slug: google/gemma-3-4b-it
+    capability_class: weak
+    role_class: smart
+
+# Optional premium closed focal (only if budget allows; C1+C4 only)
+optional_premium_focal_agents:
+  sweep_gpt_4_1_mini:
+    provider: openrouter
+    model_slug: openai/gpt-4.1-mini
+    capability_class: strong_closed
+    role_class: smart
+    enabled: false
+
+# ── Heterogeneous-smart control (Experiment E8): 3 distinct strong models ──
+heterogeneous_smart_agents:
+  het_deepseek:
+    provider: deepseek
+    model_slug: deepseek-chat
+  het_llama_70b:
+    provider: openrouter
+    model_slug: meta-llama/llama-3.1-70b-instruct
+  het_qwen_72b:
+    provider: openrouter
+    model_slug: qwen/qwen-2.5-72b-instruct
+
+# ── Judge cascade (answer extraction) — ALL PAID, no free tier ─────────────
+# Fires only when regex fails (~8% of trials in Phase 1).
+judge_cascade:
+  primary:
+    provider: openrouter
+    model_slug: google/gemini-2.0-flash-001
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+  secondary:
+    provider: mistral             # user's Mistral platform keys (round-robin across 2)
+    model_slug: mistral-small-latest
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+  tertiary:
+    provider: deepseek
+    model_slug: deepseek-chat
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+
+bit_precision_policy:
+  policy_description: >
+    All models (smart, weak, judge, sweep) are accessed via remote OpenAI-
+    compatible APIs. No local models are loaded in the CPU_Only pipeline.
+    Precision is server-side. The GPU_Only mechanistic probe (E9) loads one
+    open 8B model locally in bf16 via vLLM; see GPU_Only/.
+  local_model_torch_dtype: not_applicable
+  local_model_quantization: not_applicable

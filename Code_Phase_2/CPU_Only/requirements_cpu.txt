@@ -1,0 +1,43 @@
+# Plato's Ship — Pinned Dependencies (CPU VM / API-only mode)
+# No GPU, no torch CUDA, no flash_attn, no bitsandbytes required.
+# All model inference is via API calls only.
+#
+# On Ubuntu 24.04 (PEP 668): create a venv first:
+#   python3 -m venv ~/venv
+#   source ~/venv/bin/activate   (or use ~/venv/bin/pip / ~/venv/bin/python3 directly)
+#
+# Then install:
+#   pip install -r requirements.txt
+
+# Core ML
+numpy<2.0
+transformers==4.46.0
+accelerate==0.34.0
+datasets==2.16.0
+sentencepiece==0.2.0
+protobuf==4.25.0
+
+# Data processing
+pandas==2.2.2
+pyarrow==17.0.0
+
+# API clients
+# NOTE: openai>=1.54.0 required for httpx 0.28 compatibility (proxies kwarg removed)
+openai>=1.54.0
+requests==2.31.0
+google-generativeai==0.8.5
+mistralai==1.6.0
+
+# Configuration and utilities
+python-dotenv==1.0.0
+pyyaml==6.0.2
+jsonschema==4.23.0
+tqdm==4.65.0
+
+# Statistics
+scipy==1.13.1
+statsmodels==0.14.2
+
+# Embeddings (persona similarity validation)
+sentence-transformers==3.0.1
+huggingface_hub
