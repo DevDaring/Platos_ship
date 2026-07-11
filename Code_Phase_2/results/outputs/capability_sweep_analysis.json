@@ -1,0 +1,44 @@
+{
+  "focal_models_analysed": [
+    "deepseek_primary",
+    "gpt4o_mini",
+    "sweep_gemma_3_27b",
+    "sweep_gemma_3_4b_focal",
+    "sweep_llama_3_1_70b",
+    "sweep_llama_3_1_8b_focal",
+    "sweep_mistral_small",
+    "sweep_qwen_2_5_72b"
+  ],
+  "E4_capability_sweep": {
+    "spearman_solo_accuracy_vs_C4_accuracy_change": 0.3333333333333334,
+    "n_models_in_solo_vs_delta": 8,
+    "spearman_solo_accuracy_vs_C4_correct_to_incorrect": -0.21557272714438658,
+    "n_models_in_solo_vs_flip": 8,
+    "note": "Small-n trend (<=8 models). Report with CIs, not as a law (Review_Fix W8)."
+  },
+  "E1_solo_reanswer_contrast": {
+    "deepseek_primary": {
+      "C1_solo": 0.21649484536082475,
+      "C1R_solo_reanswer": 0.772,
+      "C4_two_wrong_peers": 0.2309278350515464,
+      "C4_minus_C1R": -0.5411,
+      "interpretation_hint": "self_reconsideration_if_C4_approx_C1R"
+    },
+    "gpt4o_mini": {
+      "C1_solo": 0.6393333333333333,
+      "C1R_solo_reanswer": 0.6706666666666666,
+      "C4_two_wrong_peers": 0.6693333333333333,
+      "C4_minus_C1R": -0.0013,
+      "interpretation_hint": "self_reconsideration_if_C4_approx_C1R"
+    }
+  },
+  "E2_honest_vs_anchored_contrast": {
+    "deepseek_primary": {
+      "C4_vs_C4H": {
+        "anchored_accuracy": 0.2309278350515464,
+        "honest_accuracy": 0.758,
+        "honest_minus_anchored": 0.5271
+      }
+    }
+  }
+}
