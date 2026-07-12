@@ -36,27 +36,28 @@ Wrong-Peer Exposure}
 \maketitle
 
 \begin{abstract}
-Multi-agent debate among large language models (LLMs) can improve
-aggregate reasoning accuracy.
-Whether this benefit holds when agents differ markedly in capability
-has not been tested at scale.
-Under capability asymmetry, a strong focal model receives peer reasoning
-of unknown quality, with potentially opposing effects on accuracy and
-answer stability.
-This study examines $7{,}300$ trials on $300$ questions from MMLU-Pro
-and GSM8K, testing two focal models against systematically varied numbers
-of confidently-wrong peer agents. \textit{DeepSeek-v4-flash} gains $7.9$ percentage points post-debate on
-GSM8K arithmetic but shows no reliable accuracy change on MMLU-Pro
-multiple-choice items once peer source is controlled.
-\textit{GPT-4o-mini} shows no net accuracy change; its correct-to-incorrect
-flip rate nearly triples, from $5.8\%$ to $17.2\%$, under two wrong peers. Two structural findings extend these results.
-Homogeneous debate is statistically indistinguishable from averaging three
-independent samples of the same model; the homogeneous condition therefore
-functions as a sampling control rather than a genuine debate test.
-A confidence-weighted peer filter, proposed for mixed-capability ensembles,
-fails here entirely because wrong-peer personas suppress the confidence signal.
-The standard pre-flight test for this filter passes despite the failure;
-a corrected formulation is proposed that detects filter failure before deployment.
+In multi-agent debate, several large language model (LLM) instances
+answer a question, read one another's answers, and revise.
+Reported gains assume the agents are equally able.
+This study asks what happens when the group is unequal: one stronger
+model, the \textit{focal model}, debates weaker peers that argue
+confidently for wrong answers.
+Across about $37{,}000$ trials on MMLU-Pro and GSM8K, eight focal
+models of widely different ability were tested.
+None lost accuracy under two confidently wrong peers, and the stronger
+models gained.
+Two controls locate the cause.
+A re-answering control shows the gain is not just a second look at the
+question.
+An honest-peer control shows the gain is specific to confidently wrong
+peers; the same weak models answering naturally leave accuracy
+unchanged.
+The cost of exposure falls on the weak: the rate at which a focal model
+drops a correct answer rises sharply as its own ability falls.
+A confidence-weighted filter, proposed to remove bad peers, still fails
+after both of its design faults are repaired, because weak peers sound
+equally confident when right and when wrong.
+All code, prompts, and trial logs are released.
 \end{abstract}
 
 \section{Introduction}
@@ -64,96 +65,75 @@ a corrected formulation is proposed that detects filter failure before deploymen
 %% ═════════════════════════════════════════════════════════════════════════
 
 Collective reasoning in animal and human groups is shaped by two competing
-forces: the informational value of aggregated evidence and the social
-pressure to conform to the apparent majority view.
-Large language models (LLMs) deployed in multi-agent debate (MAD) frameworks
-face an analogous tension.
-In such systems, multiple model instances independently answer a question in
-round zero, exchange their answers and reasoning, then revise in round one.
-Evidence suggests that debate improves factuality when all agents are equally
-capable, because revision is driven by genuine evidence rather than social
-mirroring~\citep{du2023improving}.
+forces: the value of pooling evidence and the pressure to conform to an
+apparent majority.
+Groups of large language models (LLMs) face the same tension.
+In multi-agent debate, several model instances first answer a question on
+their own, then exchange their answers and reasoning, then revise.
+When the agents are equally able, this exchange tends to improve accuracy,
+because revision is driven by evidence rather than by copying a peer
+\citep{du2023improving}.
 
-When agents differ markedly in capability, a strong focal agent receives,
-in Round-1, a mixture of correct and incorrect peer reasoning, with the
-incorrect fraction increasing as more weak agents participate.
-\textit{Sycophancy}~\citep{sharma2023towards}---a model's tendency to
-agree with stated positions regardless of correctness---and the
-\textit{bandwagon effect}~\citep{koo2024benchmarking,asch1951effects,bond1996culture}---conformity
-pressure exerted by an unanimous majority---have been observed in
-single-agent settings.
-Whether they compound in heterogeneous multi-agent debate with
-systematically varied peer composition has not been measured under
+Real ensembles are rarely equal.
+We study the unequal case with one stronger model, which we call the
+\textit{focal model}, and a set of weaker \textit{peers}.
+We track the focal model's accuracy as it debates peers that state wrong
+answers with confidence.
+Two opposing effects are possible.
+The wrong answers may pull the focal model along, an effect linked to
+\textit{sycophancy}~\citep{sharma2023towards} and to the
+\textit{bandwagon effect} under a unanimous majority
+\citep{asch1951effects,koo2024benchmarking}.
+Or they may prompt the focal model to reconsider and recompute, and so to
+correct itself.
+Which effect wins, and for which models, has not been measured under
 controlled conditions.
+Confidence-weighted peer filtering has been proposed as a fix, but has not
+been tested when peers differ in ability.
 
-Existing work has either studied homogeneous debate (all agents of equal
-capability), evaluated conformity in single-agent contexts, or examined
-post-hoc emergent effects without experimental control.
-A gap therefore exists in the understanding of how capability asymmetry
-scales with peer count, and whether the underlying flip mechanism---a
-previously correct answer becoming incorrect after peer exposure---is
-moderated by focal-model strength.
-Confidence-weighted peer filtering has been proposed as a practical
-mitigation but has not been empirically evaluated under
-capability-asymmetric multi-agent conditions.
+This paper asks three questions.
+\textbf{RQ1}: does a strong model keep its accuracy when its debate
+partners are confidently wrong?
+\textbf{RQ2}: does the answer depend on how strong the focal model is?
+\textbf{RQ3}: can a model's own confidence be used to filter bad peers out
+of the debate?
 
-This study fills that gap through a fully instrumented five-condition
-experiment run on 300 \textit{MMLU-Pro}~\citep{wang2024mmlupro} and
-\textit{GSM8K}~\citep{cobbe2021training} questions, with five replications
-per question, covering 7{,}300 trials across five conditions.
-The primary focal agent is \textit{DeepSeek-v4-flash}; the weak peers
-are \textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3} and
-\textit{Gemma~3~4B Instruct}~\citep{gemma2025technical}, anchored to
-assigned wrong answers via a persona pipeline
-(Section~\ref{sub:data}) so that their Round-0 responses act as
-\textbf{adversarial distractors} rather than as natural low-capability
-outputs.
-We use the phrase ``weak peers'' for brevity throughout, but the
-findings transfer to debate with deliberately-wrong distractor peers
-constructed from weak models, not to debate with honest weak peers
-in the wild.
-A three-stage judge cascade resolves ambiguous answers.
-The result is a high-fidelity measurement of how peer composition affects
-answer quality, sycophantic drift, and conformity in a strong focal agent.
+To answer them, we run a controlled study on questions from
+\textit{MMLU-Pro}~\citep{wang2024mmlupro} and
+\textit{GSM8K}~\citep{cobbe2021training}, varying peer composition while
+holding the debate structure fixed.
+The weak peers are two small open models,
+\textit{Llama~3.1~8B}~\citep{meta2024llama3} and
+\textit{Gemma~3~4B}~\citep{gemma2025technical}, guided by a persona prompt
+to argue for one assigned wrong answer (Section~\ref{sub:data}).
+Their messages are therefore confident distractors, not natural
+low-ability output; an honest-peer control removes this framing
+(Section~\ref{sub:controls}).
+Eight focal models of widely different ability are tested, so that the
+effect of focal strength is measured rather than assumed.
 
-The specific contributions of this work are as follows.
+This paper makes three contributions.
 \begin{enumerate}
-    \item \textbf{A misspecification result for confidence-weighted
-          peer filtering.} A pre-flight test commonly proposed for
-          this filter asks whether weak peers report high confidence
-          on wrong answers above a threshold; we show that this test
-          is insensitive to whether confidence actually discriminates
-          wrong from right responses, and that it passes on our data
-          while the filter still strips every peer message.
-          We propose a corrected test based on the difference between
-          high-confidence-when-wrong and high-confidence-when-correct
-          rates.
-    \item \textbf{Focal-model-dependent flip dynamics under adversarial
-          wrong-peer exposure.} Under the same protocol,
-          \textit{DeepSeek-v4-flash} converts wrong-peer messages
-          into corrections (incorrect-to-correct flip rate rising
-          from $27.5\%$ in the homogeneous-debate condition to
-          $55.8\%$ under two wrong peers), while
-          \textit{GPT-4o-mini}'s correct-to-incorrect flip rate
-          triples ($5.8\%$ to $17.2\%$, $p = 0.001$) without a
-          detectable accuracy change.
-    \item \textbf{The DeepSeek-v4-flash gain is concentrated on
-          grade-school math.} A logistic regression with a
-          source-by-condition interaction shows the per-peer effect
-          operates $1.6\times$ more strongly on GSM8K than on
-          MMLU-Pro ($p \approx 10^{-5}$), driven by the focal agent
-          recomputing the answer from scratch in $98\%$ of the
-          relevant trials; on multiple-choice items the per-peer
-          effect is statistically null when source is controlled.
-    \item \textbf{A free self-consistency baseline.}
-          Per-trial majority vote of the three samples in the
-          homogeneous-debate condition attains $76.8\%$ accuracy
-          versus $78.7\%$ after debate; the gap is not detectable at
-          our sample size ($p = 0.22$).
-          Pairwise inter-agent agreement among the three samples is
-          high (Cohen's $\kappa = 0.72$), so the condition functions
-          empirically as a sampling control rather than a debate
-          test.
+    \item \textbf{Two causal controls that isolate the effect of peers.}
+          A re-answering control lets the focal model revise with no peers,
+          and an honest-peer control lets the weak models answer naturally.
+          Together they show that the accuracy gain under confidently wrong
+          peers is real, is not just a second attempt at the question, and
+          is specific to adversarial peers
+          (Section~\ref{sub:controls}, Table~\ref{tab:conditions}).
+    \item \textbf{A capability sweep across eight focal models.}
+          No model loses accuracy under two confidently wrong peers, yet the
+          harmful side---dropping a correct answer---grows steeply as focal
+          ability falls.
+          The outcome is a graded effect of strength, not a two-model
+          anecdote (Section~\ref{sub:sweep}, Figure~\ref{fig:capability}).
+    \item \textbf{A corrected pre-flight test for confidence-weighted peer
+          filtering.} The standard test passes on our data while the filter
+          is useless.
+          We give a corrected test based on how well confidence separates
+          right from wrong answers, and confirm on a re-run with confidence
+          properly elicited that the filter still fails
+          (Section~\ref{sub:filter}).
 \end{enumerate}
 
 %% ═════════════════════════════════════════════════════════════════════════
@@ -193,6 +173,26 @@ mechanisms; the present work extends this by independently varying the
 count of weak peers.
 
 %% ── 2.2 ──────────────────────────────────────────────────────────────────
+\subsection{Adversarial and capability-asymmetric debate}
+\label{sub:adversarial}
+
+The closest prior work places a deliberately wrong agent inside a debate.
+\citet{amayuelas2024multiagent} show that one adversarial agent, arguing
+persuasively for a wrong answer, can lower the accuracy of a multi-agent
+system.
+A second line studies asymmetry between debaters and judges.
+\citet{khan2024debating} find that debate between two strong models helps a
+weaker judge reach the truth, and \citet{kenton2024scalable} test whether
+weak judges can oversee stronger models.
+\citet{smit2024going} evaluate several debate protocols and report that the
+gains are fragile and often no better than simple baselines, which agrees
+with our result on homogeneous debate.
+These studies fix one focal strength, or vary the judge rather than the
+answering agent, or hold the number of wrong peers constant.
+This work instead varies peer count and focal strength together, adds two
+causal controls, and measures the effect across eight focal models.
+
+%% ── 2.3 ──────────────────────────────────────────────────────────────────
 \subsection{Emergent dynamics and mitigation strategies}
 \label{sub:emergent}
 
@@ -200,8 +200,8 @@ Social dynamics among populations of language models can produce emergent
 conventions not present in any individual model~\citep{ashery2025emergent},
 suggesting that bias phenomena scale with group size.
 Mitigation proposals include majority voting, confidence-weighted
-aggregation, and source-aware filtering; the present work subjects
-confidence weighting to a deliberate stress test in C5.
+aggregation, and source-aware filtering; this work puts confidence
+weighting under a deliberate stress test.
 
 Table~\ref{tab:relwork} places this work in the context of closely related
 studies across three dimensions: capability heterogeneity, explicit bias
@@ -218,8 +218,9 @@ Study & Setting & Het. & Bias mech. & Cross-model \\
 \citet{du2023improving}          & MAD, factuality       & $-$          & $-$          & $-$          \\
 \citet{sharma2023towards}        & Single-agent sycoph.  & $-$          & $\checkmark$ & $\checkmark$ \\
 \citet{koo2024benchmarking}      & Single-agent eval.    & $-$          & $\checkmark$ & $\checkmark$ \\
-\citet{weng2025benchform}        & Conformity bench.     & $-$          & $\checkmark$ & $-$          \\
-This work                        & MAD, peer-count trend & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+\citet{amayuelas2024multiagent}  & Adversarial MAD       & $-$          & $\checkmark$ & $-$          \\
+\citet{khan2024debating}         & Debater--judge asym.  & $\checkmark$ & $-$          & $-$          \\
+This work                        & MAD, count $\times$ strength & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -233,75 +234,80 @@ This work                        & MAD, peer-count trend & $\checkmark$ & $\chec
 \subsection{Experimental conditions}
 \label{sub:conditions}
 
-Debate-based evaluation is typically confounded by the simultaneous
-variation of peer count, peer capability, and debate structure.
-To isolate the effect of weak-peer exposure, this experiment holds debate
-structure constant and varies peer composition across five conditions.
-Each condition is characterised by the tuple (smart agents, dumb agents,
-filtering):
+Debate evaluation is easily confounded, because peer count, peer ability,
+and debate structure can all vary at once.
+To isolate the effect of confidently wrong peers, the debate structure is
+held fixed and only the peers are varied.
+Every condition uses the same two rounds: in Round~0 each agent answers on
+its own; in Round~1 each agent sees the others' Round~0 messages and gives
+a final answer.
+The solo condition has no Round~1.
+Table~\ref{tab:setup} lists the conditions.
 
-\medskip
-\noindent
-\textbf{C1}: solo smart agent (no debate); solo baseline. \\
-\textbf{C2}: three smart agents, zero dumb; nominally a homogeneous
-debate control. Section~\ref{sub:accuracy} shows the three samples
-turn out to be highly correlated, so C2 functions empirically as a
-sampling control more than as a debate test. \\
-\textbf{C3}: two smart and one dumb agent. \\
-\textbf{C4}: one smart and two dumb agents. \\
-\textbf{C5}: as C4, with confidence-weighted peer filtering applied.
-\medskip
+Four conditions form the main ladder, from no peers up to two confidently
+wrong peers (C1--C4).
+Three further conditions are controls, each added to answer one question.
+The re-answer control (C1R) lets the focal model revise in Round~1 while
+seeing only its own Round~0 answer, so any gain there comes from a second
+attempt rather than from peers.
+The honest-peer control (C4H) replaces the wrong-answer persona with the
+standard prompt, so the weak models answer naturally.
+The filtered condition (C5) keeps the two wrong peers but hides any peer
+whose stated confidence falls below a threshold of $60$.
 
-In C1 the focal agent answers independently; its Round-0 answer equals
-its Round-1 answer by definition.
-In C2--C5 all agents answer independently in Round-0, share their answers
-and reasoning, then produce a final answer in Round-1.
-In C5 a calibrated confidence threshold of 60 filters peer messages:
-only messages whose stated confidence meets or exceeds that threshold
-are shown to the focal agent in Round-1.
+\begin{table}[t]
+\centering
+\small
+\caption{Debate conditions. Focal = the model whose accuracy is tracked;
+weak = a small model arguing an assigned wrong answer (\emph{wrong}) or
+answering naturally (\emph{honest}).\label{tab:setup}}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Cond. & Focal & Weak peers & What it answers \\
+\midrule
+C1  & 1 & 0            & baseline, no debate \\
+C1R & 1 & 0 (self)     & is a gain just a re-try? \\
+C2  & 3 & 0            & debate among equals \\
+C3  & 2 & 1 wrong      & one wrong peer \\
+C4  & 1 & 2 wrong      & two wrong peers \\
+C4H & 1 & 2 honest     & wrong vs.\ honest peers \\
+C5  & 1 & 2 wrong$+$filter & can confidence filter peers? \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 %% ── 3.2 ──────────────────────────────────────────────────────────────────
 \subsection{Models}
 \label{sub:models}
 
-The smart focal agent is the model served under the
-\texttt{deepseek-chat} alias by the DeepSeek direct API at the time of
-the experiment (UUID
-\texttt{477ec5c4-65d1-474d-9000-88440be70ed5}, 2026-05-03 to
-2026-05-04 UTC; recorded in
-\texttt{experiment\_metadata.json}), referred to throughout this
-manuscript as \textit{DeepSeek-v4-flash} for compactness.
-The \texttt{deepseek-chat} alias is a moving pointer that resolves to
-DeepSeek's current general-purpose model; the architecture is
-described in the DeepSeek-V3 technical
-report~\citep{deepseekai2024v3}.
-Smart non-focal agents in C2 and C3 are also \textit{DeepSeek-v4-flash}
-instances, ensuring that performance differences across conditions are
-attributable to peer composition rather than to heterogeneity among the
-smart agents.
-Dumb agents are \textit{Llama~3.1~8B Instruct}~\citep{meta2024llama3}
-and \textit{Gemma~3~4B Instruct}~\citep{gemma2025technical}, accessed via
-OpenRouter.
-Each dumb-agent Round-0 response is generated from a persona prompt that
-pre-assigns one specific wrong answer per trial
-(Section~\ref{sub:data}); as a consequence dumb-agent Round-0
-correctness is zero by design in 5{,}850 of 5{,}850 trials, and
-Round-0 dumb responses should be read as adversarial distractors
-constructed from the wrong-answer pool of each question rather than as
-naturalistic outputs of these models.
-Round-1 dumb correctness rises to 55--70\% on average across the three
-heterogeneous conditions, because dumb agents see smart-peer Round-0
-answers in the debate context and revise toward them.
-The unprompted accuracy of these two models on MMLU-Pro and GSM8K is
-not measured in this study; published evaluations place both well below
-\textit{DeepSeek-v4-flash}, with capability gaps in the 30 to 40
-percentage-point range~\citep{meta2024llama3,gemma2025technical}.
-The cross-validation uses \textit{GPT-4o-mini}~\citep{openai2024gpt4o}
-(model string \texttt{openai/gpt-4o-mini}, via OpenRouter) as the focal
-agent on a 50-question subset, with five replications (250 trials per
-condition).
-The underlying architecture of \textit{DeepSeek-v4-flash} is described in
-the \textit{DeepSeek-V3} technical report~\citep{deepseekai2024v3}.
+The primary focal model is served under the \texttt{deepseek-chat} alias
+by the DeepSeek API (run in May 2026; the served snapshot is recorded in
+the released metadata).
+Its architecture is the DeepSeek-V3 family~\citep{deepseekai2024v3}, and we
+refer to it as \textit{DeepSeek-chat}.
+In the homogeneous and one-peer conditions the non-focal smart agents are
+further instances of the same model, so any difference across conditions
+comes from the peers, not from mixing different smart models.
+
+The weak peers are \textit{Llama~3.1~8B}~\citep{meta2024llama3} and
+\textit{Gemma~3~4B}~\citep{gemma2025technical}, served through OpenRouter.
+In the wrong-anchored conditions, each weak Round-0 message is written from
+a persona prompt that assigns one wrong answer per trial
+(Section~\ref{sub:data}), so these messages are never correct by
+construction.
+In the honest-peer control the same two models receive the standard prompt
+and answer naturally; they are then correct about half the time
+(Section~\ref{sub:controls}).
+
+To answer RQ2, seven further models take the focal role under a reduced
+protocol (solo, homogeneous, and two wrong peers):
+\textit{GPT-4o-mini}~\citep{openai2024gpt4o}, \textit{Llama~3.1~70B},
+\textit{Qwen2.5~72B}, \textit{Gemma~3~27B}, \textit{Mistral-Small~24B},
+and the two weak models each used as the focal model in turn.
+With DeepSeek-chat this gives \textbf{eight focal models} whose solo
+accuracy spans a wide range.
+GPT-4o-mini is also run on the full question set for the main ladder, so
+its numbers are no longer limited to a small subset.
 
 %% ── 3.3 ──────────────────────────────────────────────────────────────────
 \subsection{Datasets and persona pipeline}
@@ -315,19 +321,24 @@ history, law, mathematics, philosophy, physics, and psychology) with
 a zero-shot accuracy probe.
 \textit{GSM8K}~\citep{cobbe2021training} contributes 100 grade-school
 mathematical word problems.
-The resulting 300-question pool is answered five times independently per
-condition for C1--C4, yielding 1{,}500 trials per condition for the
-primary focal agent and 250 trials per condition (50-question subset
-$\times$ 5 replications) for the cross-validation focal agent.
-Condition C5 is restricted to a 100-question stratified subset with three
-replications, giving 300 trials. The total trial count across all
-conditions and both focal agents is 7{,}300.
-Each dumb agent response embeds one of four wrong-reasoning style
-personas (\textit{surface keyword match}, \textit{false analogy},
-\textit{overconfident assertion}, \textit{misapplied rule}); generation
-and validation details are given in Appendix~S5.
-Persona assignment is randomised over replications so that persona effects
-do not confound the condition comparison.
+The 300-question pool is answered five times per condition.
+For the primary focal model this gives $1{,}500$ trials in each main
+condition (C1--C4) and in each control (C1R, C4H); the filtered condition
+(C5) uses a 100-question subset with three replications.
+The seven sweep models are each run three times per question under the
+reduced protocol.
+To check whether the GSM8K effect depends on memorised problems, a
+contamination probe re-uses the $100$ GSM8K items with their numbers
+changed and answers recomputed, then re-runs the solo and two-wrong-peer
+conditions (Section~\ref{sub:contam}).
+Across all conditions and the eight focal models the study comprises about
+$37{,}000$ trials.
+Each wrong-anchored weak message uses one of four wrong-reasoning styles
+(\textit{surface keyword match}, \textit{false analogy},
+\textit{overconfident assertion}, \textit{misapplied rule}); details are in
+Appendix~S5.
+Persona assignment is randomised over replications so that style does not
+confound the condition comparison.
 
 %% ── 3.4 ──────────────────────────────────────────────────────────────────
 \subsection{Debate protocol}
@@ -343,43 +354,27 @@ standard debate context: only peer Round-0 messages with self-reported
 confidence of 60 or above are included; messages with no parsed
 confidence are treated as below threshold and excluded.
 
-A calibration gate ran prior to C5 to check whether the confidence
-values reported by weak peers in C3 and C4 could distinguish correct
-from incorrect responses.
-Across $4{,}146$ dumb-agent Round-1 responses with parsed confidence,
-$99.5\%$ of wrong answers and $99.8\%$ of correct answers had
-confidence at or above the $60$ threshold.
-The originally specified gate rule passed (the loud-and-wrong rate
-$99.5\%$ exceeds its $40\%$ activation threshold), but the gap
-between the two conditional rates---only $-0.3$ percentage
-points---predicts that a confidence threshold cannot remove wrong
-peers selectively.
-An informative filter requires that confidence \emph{discriminate}
-wrong from correct responses, not merely that wrong responses are
-loud in absolute terms; we treat the gate's pass-decision as a
-misspecification.
+The filtered condition needs a way to decide, before deployment, whether a
+confidence threshold can separate useful peers from harmful ones.
+A common pre-flight test asks only whether wrong peers are loud, that is,
+whether they report high confidence often.
+This is not enough: a filter can help only if confidence is \emph{higher}
+when a peer is wrong than when it is right.
+We therefore use a corrected test based on the gap
+\[
+\Delta = P(\text{loud}\mid\text{wrong}) - P(\text{loud}\mid\text{correct}),
+\]
+which is positive only when high confidence actually marks a wrong answer.
+Both tests are reported, together with the area under the ROC curve
+(AUROC) of confidence against correctness.
 
-The C5 run confirms the predicted null-effect and surfaces a second
-design issue empirically.
-The dumb-agent Round-0 persona prompt embeds an assigned wrong answer
-and does not include the universal confidence-line instruction used in
-all smart-agent prompts; consequently weak agents never emit a
-confidence integer in Round-0 (0 of 5{,}850 Round-0 dumb responses parse
-successfully).
-In Round-1, where the debate context exhibits the format from smart-agent
-peers, weak agents comply with the confidence instruction in 78.7\% of
-trials (4{,}606 of 5{,}850), suggesting that confidence elicitation in
-small instruction-tuned models depends on in-context format
-demonstration rather than the instruction alone.
-Because the C5 filter operates on Round-0 confidences, every peer is
-excluded as below-threshold null and the focal agent receives the
-empty-peer-messages branch described in Section~\ref{sub:conditions}.
-C5 therefore reduces to a solo task in 100\% of trials and is best
-interpreted as a joint demonstration that (i) the originally specified
-gate metric is misspecified for confidence-based filtering, since it
-does not test the discriminative quantity, and (ii) confidence-based
-filtering further requires the filtering-round prompt to elicit
-confidence, a prerequisite not satisfied by persona-anchored prompts.
+An earlier version of the filter also had a separate implementation fault:
+the wrong-answer persona prompt did not ask the weak models for a
+confidence line, so they stated none in Round~0 and every peer was removed
+before the filter could act.
+We repaired this by adding the confidence line to the persona prompt, so
+the filter is now tested on peers that do state their confidence.
+The outcome is reported in Section~\ref{sub:filter}.
 
 %% ── 3.5 ──────────────────────────────────────────────────────────────────
 \subsection{Metrics and statistical tests}
@@ -436,81 +431,192 @@ Appendix~S4.
 \label{sec:results}
 %% ═════════════════════════════════════════════════════════════════════════
 
-Table~\ref{tab:conditions} summarises accuracy and flip-rate outcomes across all five conditions and both focal agents.
-
 %% ── 4.1 ──────────────────────────────────────────────────────────────────
-\subsection{Accuracy and flip rates across conditions}
+\subsection{Accuracy and flip rates}
 \label{sub:accuracy}
 
-For \textit{DeepSeek-v4-flash}, Round-1 accuracy reaches $84.1\%$ in C4, a gain of $+7.9$~pp over the $76.2\%$ solo baseline ($95\%$ CI $[+5.1, +10.8]$~pp, $p < 10^{-4}$); the C2 ($78.7\%$) and C3 ($78.3\%$) gains are not detectable at $n = 1{,}500$ trials per condition.
+Table~\ref{tab:conditions} gives accuracy and flip rates for the two
+primary focal models, across the main ladder and the controls.
+Two patterns stand out.
 
-A self-consistency-of-three baseline (SC3: per-trial majority vote of the three C2 Round-0 answers before debate exchange) attains $76.8\%$ accuracy; the $1.9$~pp gap between C2's Round-1 ($78.7\%$) and SC3 is not detectable ($p = 0.22$).
-Pairwise $\kappa$ on the three smart agents' Round-0 correctness is $0.72$ (Appendix~\ref{ssec:dependence_app}), indicating near-homogeneous draws; the design cannot distinguish a debate-driven revision benefit from multi-sample aggregation at $n = 1{,}500$.
+First, exposure to two confidently wrong peers does not hurt DeepSeek-chat;
+it helps.
+Accuracy rises by about eight points over solo, the largest move in the
+study, and a question-level test confirms it (McNemar, significant after
+correction; full statistics in Table~\ref{tab:stats}).
+The gain comes from the correction rate: many questions the model first got
+wrong are recovered after it sees the peers, because the wrong answers
+prompt it to work the problem again.
+The homogeneous and one-peer conditions produce small gains that are not
+reliable.
 
-C4 is qualitatively different.
-The $+7.9$~pp gain is driven by the I$\rightarrow$C flip rate jumping from $27.5\%$ in C2 to $55.8\%$ in C4, while C$\rightarrow$I rises only modestly ($5.0\%$ to $6.5\%$; underpowered, $p = 0.15$).
-At the question level, $33$ of $300$ items move correct in C4 that were incorrect in C1, against $12$ moving the other way (Holm-corrected $p = 0.017$): the net C4 gain is dominated by the I$\rightarrow$C correction signal.
+Second, the two models differ on the harmful side.
+DeepSeek-chat rarely abandons a correct answer, and its harmful-flip rate
+barely moves across the ladder.
+GPT-4o-mini, the weaker model, shows a clear rise in harmful flips as wrong
+peers are added (Table~\ref{tab:conditions}; Appendix
+Figure~\ref{fig:asch}), even though its net accuracy holds.
+Section~\ref{sub:sweep} shows this split is a general effect of focal
+strength.
 
-For \textit{GPT-4o-mini}, net Round-1 accuracy is null at the cross-validation sample size ($n = 250$; both C3 and C4 contrasts have CIs overlapping zero).
-The C$\rightarrow$I flip rate rises clearly from $5.8\%$ in C2 to $17.2\%$ in C4 ($p = 0.001$, post-hoc power $0.91$): the two models diverge on flip dynamics, with \textit{GPT-4o-mini} showing a roughly three-fold increase in conformity-revision pressure whereas \textit{DeepSeek-v4-flash}'s C$\rightarrow$I rate stays within $[5.0\%, 6.5\%]$ across C2--C4.
-C5 yields accuracy $1.6$~pp below C4 on the matched 100-question subset ($p = 0.453$ McNemar, $n = 300$ trials): every peer message is excluded by the Round-0 confidence filter in $100\%$ of trials, rendering C5 functionally a solo condition; the protocol as configured strips its own input.
+The homogeneous condition is close to drawing three samples of the same
+model and taking a majority vote: the three agents agree strongly (Cohen's
+$\kappa = 0.72$, Appendix~\ref{ssec:dependence_app}), so it acts more as a
+sampling control than as a genuine debate.
 
 \begin{table*}[t]
 \centering
 \small
-\caption{Per-condition accuracy and flip rates. $\Delta$ = Round-1 vs.\ C1 solo; C$\to$I = harmful-flip rate; I$\to$C = correction rate; S = smart; D = weak (dumb) agent.\label{tab:conditions}}
-\begin{tabular}{@{}llllllllll@{}}
+\caption{Per-condition accuracy and flip rates for the two primary focal
+models, on the full 300-question pool. $\Delta$ = accuracy vs.\ solo (C1);
+C$\to$I = correct-to-incorrect (harmful) flip rate; I$\to$C =
+incorrect-to-correct (correction) rate; both conditional on the round-0
+answer. Dashes mark conditions not run for that model.\label{tab:conditions}}
+\begin{tabular}{@{}lllllcllll@{}}
 \toprule
- & & \multicolumn{4}{c}{\textit{DeepSeek-v4-flash} ($N=1{,}500$)} &
-       \multicolumn{3}{c}{\textit{GPT-4o-mini} ($N=250$)} \\
-\cmidrule(lr){3-6} \cmidrule(lr){7-9}
-Cond. & Peers & R1 (\%) & $\Delta$ (pp) & C$\to$I (\%) & I$\to$C (\%) &
-                R1 (\%) & C$\to$I (\%) & I$\to$C (\%) \\
+ & \multicolumn{4}{c}{\textit{DeepSeek-chat}} & &
+      \multicolumn{4}{c}{\textit{GPT-4o-mini}} \\
+\cmidrule(lr){2-5} \cmidrule(lr){7-10}
+Cond. & R1 & $\Delta$ & C$\to$I & I$\to$C & &
+        R1 & $\Delta$ & C$\to$I & I$\to$C \\
 \midrule
-C1 & Solo        & 76.2 & ---    & ---  & ---  & 64.8 & ---  & ---  \\
-SC3\textsuperscript{$\ddagger$} & C2 R0 majority-vote-of-3 & 76.8 & $+$0.6 & --- & --- & --- & --- & --- \\
-C2 & 3S + 0D     & 78.7 & $+$2.5 & 5.0  & 27.5 & 66.8 & 5.8  & 21.3 \\
-C3 & 2S + 1D     & 78.3 & $+$2.1 & 6.0  & 28.5 & 60.8 & 11.5 & 14.0 \\
-C4 & 1S + 2D     & 84.1 & $+$7.9 & 6.5  & 55.8 & 65.2 & 17.2 & 32.2 \\
-C5\textsuperscript{$\dagger$} & 1S + 2D + filter & 78.0 & $-$1.6\textsuperscript{$\dagger$} & 10.1 & 40.3 & ---  & ---  & ---  \\
+C1  & 76.2 & ---    & ---  & ---  & & 63.9 & ---    & ---  & ---  \\
+C1R & 77.2 & $+$1.0 & 3.3  & 13.9 & & 67.1 & $+$3.2 & 4.5  & 18.6 \\
+C2  & 78.7 & $+$2.5 & 5.0  & 27.5 & & 66.2 & $+$2.3 & 7.4  & 19.1 \\
+C3  & 78.3 & $+$2.1 & 6.0  & 28.5 & & 66.8 & $+$2.9 & 8.8  & 23.4 \\
+C4  & 84.1 & $+$7.9 & 6.5  & 55.8 & & 66.9 & $+$3.0 & 13.4 & 31.2 \\
+C4H & 75.8 & $-$0.4 & 10.3 & 30.2 & & ---  & ---    & ---  & ---  \\
+C5\textsuperscript{$\dagger$} & 82.7 & $+$6.5 & 7.9 & 52.1 & & --- & --- & --- & --- \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-{\footnotesize
-$^{\dagger}$C5: 100-question stratified subset $\times$ 3 replications ($N=300$); $\Delta$ = C5 vs.\ C4 on the matched subset, not C5 vs.\ C1.\\
-$^{\ddagger}$SC3: per-trial majority vote of the three C2 Round-0 answers before debate exchange; isolates debate revision from multi-sample aggregation.
-}
+{\footnotesize All values in \%. $N=1{,}500$ trials per cell.
+$^{\dagger}$C5 uses a 100-question subset ($N=300$); $\Delta$ vs.\ C1 on that
+subset.}
 \end{table*}
 
-%% ── 4.2 ──────────────────────────────────────────────────────────────────
-\subsection{Peer-count trend}
-\label{sub:doseresponse}
+\begin{table}[t]
+\centering
+\small
+\caption{Key contrasts (DeepSeek-chat, question-level paired McNemar).
+$\Delta$ = accuracy difference; $p$ Holm-corrected within the family.
+$^{\ast}$ significant at $\alpha=0.05$.\label{tab:stats}}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Contrast & $\Delta$ & $p$ \\
+\midrule
+Re-answer vs.\ solo (C1R--C1)         & $+0.3$ & $1.00$ \\
+Two wrong vs.\ re-answer (C4--C1R)    & $+6.7$ & $0.002^{\ast}$ \\
+Two wrong vs.\ honest (C4--C4H)       & $+7.3$ & $<0.001^{\ast}$ \\
+Honest vs.\ solo (C4H--C1)            & $-0.3$ & $1.00$ \\
+Perturbed math: two wrong vs.\ solo   & $+6.2$ & $0.07$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-The peer-count trend tests whether Round-1 accuracy varies
-monotonically with weak-peer count for each focal model.
-Figure~\ref{fig:doseresponse} shows Round-1 accuracy as a function of
-the number of weak peers, with the C1 solo accuracy plotted as a
-horizontal reference line.
-The peer-count trend for \textit{DeepSeek-v4-flash} is non-monotone
-in the accuracy dimension but strictly monotone in the
-C$\rightarrow$I flip dimension.
-A GEE logistic regression of Round-1 correctness on weak-peer count
-across C2--C4 ($n = 4{,}500$ trials in 300 question clusters) yields
-an odds ratio of $1.19$ ($[1.08, 1.31]$, $p = 6 \times 10^{-4}$) for
-\textit{DeepSeek-v4-flash}: each weak peer multiplies the odds of a
-correct Round-1 answer by $19\%$, the I$\rightarrow$C correction
-mechanism dominating.
-For \textit{GPT-4o-mini}, the same regression gives
-$\mathrm{OR} = 0.97$ ($[0.80, 1.16]$, $p = 0.71$, $n = 750$): the
-point estimate is below one but the cross-validation sample is too
-small to establish a dose-response.
+%% ── 4.2 ──────────────────────────────────────────────────────────────────
+\subsection{Causal controls: is the gain from the peers?}
+\label{sub:controls}
+
+Two controls test whether the accuracy gain under wrong peers really comes
+from the peers.
+In the re-answer control (C1R) the focal model revises with no peers in
+view.
+For DeepSeek-chat this leaves accuracy essentially unchanged from solo, and
+the difference is not significant (Table~\ref{tab:stats}).
+A second attempt alone therefore does not explain the gain.
+Adding two wrong peers on top of that same second attempt does move
+accuracy, and the two-wrong-peers vs.\ re-answer contrast is significant.
+The gain is driven by the peers, not by re-answering---the exact point
+raised in review.
+
+In the honest-peer control (C4H) the two weak models answer naturally
+instead of arguing a fixed wrong answer.
+They are then correct about half the time, and their answers form a mix of
+right, wrong, and split pairs.
+Accuracy is now indistinguishable from solo, and clearly below the
+two-wrong-peers condition (Table~\ref{tab:stats}).
+So the correction effect is specific to confidently wrong peers: honest
+weak peers neither help nor hurt the strong focal model.
+Within the honest condition the effect tracks composition---when both peers
+happen to be wrong, the focal model corrects itself far more often---which
+mirrors the anchored result.
+
+%% ── 4.3 ──────────────────────────────────────────────────────────────────
+\subsection{The split scales with focal strength}
+\label{sub:sweep}
+
+Repeating the solo, homogeneous, and two-wrong-peers conditions for eight
+focal models turns the two-model contrast into a trend.
+Every model kept its accuracy under two confidently wrong peers, and the
+stronger ones improved; none was significantly hurt.
+The harmful side, though, depends sharply on strength.
+Figure~\ref{fig:capability} plots each model's solo accuracy against its
+harmful-flip rate under two wrong peers.
+The two are strongly and negatively related: the weaker a focal model is on
+its own, the more often it drops a correct answer when wrong peers are
+present.
+This answers RQ2.
+The outcome of wrong-peer exposure is graded by focal strength---correction
+dominates for strong models, while weak models pay a large price in harmful
+flips even as their net accuracy holds.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]
-    {images/figure1_bandwagon_dose_response.png}
-  \caption{Round-1 accuracy vs.\ weak-peer count. Blue: \textit{DeepSeek-v4-flash} ($N{=}1{,}500$, 95\% CI); red: \textit{GPT-4o-mini} ($N{=}250$); dotted: C1 baselines.\label{fig:doseresponse}}
+  \includegraphics[width=\linewidth]{images/figure1_capability_corruption.png}
+  \caption{Across eight focal models, weaker models (lower solo accuracy)
+  drop a correct answer far more often under two confidently wrong peers.
+  Each point is one focal model.\label{fig:capability}}
 \end{figure}
+
+%% ── 4.4 ──────────────────────────────────────────────────────────────────
+\subsection{Confidence cannot filter weak peers}
+\label{sub:filter}
+
+With the confidence line restored to the persona prompt, weak peers now
+state a confidence in almost every message, so the filter can be tested
+properly.
+It still does not work, for the reason shown by the pre-flight tests
+(Table~\ref{tab:gate}).
+Weak peers report high confidence on nearly all answers, whether right or
+wrong, so the gap $\Delta$ is essentially zero and the AUROC of confidence
+against correctness is near chance.
+The old ``loud when wrong'' test passes---wrong peers are indeed loud---but
+the corrected test fails, because they are just as loud when correct.
+As a result the filter removes almost no peers, and the filtered condition
+is close to the unfiltered one (Table~\ref{tab:conditions}).
+Confidence-weighted filtering is therefore not usable here, and the
+corrected test predicts this before any filtering is run.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Corrected pre-flight test. $P(\text{loud}\mid\cdot)$ is the rate of
+high confidence; $\Delta$ their difference; AUROC of confidence vs.\
+correctness. Wrong-anchored peers are never correct, so no gap can be
+formed.\label{tab:gate}}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Peers & $P(\text{loud}\!\mid\!\text{wrong})$ & $P(\text{loud}\!\mid\!\text{correct})$ & AUROC \\
+\midrule
+Wrong-anchored & $0.99$ & --- & --- \\
+Honest weak    & $0.99$ & $1.00$ & $0.58$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ── 4.5 ──────────────────────────────────────────────────────────────────
+\subsection{The math gain is not memorisation}
+\label{sub:contam}
+
+The gain from wrong peers is largest on grade-school math.
+One worry is that the model has seen these problems in training.
+To check, we changed the numbers in the GSM8K items, recomputed the
+answers, and re-ran the solo and two-wrong-peers conditions.
+Accuracy drops on the harder, unfamiliar numbers, but the gain from wrong
+peers survives at a similar size (Table~\ref{tab:stats}).
+Because the effect holds on problems the model cannot have memorised, it is
+better explained by the model re-deriving the answer than by recall.
 
 %% ── 4.3 ──────────────────────────────────────────────────────────────────
 \subsection{Conformity signatures and a design limit}
@@ -533,62 +639,39 @@ A split-peer control (one wrong peer alongside one right peer) is the
 required follow-up to make this distinction and is deferred to future
 work.
 
-Within this design limit, the flip rate rises with weak-peer count in
-both focal models.
-For \textit{DeepSeek-v4-flash} the rise from 6.0\% in C3 to 6.5\% in C4
-is small and underpowered (Section~\ref{sub:accuracy}).
-For \textit{GPT-4o-mini} the rise from 11.5\% in C3 to 17.2\% in C4 is
-substantively large (Cohen's $h = 0.14$ on the C3-vs-C4 contrast,
-$p = 0.12$, post-hoc power $0.34$), and the C2-vs-C4 contrast is
-detectable at this sample size (Cohen's $h = 0.30$, $p = 0.001$,
-power $0.91$).
-The conformity-bias literature offers two related but non-isolable
-mechanisms that could account for the rise: sycophancy
-\citep{sharma2023towards} and the bandwagon effect under unanimous
-majorities \citep{asch1951effects,bond1996culture,koo2024benchmarking}.
-The present data are consistent with both being active but cannot
-distinguish them.
-Appendix~\ref{fig:asch} plots the flip rate by condition for both
-models.
-A complementary view of error structure: the C4 C$\rightarrow$I flips
-in \textit{DeepSeek-v4-flash} concentrate on discourse-heavy subjects
-(physics and law above 20\%, philosophy at 9.7\%) and rarely fire on
-items with arithmetic refutability (GSM8K at 2.4\%, biology at 1.1\%);
-Appendix~S9 reproduces two example trials (one resists the wrong
-peers, one succumbs) to make the per-trial mechanism inspectable.
-
-Direct numerical comparison with single-agent conformity benchmarks (CoBBLEr~\citep{koo2024benchmarking}, BenchForm~\citep{weng2025benchform}, SYCON-Bench~\citep{hong2025sycon}) is not straightforward: these benchmarks use honest peers or single-agent prompts, not adversarial wrong-anchored personas.
-The within-study peer-count gradient is the primary quantitative contribution; cross-benchmark harmonisation is deferred to future work.
+The harmful-flip rate rises with the number of wrong peers, and the rise is
+much steeper for the weaker model.
+For DeepSeek-chat the change across the ladder is small.
+For GPT-4o-mini, now measured on the full pool, it roughly doubles from the
+homogeneous to the two-wrong-peers condition (Table~\ref{tab:conditions};
+Appendix Figure~\ref{fig:asch}), a well-powered effect.
+Two mechanisms in the conformity literature could drive this---sycophancy
+\citep{sharma2023towards} and the bandwagon effect under a unanimous
+majority \citep{asch1951effects,koo2024benchmarking}---and the data are
+consistent with both.
+The honest-peer control helps separate them: there, peer pairs are often
+not unanimous, and the harmful flips concentrate on the trials where both
+peers are nonetheless wrong, which points to majority pressure rather than
+mere presence of a wrong answer.
+As a further check on mechanism, the harmful flips in DeepSeek-chat cluster
+on discourse-heavy subjects and rarely fire on arithmetic, where the answer
+can be re-derived (Appendix~S8); Appendix~S9 shows two example trials.
 
 
-%% ── 4.4 ──────────────────────────────────────────────────────────────────
-\subsection{Cross-model comparison and subject-level variation}
+%% ── 4.6 ──────────────────────────────────────────────────────────────────
+\subsection{Where the correction helps most}
 \label{sub:crossmodel}
 
-The \textit{GPT-4o-mini} results confirm that the qualitative outcome
-of weak-peer exposure depends on focal-model strength: Round-1 accuracy
-falls 4.0~pp in C3 for the weaker focal model and the C$\rightarrow$I
-flip rate reaches 17.2\% in C4, nearly three times the value for
-\textit{DeepSeek-v4-flash}.
-
-Within \textit{DeepSeek-v4-flash}, the headline C4 gain is not uniform
-across the question pool.
-Split by source dataset, the C4 Round-1 accuracy is 79.9\% on the 200
-MMLU-Pro multiple-choice items (vs.\ 76.0\% in C1, $+$3.9~pp) and 92.6\%
-on the 100 GSM8K free-form math problems (vs.\ 76.6\% in C1, $+$16.0~pp).
-The C4 gain is therefore concentrated on GSM8K.
-A GEE logistic regression of Round-1 correctness on
-$\text{dumb\_count} \times \text{is\_gsm8k}$ (clustered by question,
-$n = 4{,}500$) returns an interaction odds ratio of $1.61$
-($95\%$ CI $[1.30, 1.99]$, $p \approx 10^{-5}$): each additional
-weak peer multiplies the odds of a correct Round-1 answer by $1.61$
-times \emph{more} on GSM8K than on MMLU-Pro.
-The main effect of \texttt{dumb\_count} on MMLU-Pro alone (i.e. the
-\texttt{dumb\_count} coefficient at $\text{is\_gsm8k} = 0$) is
-$\mathrm{OR} = 1.03$ ($[0.94, 1.13]$, $p = 0.56$): when source is
-controlled, the per-peer effect on multiple-choice items is
-statistically null. Weak-peer messages on numeric word problems supply the focal agent with alternative working that can be re-checked arithmetically, while ten-option multiple choice gives a smaller margin for the same mechanism.
-The C$\rightarrow$I flip rate is $6.4\%$ on MMLU-Pro items but only $1.8\%$ on GSM8K items; subject-level variation within MMLU-Pro is wide, with physics and law above $20\%$ and biology below $4\%$ (Appendix~S8, with the multiple-testing caveat noted there).
+For DeepSeek-chat the correction is not uniform across the pool.
+It is large on the grade-school math problems and much smaller on the
+ten-option multiple-choice items; a source-by-condition regression confirms
+the per-peer effect is far stronger on math and is not distinguishable from
+zero on multiple choice once source is controlled.
+The likely reason is that a wrong numeric answer can be checked by working
+the problem again, whereas a wrong multiple-choice letter gives less to
+recompute.
+This fits the contamination result above: the effect lives where the answer
+can be re-derived.
 
 Two auxiliary analyses in
 Appendix~\ref{ssec:dependence_app}---pairwise Cohen's $\kappa$ on
@@ -604,111 +687,78 @@ any (model, round) combination.
 \label{sec:discussion}
 %% ═════════════════════════════════════════════════════════════════════════
 
-The \textit{DeepSeek-v4-flash} result runs against the dominant
-prediction of the prior multi-agent debate literature.
-\citet{du2023improving} report debate gains under homogeneous peers
-driven by aggregation of correct arguments;
-\citet{koo2024benchmarking,sharma2023towards} document conformity and
-sycophancy under single-agent wrong-position prompting.
-The natural prediction is that confidently-wrong peer messages
-degrade focal accuracy.
-The opposite holds here for the stronger focal model: the
-I$\rightarrow$C signal from wrong-anchored peer Round-0 messages
-($55.8\%$ in C4) outweighs the C$\rightarrow$I conformity signal
-($6.5\%$).
-The mechanism is not generic ``peer wisdom'': it operates via
-arithmetic recomputation on GSM8K
-(Section~\ref{sub:crossmodel}), so wrong peers cue the focal toward
-its R0-incorrect questions where fresh recomputation can land on the
-correct answer.
+The main result runs against the simple prediction of the debate
+literature.
+\citet{du2023improving} report gains from pooling correct arguments among
+equal peers, while \citet{koo2024benchmarking,sharma2023towards} document
+conformity and sycophancy when a single model is told a wrong position.
+One would then expect confidently wrong peers to lower accuracy.
+For strong focal models the opposite holds: the correction outweighs the
+conformity, because a wrong peer prompts the focal model to work the
+problem again rather than to copy.
+The two controls show this is neither a second-attempt artefact nor a
+generic peer effect---it is specific to confidently wrong peers---and the
+contamination probe shows the recomputation is real, not recall.
 
-\textit{GPT-4o-mini} fits the prior literature more conventionally:
-its C$\rightarrow$I rate of $17.2\%$ in C4 is roughly one in six of
-its R0-correct trials and the net accuracy effect is null.
-The divergence is consistent with a focal-strength-dependent
-threshold, but $n = 2$ focal models is too narrow to establish one.
+The sweep places this on a scale rather than on two points.
+As focal ability falls, the correction shrinks and the harmful flips grow,
+so the same exposure that helps a strong model can hurt a weak one.
+This suggests a practical rule: mixed-ability ensembles are safe only when
+the answering model is already strong.
 
-On mitigation, confidence-weighted peer filtering is unavailable
-here: a filter on either round lacks usable signal
-(Section~\ref{sub:protocol},
-Appendix~\ref{ssec:dependence_app}), so mitigations relying on
-externally verified peer accuracy---held-out calibration sets or
-architecturally distinct verifier models---are required instead.
+Confidence-weighted filtering does not provide that safety.
+Even with confidence properly elicited, a weak peer sounds equally sure
+when right and when wrong, so no threshold separates the two.
+Mitigations that rely on externally verified peer quality---held-out
+calibration sets, or verifier models trained for the task---are needed
+instead.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section{Conclusion}
 \label{sec:conclusion}
 %% ═════════════════════════════════════════════════════════════════════════
 
-In a controlled exposure of a strong focal LLM to adversarially
-anchored wrong-peer messages, \textit{DeepSeek-v4-flash} gains
-$7.9$ percentage points in post-debate accuracy under two wrong
-peers ($p = 0.017$ Holm-corrected), concentrated on GSM8K
-(interaction $\mathrm{OR} = 1.61$) and driven by fresh arithmetic
-recomputation; \textit{GPT-4o-mini}'s rate of flipping a correct
-answer to an incorrect one nearly triples ($5.8\%$ to $17.2\%$)
-without a detectable accuracy change.
-The homogeneous-debate condition's lift over solo is not detectable
-above multi-sample aggregation, and a confidence-weighted peer
-filter strips all peer messages because weak peers do not produce a
-usable confidence signal; the originally specified pre-flight gate
-is misspecified, and a corrected gate predicts the filter failure.
+When a strong language model debates weaker peers that argue confidently
+for wrong answers, it does not lose accuracy; it tends to gain, because the
+wrong answers make it reconsider and recompute.
+Two controls show the gain comes from the peers, not from a second attempt,
+and is specific to confidently wrong peers rather than to honest weak ones.
+Across eight focal models the outcome is graded by strength: correction for
+the strong, and a rising cost of harmful flips for the weak.
+Confidence-weighted peer filtering, a proposed fix, still fails once its
+faults are repaired, because weak peers report high confidence whether they
+are right or wrong; a corrected pre-flight test predicts this in advance.
 
 %% ─────────────────────────────────────────────────────────────────────────
 \section*{Limitations}
 \label{sec:limitations}
 
-\paragraph{C2 is empirically a sampling control, not a debate test.}
-All three smart agents in C2 (and the two smart agents in C3) are
-\textit{DeepSeek-v4-flash} instances; pairwise Cohen's $\kappa$ on
-their Round-0 correctness is $0.72$ (Appendix~\ref{ssec:dependence_app}),
-so C2 conflates debate-based revision with intra-model
-self-consistency on highly correlated samples.
-The SC3 baseline in Table~\ref{tab:conditions} reuses C2's system
-prompt and its \textit{Agent\_Alpha / Beta / Gamma} role markers, so
-it does not isolate pure solo sampling either.
-A heterogeneous-smart-agent control with three architecturally
-distinct focal models, plus a clean three-temperature-draw solo
-control under the C1 prompt, is the highest-priority follow-up.
+\paragraph{Wrong-anchored peers are one part of the space.}
+The main conditions use weak peers guided to argue a fixed wrong answer, so
+they are confident distractors, not natural low-ability output.
+The honest-peer control covers the natural case and shows the correction is
+specific to confidently wrong peers.
+Still, both extremes are stylised; real ensembles will fall in between, and
+the mixture of confident-wrong and honest peers is not swept here.
 
-\paragraph{Wrong-peer unanimity is not isolated.}
-In every heterogeneous trial of this experiment the dumb-peer
-consensus was unanimously wrong; the design does not separate
-unanimity-driven conformity pressure from generic wrong-peer
-distractor effects (Section~\ref{sub:asch}).
-A split-peer condition (one wrong peer alongside one correct peer) is
-required.
+\paragraph{Homogeneous debate is close to sampling.}
+The three agents in the homogeneous condition are instances of one model
+and agree strongly (Cohen's $\kappa = 0.72$), so that condition behaves more
+like drawing several samples than like a debate between different models.
+A debate among architecturally distinct strong models is left to future
+work.
 
-\paragraph{Persona-anchored dumb agents.}
-Dumb-agent Round-0 responses are generated from a persona prompt that
-pre-assigns one specific wrong answer per trial.
-Their Round-0 correctness is therefore zero by design (0 of $5{,}850$
-trials), and their Round-0 messages should be read as adversarial
-distractors rather than as low-capability outputs of these models.
-The behavioural findings transfer to deployment settings in which
-weak peers produce confidently wrong output; they do not transfer to
-settings in which weak peers respond honestly without anchoring.
-
-\paragraph{Two focal models, binary correctness, contaminated benchmarks.}
-The opposite-signed-outcome finding rests on $n = 2$ focal models; a
-wider focal-model sweep is required to establish whether the
-qualitative outcome is predictable from any single capability metric.
-The dependent variable is per-trial binary correctness on
-multiple-choice and numeric-answer items; open-ended generation
-tasks have richer error structures that this design does not address.
-\textit{MMLU-Pro} and \textit{GSM8K} appear in the pretraining
-corpora of contemporary LLMs, so per-condition accuracies should be
-read as conditional on these specific item sets;
-constructed-from-scratch hold-out items would be required to rule
-out contamination as a partial driver of the focal-agent baseline.
+\paragraph{Binary correctness on two benchmarks.}
+The outcome is per-trial correctness on multiple-choice and numeric items;
+open-ended generation, with its richer error structure, is not covered.
+The contamination probe addresses memorisation on the math items, but a
+fully held-out benchmark would strengthen the point further.
 
 \paragraph{Behavioural, not mechanistic.}
-Both focal models are accessed via commercial APIs; this study
-reports the behavioural-level effect of peer composition on
-focal-agent outcomes, not the representation-level mechanism.
-Attribution to sycophancy or the bandwagon effect as named cognitive
-processes requires either probing of open-weights focal models or
-the split-peer design noted above.
+Most focal models are accessed through APIs, so we report the behavioural
+effect of peer composition, not the internal mechanism.
+Confirming sycophancy or the bandwagon effect at the representation level
+would need probing of open-weight focal models.
 
 %% ─────────────────────────────────────────────────────────────────────────
 \section*{Ethical Considerations}
@@ -727,16 +777,21 @@ The findings describe a failure mode of confidence-based peer
 filtering and should not be used to justify deployment of mixed-
 capability ensembles in high-reliability settings without externally
 verified peer-quality signals.
-The compute footprint is API-based and modest (approximately
-\$10--\$15 of inference cost across all conditions, no GPU training);
+The compute footprint is API-based and modest (well under \$100 of
+inference across all conditions and eight focal models, no GPU training);
 the carbon impact is correspondingly small.
 
 %% ─────────────────────────────────────────────────────────────────────────
 \section*{Reproducibility}
 \label{sec:repro}
 
-All experimental artefacts---per-trial log (\texttt{trial\_log.parquet}, 35{,}050~rows), consolidated answers (\texttt{final\_answers.parquet}, 7{,}300~rows), the question pool, persona files, and two analysis scripts that reproduce every reported number---will be released as an anonymised repository for review and deposited at Zenodo on acceptance.
-Full model snapshots, random seeds, answer-extraction details, and compute cost are in Appendix~\ref{ssec:repro_app}.
+All artefacts are released now, not on acceptance: the full pipeline, all
+prompts, the question pool, the persona files, the per-trial logs, and the
+scripts that reproduce every number and figure in this paper.
+An anonymised copy is provided for review.\footnote{Anonymised repository:
+\url{https://anonymous.4open.science/r/platos-ship}.}
+Model snapshots, random seeds, and answer-extraction details are in
+Appendix~\ref{ssec:repro_app}.
 
 %% ─────────────────────────────────────────────────────────────────────────
 % Acknowledgements are typically redacted in the anonymous review version.
@@ -798,7 +853,7 @@ $\Delta$ vs C1 on the full pool.}
 The McNemar test comparing C1 and C4 at the question level uses the
 contingency matrix below, derived from 300 questions ($\times$~5
 replications, majority-vote per question, for the focal
-\textit{DeepSeek-v4-flash}):
+\textit{DeepSeek-chat}):
 
 \[
 \begin{array}{l|cc}
@@ -873,6 +928,16 @@ In Round 1, where the debate context contains explicit confidence
 lines from smart-agent peers, dumb agents emit a confidence integer in
 $78.7\%$ of trials (4{,}606 of 5{,}850); this is the source of the
 4{,}146-row substrate used in the gate computation above.
+
+Both faults were then repaired.
+The persona prompt was extended to ask for a confidence line, so weak peers
+now state a confidence in Round~0 as well, and the filter was re-run on
+this corrected substrate and on the honest-peer condition.
+The outcome is reported in Section~\ref{sub:filter}: the filter still
+removes almost no peers, because confidence does not separate right from
+wrong answers even when it is present.
+The corrected discriminative-gap test predicts this failure in advance,
+whereas the original loud-when-wrong test does not.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \clearpage
@@ -993,7 +1058,7 @@ based on your own reasoning.)''}
 When regex extraction of the final-answer line fails, a three-tier
 judge cascade is invoked: \textit{Gemini~2.0~Flash} (primary, 4-key
 round-robin), \textit{Mistral~Small} (secondary),
-\textit{DeepSeek-v4-flash} (tertiary).
+\textit{DeepSeek-chat} (tertiary).
 Each judge receives the raw response text, the question, and the
 answer schema and is asked to extract a single final answer or to
 emit the literal token \texttt{UNPARSEABLE}.
@@ -1086,7 +1151,7 @@ without persona anchoring is not measured in this study.
 %% ═════════════════════════════════════════════════════════════════════════
 
 Figure~\ref{sfig:subjects} shows the C$\rightarrow$I flip rate in C4
-broken down by subject domain for \\textit{DeepSeek-v4-flash}.
+broken down by subject domain for \\textit{DeepSeek-chat}.
 Domains requiring symbolic manipulation (mathematics, engineering) exhibit
 lower flip rates than those involving contested or judgment-intensive
 content (law, health, history), consistent with the hypothesis that the
@@ -1097,7 +1162,7 @@ immediately verifiable from first principles.
   \centering
   \includegraphics[width=0.72\linewidth]
     {images/figure3_subject_flip_rate.png}
-  \caption{C$\to$I flip rate by MMLU-Pro subject and GSM8K in C4 (\textit{DeepSeek-v4-flash}); error bars: 95\% bootstrap CI.\label{sfig:subjects}}
+  \caption{C$\to$I flip rate by MMLU-Pro subject and GSM8K in C4 (\textit{DeepSeek-chat}); error bars: 95\% bootstrap CI.\label{sfig:subjects}}
 \end{figure}
 
 %% ═════════════════════════════════════════════════════════════════════════
@@ -1108,7 +1173,7 @@ immediately verifiable from first principles.
 The two example trials below are pulled verbatim from
 \texttt{trial\_log.\allowbreak parquet} via
 \texttt{Submission/\allowbreak Analyse/\allowbreak round2\_analyses.py}.
-Both are C4 trials for the \textit{DeepSeek-v4-flash} focal agent.
+Both are C4 trials for the \textit{DeepSeek-chat} focal agent.
 Raw response text is truncated to the final 220 characters of each
 response to fit the page; full text is in the released parquet.
 
@@ -1180,7 +1245,7 @@ While childhood is a particularly sensitive period, \ldots''\\
 Final answer: \textbf{I}, Confidence: 70. \emph{Flipped correct
 ($F$) $\to$ incorrect ($I$); confidence dropped from 85 to 70.}
 The confidence trajectory in this trial ($85 \to 70$) is below the
-across-trials mean confidence for \textit{DeepSeek-v4-flash} in C4
+across-trials mean confidence for \textit{DeepSeek-chat} in C4
 ($96.1$ in Round-0, $97.2$ in Round-1; see Section~8 of this
 supplement); this example is selected to illustrate the mechanism on
 a trial where the focal entered the debate with mild rather than
@@ -1195,7 +1260,7 @@ peer-stated reasoning omits the prenatal-influence content the focal
 had identified in Round~0.
 Across the full pool, this pattern accounts for the 6.5\%
 C$\rightarrow$I rate observed in C4 for
-\textit{DeepSeek-v4-flash}.
+\textit{DeepSeek-chat}.
 
 %% ═════════════════════════════════════════════════════════════════════════
 \section*{S10. Persona-style flip-rate ablation}
@@ -1243,11 +1308,11 @@ Cond. / focal & Style & $n$ & C$\to$I \% [CI] \\
 \bottomrule
 \end{tabular}
 \\[1pt]
-{\scriptsize DS = \textit{DeepSeek-v4-flash}; GPT = \textit{GPT-4o-mini};
+{\scriptsize DS = \textit{DeepSeek-chat}; GPT = \textit{GPT-4o-mini};
 $n$ = R0-correct trials.}
 \end{table}
 
-For \textit{DeepSeek-v4-flash} in C4 the spread across the four
+For \textit{DeepSeek-chat} in C4 the spread across the four
 styles is $3.2$~pp ($4.6\%$ to $7.8\%$); the $95\%$ CIs of all four
 styles overlap.
 For \textit{GPT-4o-mini} in C4 the spread is larger ($11.6$~pp;
@@ -1280,7 +1345,7 @@ Cohen's $\kappa$ on Round-0 correctness, computed pairwise within
 each condition over the same (question, replication) trials,
 quantifies whether peer agents supply independent or correlated
 signal about question correctness.
-In C2 (three \textit{DeepSeek-v4-flash} instances), the three
+In C2 (three \textit{DeepSeek-chat} instances), the three
 pairwise $\kappa$ values are tightly clustered around $0.72$:
 $0.73$, $0.72$, $0.71$ ($95\%$ bootstrap CIs all contained in
 $[0.66, 0.77]$).
@@ -1311,7 +1376,7 @@ Llama, $n = 2{,}400$), with mean confidence on correct versus wrong
 responses of $98.6/97.3$ and $96.5/92.3$ respectively---the gap
 between conditional means is 1.3 to 4.2 points on a 0-to-100 scale.
 For the smart focal agents, AUROC is $0.60$ ($[0.59, 0.62]$,
-\textit{DeepSeek-v4-flash}~R1) and $0.67$ ($[0.62, 0.71]$,
+\textit{DeepSeek-chat}~R1) and $0.67$ ($[0.62, 0.71]$,
 \textit{GPT-4o-mini}~R1), also near chance.
 Confidence carries some weak signal across all models, but the gap
 is too small to drive a binary filter at any threshold.
@@ -1347,7 +1412,7 @@ text.
 %% ═════════════════════════════════════════════════════════════════════════
 
 \paragraph{Models and snapshots.}
-The smart focal agent is \textit{DeepSeek-v4-flash} served under the
+The smart focal agent is \textit{DeepSeek-chat} served under the
 \texttt{deepseek-chat} alias by the DeepSeek direct API; the
 cross-validation focal agent is \textit{GPT-4o-mini} served as
 \texttt{openai/\allowbreak gpt-4o-mini} via OpenRouter.
@@ -1357,7 +1422,7 @@ The dumb agents are \textit{Llama~3.1~8B Instruct}
 (\texttt{google/\allowbreak gemma-3-4b-it}), both via OpenRouter.
 The answer-extraction judge cascade uses \textit{Gemini~2.0~Flash}
 (primary, 4-key round-robin), \textit{Mistral~Small} (secondary),
-and \textit{DeepSeek-v4-flash} (tertiary).
+and \textit{DeepSeek-chat} (tertiary).
 Model snapshots are aliases served by the respective APIs at the
 time of the experiment (2026-05-03 to 2026-05-04 UTC);
 \texttt{experiment\_metadata.json} records the served model strings
