@@ -261,6 +261,17 @@ class TrialRunner:
                     persona_text = self._get_persona(question["question_identifier"], trial_index, j, rng, pool=pool)
                     anchor = "wrong"
 
+                # HARD GUARD: an anchored/split peer without a persona must fail
+                # LOUDLY. Silently letting the weak model answer honestly changes
+                # the experimental condition (this is exactly how E6's C4 first
+                # ran with honest peers). Fail the trial; do not corrupt the design.
+                if peer_mode in ("anchored", "split") and persona_text is None:
+                    raise ValueError(
+                        f"No validated persona for question '{question['question_identifier']}' "
+                        f"(peer_mode={peer_mode}, slot={j}, condition={condition_id}). "
+                        f"Generate personas for this question pool before running this condition."
+                    )
+
                 agents.append({
                     "identifier": f"Agent_Dumb_{j+1}",
                     "role": "dumb",
@@ -329,13 +340,16 @@ class TrialRunner:
         aggregation_rule = cond_config.get("aggregation_rule", "none")
 
         correct_answer = str(question["correct_answer"]).strip()
-        agents = self._build_agents_for_condition(condition_id, question, trial_index, focal_agent_name)
 
         # Thread-local accumulators; merged into shared state under lock at the end.
         _trial_rows_local = []
         _final_rows_local = []
 
         try:
+            # Build agents inside the try so guard violations (e.g. a missing
+            # anchored persona) fail THIS trial cleanly instead of the worker.
+            agents = self._build_agents_for_condition(condition_id, question, trial_index, focal_agent_name)
+
             # Round 0
             r0_responses = run_round0(agents, question, self.judge_cascade)
 

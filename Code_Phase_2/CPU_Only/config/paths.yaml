@@ -18,6 +18,7 @@ huggingface_cache_directory: ~/.cache/huggingface
 # ── Phase 2 additional artefacts ───────────────────────────────────────────
 correct_anchored_personas_file: ./data/processed/correct_anchored_personas.parquet
 confidence_personas_file: ./data/processed/confidence_personas.parquet
+perturbed_personas_file: ./data/processed/perturbed_personas.parquet
 perturbed_gsm8k_pool_file: ./data/processed/perturbed_gsm8k_pool.parquet
 corrected_calibration_gate_report_file: ./data/outputs/corrected_calibration_gate_report.parquet
 capability_sweep_summary_file: ./data/outputs/capability_sweep_summary.parquet

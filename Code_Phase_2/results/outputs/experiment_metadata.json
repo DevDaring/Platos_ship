@@ -1,13 +1,8 @@
 {
   "phase": 2,
-  "run_timestamp_utc": "2026-07-10T17:17:43.730768",
+  "run_timestamp_utc": "2026-07-11T16:51:25.108763",
   "random_seed_value": 20260502,
   "experiments_run": [
-    "E1_solo_reanswer",
-    "E2_honest_peers",
-    "E3_confidence_filter_rerun",
-    "E4_focal_sweep",
-    "E5_gpt4o_full_pool",
     "E6_perturbed_gsm8k"
   ],
   "smart_agents": {
@@ -22,40 +17,15 @@
   },
   "dumb_agents": {
     "llama_3_1_8b_instruct": {
-      "provider": "openrouter",
+      "provider": "openrouter+fallback",
       "model": "meta-llama/llama-3.1-8b-instruct"
     },
     "gemma_3_4b_instruct": {
-      "provider": "openrouter",
+      "provider": "openrouter+fallback",
       "model": "google/gemma-3-4b-it"
     }
   },
-  "sweep_focal_agents": {
-    "sweep_llama_3_1_70b": {
-      "provider": "openrouter",
-      "model": "meta-llama/llama-3.1-70b-instruct"
-    },
-    "sweep_qwen_2_5_72b": {
-      "provider": "openrouter",
-      "model": "qwen/qwen-2.5-72b-instruct"
-    },
-    "sweep_gemma_3_27b": {
-      "provider": "openrouter",
-      "model": "google/gemma-3-27b-it"
-    },
-    "sweep_mistral_small": {
-      "provider": "openrouter",
-      "model": "mistralai/mistral-small-3.2-24b-instruct"
-    },
-    "sweep_llama_3_1_8b_focal": {
-      "provider": "openrouter",
-      "model": "meta-llama/llama-3.1-8b-instruct"
-    },
-    "sweep_gemma_3_4b_focal": {
-      "provider": "openrouter",
-      "model": "google/gemma-3-4b-it"
-    }
-  },
+  "sweep_focal_agents": {},
   "heterogeneous_agents": {},
   "note_deepseek_alias": "deepseek-chat alias retires 2026-07-24; pin deepseek-v4-flash for later runs."
 }

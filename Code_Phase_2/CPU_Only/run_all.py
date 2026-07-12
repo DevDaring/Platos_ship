@@ -239,7 +239,27 @@ def run(project_root: Path, selected: Optional[List[str]], priorities: Optional[
         )
 
     if need_perturbed and not analyse_only:
-        build_perturbed_gsm8k_pool(project_root, verify_agent=weak_probe, dry_run=dry_run)
+        perturbed_pool_df = build_perturbed_gsm8k_pool(project_root, verify_agent=weak_probe, dry_run=dry_run)
+        # E6's C4 uses WRONG-ANCHORED peers, identical in format to the main
+        # Phase-1 pool (no confidence line). Perturbed questions have new IDs,
+        # so they need their own persona pool — without this, _get_persona
+        # would find nothing and the runner must NOT silently degrade to
+        # honest peers (guarded in trial_runner).
+        perturbed_personas_df = generate_all_personas(
+            project_root, weak_probe, dry_run=dry_run,
+            anchor_mode="wrong", output_path_key="perturbed_personas_file",
+            questions_df=perturbed_pool_df, include_confidence_line_override=False,
+        )
+        perturbed_personas_df = validate_and_regenerate(
+            perturbed_personas_df, weak_probe, perturbed_pool_df,
+            max_regeneration_attempts=1 if dry_run else 3, project_root=project_root,
+            output_path_key="perturbed_personas_file",
+            include_confidence_line=False, anchor_mode="wrong",
+        )
+        # Merge into the runner's anchored pool so perturbed C4 finds personas.
+        personas_df = pd.concat([personas_df, perturbed_personas_df], ignore_index=True)
+        logger.info(f"Merged {len(perturbed_personas_df)} perturbed personas into the anchored pool "
+                    f"({len(personas_df)} total).")
 
     write_metadata(project_root, paths, agents, exp, to_run)
 

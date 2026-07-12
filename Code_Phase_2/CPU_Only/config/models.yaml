@@ -80,15 +80,23 @@ smart_agents:
         model_slug: openai/gpt-4o-mini
 
 # ── Weak (dumb) peers — persona-anchored or honest ─────────────────────────
+# These power both persona generation and the debate peers. nano-gpt fallback
+# recovers when OpenRouter's tiny-model routing is slow/rate-limited upstream.
 dumb_agents:
   llama_3_1_8b_instruct:
     provider: openrouter          # tiny models are cheapest on aggregators
     model_slug: meta-llama/llama-3.1-8b-instruct
     role_class: weak
+    fallbacks:
+      - provider: nanogpt
+        model_slug: meta-llama/llama-3.1-8b-instruct
   gemma_3_4b_instruct:
     provider: openrouter
     model_slug: google/gemma-3-4b-it
     role_class: weak
+    fallbacks:
+      - provider: nanogpt
+        model_slug: google/gemma-3-4b-it
 
 # ── Focal-model sweep (Experiment E4): 6 extra open-weight focals ──────────
 # Reduced protocol per model (C1, C2, C4). Route each to its cheapest source.
