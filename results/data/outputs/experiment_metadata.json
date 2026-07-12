@@ -1,7 +1,7 @@
 {
   "experiment_run_universal_unique_identifier": "477ec5c4-65d1-474d-9000-88440be70ed5",
   "git_commit_hash_at_run_start": "d2e27fde54cad4a506259ca1a0c00188f27b77a6",
-  "python_interpreter_path": "/home/debz/venv/bin/python3",
+  "python_interpreter_path": "python3",
   "package_versions": {
     "torch": "2.11.0+cu130",
     "transformers": "4.46.0",

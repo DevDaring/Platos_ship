@@ -50,3 +50,5 @@ Submission/.build/
 *.toc
 # ── Paper drafts — keep OFF GitHub (private) ──
 Submission/
+
+results/logs/

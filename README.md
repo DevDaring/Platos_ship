@@ -1,586 +1,141 @@
-# Plato's Ship - Capability-Asymmetric LLM Debate Study
+# Plato's Ship — Capability-Asymmetric Multi-Agent LLM Debate
 
-A fully reproducible research pipeline that measures how a strong LLM
-focal agent's reasoning changes when it is forced to debate with
-capability-weaker ("dumb") peer agents, and whether a confidence-weighted
-peer-filtering rule is available as a mitigation.
+A fully reproducible research pipeline that measures what happens to a strong
+language model — the **focal model** — when it debates weaker peers that argue
+confidently for wrong answers, and whether a confidence-weighted peer filter
+can remove those bad peers.
 
-Named after Plato's ship-of-state metaphor: do unskilled crew members
-drag down a skilled navigator? The empirical answer reported in the
-accompanying paper is **focal-model-dependent on flip dynamics, not
-on net accuracy** — DeepSeek-v4-flash gains +7.9 pp Round-1 accuracy
-under two adversarially-anchored weak peers (paired trial-level and
-question-level McNemar agree), while GPT-4o-mini's net accuracy is
-not statistically affected but its correct-to-incorrect flip rate
-rises threefold (5.8% to 17.2%) with weak-peer count.
-Confidence-weighted filtering is unavailable as a mitigation because
-weak agents emit no usable confidence signal.
+Named after Plato's ship-of-state metaphor: do unskilled crew drag down a
+skilled navigator? This repository contains the complete code, prompts,
+question pool, and per-trial logs behind the accompanying paper, so that every
+number and figure can be regenerated from scratch.
 
-The paper accompanying this repository (`Submission/CSR_Paper.tex` +
-`Submission/CSR_Supplement.tex`) targets ACL ARR; the prior CSR
-formatting is retained.
+> **Anonymity note.** This repository is prepared for double-blind review. It
+> contains no author names, institutions, or personal identifiers. The `.env`
+> holding API keys is never committed; copy `.env.example` and fill your own.
 
 ## Headline findings
 
-- **Trial total:** 7,300 across 5 conditions and 2 focal models.
-  Dataset: 200 MMLU-Pro + 100 GSM8K = 300 questions.
-- **DeepSeek-v4-flash, C4 (1 smart + 2 adversarial wrong-peer
-  distractors):** Round-1 accuracy rises from 76.2% solo to 84.1%
-  (+7.9 pp). Trial-level and question-level paired McNemar tests
-  agree: 33 questions move from incorrect in C1 to correct in C4
-  against 12 moving the other way (Holm-corrected p = 0.017). No
-  hidden subset regression.
-- **GPT-4o-mini cross-validation:** net accuracy effect is not
-  statistically detectable at n=250 per condition (C3 vs C1
-  Δ = −4.0 pp, 95% bootstrap CI [−12.4, +4.4]). The C→I flip rate,
-  however, rises significantly from 5.8% in C2 to 17.2% in C4
-  (Cohen's h = 0.30, p = 0.001, power 0.91), ~3× DeepSeek's.
-- **Self-consistency-of-3 baseline (free from C2's R0 samples):** the
-  C2 lift over the SC-3 baseline is +1.9 pp but is **not
-  statistically detectable** at n=1,500 (p = 0.22, h = 0.045). The
-  three smart agents in C2 are highly correlated (Cohen's κ = 0.72),
-  so by the correlated-rater approximation ESS = k/(1+(k-1)ρ) the
-  three samples behave like ~1.2 effective independent draws.
-- **C5 confidence-weighted filter strips 100% of peers** in every
-  trial. Two failure modes: (a) dumb agents emit no confidence
-  integer under the persona-anchored Round-0 prompt (0 of 5,850 R0
-  parses); (b) when they do emit one in Round-1, the conditional rates
-  P(conf≥60|wrong) = 0.995 and P(conf≥60|correct) = 0.998 differ by
-  -0.003, so confidence carries no discriminative signal. The
-  originally specified calibration gate metric is shown to be
-  misspecified.
-- **GSM8K drives the headline gain.** DeepSeek C4 on GSM8K: +16.0 pp.
-  On MMLU-Pro: +3.9 pp.
+Across ~37,000 trials on MMLU-Pro + GSM8K, with **eight focal models** spanning
+a wide capability range:
 
-The full attack-and-fix review for ACL ARR readiness is in
-`Submission/final_review.md`. Every numerical claim in the paper
-traces to one of the parquet artefacts in `results/data/outputs/` via
-`Submission/Analyse/free_analyses.py` or
-`Submission/Analyse/inter_agent_dependence.py`.
+- **Correction, not corruption, for strong models.** No focal model loses
+  accuracy under two confidently wrong peers, and the stronger ones gain (up to
+  +7.9 points). The wrong answers prompt the focal model to reconsider and
+  recompute rather than to copy.
+- **The gain is causal, and specific.** A *re-answering* control (revise with no
+  peers) reproduces none of the gain; two wrong peers beat it by a significant
+  margin. An *honest-peer* control (the same weak models answering naturally)
+  leaves accuracy at solo level. The effect is specific to confidently wrong
+  peers.
+- **The cost falls on the weak.** The rate at which a focal model drops a
+  correct answer under wrong peers rises steeply as its own ability falls
+  (Spearman ρ ≈ −0.95 across the eight models).
+- **Confidence cannot filter peers.** Even with confidence properly elicited,
+  weak peers sound equally confident when right and when wrong (AUROC ≈ 0.58),
+  so no threshold separates them. A corrected pre-flight test predicts this
+  before any filtering is run.
+- **Not memorisation.** The math gain survives when GSM8K numbers are perturbed
+  and answers recomputed, supporting the recomputation mechanism.
 
----
-
-## Table of Contents
-
-1. [Research Design](#1-research-design)
-2. [Architecture Overview](#2-architecture-overview)
-3. [Repository Layout](#3-repository-layout)
-4. [Prerequisites](#4-prerequisites)
-5. [First-Time Setup on a Fresh VM](#5-first-time-setup-on-a-fresh-vm)
-6. [Secrets - .env File](#6-secrets---env-file)
-7. [Configuration Files](#7-configuration-files)
-8. [Running the Pipeline](#8-running-the-pipeline)
-9. [SMS Notifications](#9-sms-notifications)
-10. [Output Files](#10-output-files)
-11. [Reproducing Results](#11-reproducing-results)
-12. [Cost Estimate](#12-cost-estimate)
-
----
-
-## 1. Research Design
-
-### Experimental Conditions
-
-| ID | Label | Smart | Dumb | Aggregation | Purpose |
-|----|-------|-------|------|-------------|---------|
-| C1 | `C1_smart_solo` | 1 | 0 | none | Baseline - solo, no debate |
-| C2 | `C2_three_smart` | 3 | 0 | standard debate | Homogeneous peer control |
-| C3 | `C3_two_smart_one_dumb` | 2 | 1 | standard debate | Plato condition |
-| C4 | `C4_one_smart_two_dumb` | 1 | 2 | standard debate | Capability-collapse |
-| C5 | `C5_one_smart_two_dumb_confidence_weighted` | 1 | 2 | confidence-weighted | Mitigation (gate-gated) |
-
-### Dataset
-
-- **MMLU-Pro** - 200 questions across 10 subjects (20/subject), stratified by difficulty
-- **GSM8K** - 100 grade-school math word problems, stratified by difficulty
-- Difficulty probe: Llama 3.1 8B zero-shot accuracy splits each subject 50/50
-
-### Trial Protocol
+## Repository layout
 
 ```
-Round 0 (independent):
-  Each agent answers alone.
-  Required format:
-    Final answer: <X>
-    Confidence: <0-100>
-
-Round 1 (debate):
-  Each agent sees peers' Round-0 responses (random order), then re-answers.
-
-C5 only: dumb peers with confidence < 60 are filtered from the focal
-         agent's context before Round 1.
+.
+├── src/                    # Phase-1 pipeline (main experiment C1–C4 + gate + C5)
+│   ├── agent_wrappers/     # API agent abstraction, round-robin keys, judge cascade
+│   ├── dataset_builder.py  # MMLU-Pro + GSM8K sampling, difficulty stratification
+│   ├── persona_generator.py / persona_validator.py   # wrong-anchored weak peers
+│   ├── debate_protocol.py / confidence_weighted_protocol.py
+│   ├── trial_runner.py     # resumable, checkpointed trial execution
+│   ├── calibration_gate.py # pre-flight test for the confidence filter
+│   └── metrics_calculator.py / statistical_analyzer.py
+├── config/                 # experiment.yaml, models.yaml, paths.yaml (no hardcoding)
+├── results/                # released per-trial logs + question/persona pools
+├── Code_Phase_2/           # follow-up experiments (self-contained)
+│   ├── CPU_Only/           # API-only: causal controls, honest peers, 8-model
+│   │                       #   sweep, corrected filter, contamination probe
+│   ├── GPU_Only/           # optional local logprob probe (vLLM)
+│   └── results/            # Phase-2 per-trial logs + analysis outputs
+├── requirements.txt
+└── .env.example            # copy to .env and fill API keys
 ```
 
-### Calibration Gate (Stage 2)
+`src/` + `config/` run the main experiment; `Code_Phase_2/CPU_Only/run_all.py`
+is a single entry point for the follow-up experiments. Both share the same
+question pool, seed, prompts, and schemas, so results are directly comparable.
 
-```
-Gate as implemented:
-  P(confidence >= 60 | wrong, dumb agent, condition in {C3,C4}) >= 0.40
-    -> PASS: run C5
-    -> FAIL: skip C5
+## Experimental conditions
 
-In this experiment the gate PASSED (metric = 0.995) but C5
-nonetheless stripped 100% of peer messages. The gate metric as
-specified is misspecified: it should test the discriminative gap
-  P(loud | wrong) - P(loud | correct)
-against a small positive threshold, not the absolute high-confidence
-rate. The observed gap is -0.003. A correctly-specified gate would
-have FAILED and Stage 3 would not have been run. See Section 3.4 of
-the paper and Submission/Analyse/free_analyses_output.json
-("calibration_by_dumb_model").
-```
+| Code | Focal | Weak peers | Purpose |
+|------|-------|-----------|---------|
+| C1   | 1 | 0                | solo baseline, no debate |
+| C1R  | 1 | 0 (own answer)   | control: is a gain just a second attempt? |
+| C2   | 3 | 0                | homogeneous debate (equal peers) |
+| C3   | 2 | 1 wrong-anchored | one confidently wrong peer |
+| C4   | 1 | 2 wrong-anchored | two confidently wrong peers |
+| C4H  | 1 | 2 honest         | control: wrong-anchored vs. natural peers |
+| C5   | 1 | 2 wrong + filter | confidence-weighted peer filtering |
 
-### Key Metrics
+Each trial has two rounds: every agent answers independently in Round 0, then
+sees the others' Round 0 messages and gives a final answer in Round 1 (the solo
+condition has no Round 1). Weak peers are two small open models (Llama-3.1-8B,
+Gemma-3-4B); in the wrong-anchored conditions a persona prompt makes them argue
+one assigned wrong answer, and in the honest control they answer naturally.
 
-- Round-0 and Round-1 accuracy per condition, per focal agent
-- Flip rates C→I (revision pressure) and I→C (correction signal)
-- Self-consistency-of-3 baseline derived from C2's Round-0 samples
-  (free, no extra API calls)
-- Inter-agent Cohen's κ on Round-0 correctness (how independent are
-  three "independent" smart-agent samples in C2?)
-- AUROC of self-reported confidence against correctness (peer-quality
-  signal usability)
-- Cohen's h effect size and post-hoc power for every paired
-  proportion comparison
-- Trial-level McNemar with Holm-Bonferroni correction over six
-  pairwise comparisons per focal agent
-- GEE logistic regression of R1 correctness on weak-peer count,
-  clustered by question identifier (accounts for the 5-replications-
-  per-question nesting)
-
----
-
-## 2. Architecture Overview
-
-```
-Smart agents (API)           Dumb agents (API)          Judge cascade (API)
--------------------          -----------------          -------------------
-DeepSeek  <-- focal          Llama 3.1 8B  }            Tier 1: Gemini 2.5 Flash
-GPT-4o-mini <-- cross-val    Gemma 3 4B    } OpenRouter  (4 keys, round-robin)
-                                                        Tier 2: Mistral Small
-                                                        Tier 3: DeepSeek (fallback)
-
-- Judge fires ONLY on regex parse failure
-- All calls: exponential backoff (2-4-8-16-32s + jitter, max 5 retries)
-- Key rotation: OpenRouter 2 keys, DeepSeek 2 keys, Gemini 4 keys
-- NO GPU. NO local model loading. Pure API pipeline.
-```
-
----
-
-## 3. Repository Layout
-
-```
-Platos_ship/
-+-- .env                          # Secrets - NEVER commit
-+-- .env.example                  # Template with blank values
-+-- .gitignore
-+-- README.md
-+-- CLAUDE.md                     # Orientation for future Claude Code sessions
-+-- requirements.txt
-+-- TextBelt.py                   # SMS notifier
-+-- coding_agent.md               # Full implementation spec (v2; historical)
-+-- config/
-|   +-- experiment.yaml           # Conditions, sizes, seeds
-|   +-- models.yaml               # Model registry + API params
-|   +-- paths.yaml                # All filesystem paths
-+-- src/
-|   +-- pipeline_orchestrator.py  # MAIN ENTRY POINT
-|   +-- trial_runner.py           # Core execution loop
-|   +-- debate_protocol.py        # C1-C4 Round-0 + Round-1
-|   +-- confidence_weighted_protocol.py  # C5 Round-1
-|   +-- dataset_builder.py        # Downloads + stratifies datasets
-|   +-- persona_generator.py      # 1500 dumb-persona texts via Llama API
-|   +-- persona_validator.py      # Validates + regenerates personas
-|   +-- calibration_gate.py       # Stage-2 gate logic
-|   +-- metrics_calculator.py     # Accuracy, flip rates, bootstrap CIs
-|   +-- statistical_analyzer.py   # McNemar, Bonferroni, dose-response
-|   +-- environment_check.py      # Pre-flight checks
-|   +-- agent_wrappers/
-|       +-- base_agent.py         # Abstract base + RoundRobinKeyManager
-|       +-- deepseek_agent.py
-|       +-- openrouter_agent.py   # GPT-4o-mini + Llama + Gemma
-|       +-- judge_agent.py        # 3-tier cascade
-|       +-- local_huggingface_agent.py  # Reference only; unused on CPU
-+-- dry_run/                      # Per-module smoke tests
-|   +-- run_all_dry_tests.py
-|   +-- test_api_connectivity.py  # Real ping to every provider
-|   +-- test_dataset_pipeline.py
-|   +-- test_persona_pipeline.py
-|   +-- test_debate_protocol.py
-|   +-- test_answer_extraction.py
-|   +-- test_judge_cascade.py
-|   +-- test_round_robin.py
-|   +-- test_metrics_and_stats.py
-|   +-- test_local_models.py
-+-- scripts/
-|   +-- run_environment_check.sh
-|   +-- run_dry_run.sh            # Mandatory before full run
-|   +-- run_main_experiment.sh    # Stage 1
-|   +-- run_calibration_gate.sh   # Stage 2
-|   +-- run_mitigation_experiment.sh  # Stage 3
-+-- tests/
-|   +-- dry_run_assertions.py
-+-- Submission/                   # ACL ARR submission bundle (LaTeX + analyses)
-|   +-- CSR_Paper.tex             # Main manuscript
-|   +-- CSR_Supplement.tex        # Supplement S1-S8
-|   +-- cover_letter.tex          # CSR cover letter (legacy)
-|   +-- highlights.tex            # 5 Elsevier highlights
-|   +-- references.bib            # 22 entries (some flagged in
-|   |                             #   bibliography_verification_log.md)
-|   +-- final_review.md           # Adversarial ACL ARR review (30 attacks)
-|   +-- generate_figures.py       # Builds the three PNGs in images/
-|   +-- images/                   # figure1-3 PNG renderings
-|   +-- Analyse/
-|       +-- analysis.md           # Narrative results doc
-|       +-- generate_analysis.py  # Loads parquets, prints every number
-|       +-- free_analyses.py      # SC-of-3, GEE, effect sizes,
-|       |                         #   difficulty/subject/dataset splits
-|       +-- free_analyses_output.json
-|       +-- inter_agent_dependence.py  # Cohen's kappa + AUROC
-|       +-- inter_agent_dependence_output.json
-+-- results/                      # Experiment artefacts (post-run)
-|   +-- data/
-|   |   +-- processed/            # question_pool, dumb_personas
-|   |   +-- outputs/              # trial_log, final_answers, metrics,
-|   |                             #   statistical_tests, calibration_gate,
-|   |                             #   mitigation_summary, experiment_metadata
-|   +-- logs/                     # pipeline.log, api_failures.log
-+-- data/                         # Runtime only - not in git
-+-- logs/                         # Runtime only - not in git
-```
-
----
-
-## 4. Prerequisites
-
-| Requirement | Value |
-|-------------|-------|
-| OS | Ubuntu 22.04 or 24.04 LTS (x86-64) |
-| VM | >= 8 vCPUs, >= 32 GB RAM (NO GPU needed) |
-| Python | 3.10, 3.11, or 3.12 |
-| Disk | >= 20 GB free |
-| Network | Outbound HTTPS to deepseek, openrouter, google, mistral, huggingface |
-
-### API Keys Required
-
-| Provider | Purpose | Keys |
-|----------|---------|------|
-| DeepSeek | Smart focal agent + tertiary judge | 2 (round-robin) |
-| OpenRouter | GPT-4o-mini + Llama 3.1 8B + Gemma 3 4B | 2 (round-robin) |
-| Gemini | Primary judge tier | 4 (round-robin) |
-| Mistral | Secondary judge tier | 1 |
-| HuggingFace | Dataset download | 1 |
-| Github_Classic_Token | Clone this private repo | 1 |
-| TextBelt | SMS notifications (optional) | 1 |
-
----
-
-## 5. First-Time Setup on a Fresh VM
-
-### 5.1 Clone the Repository
-
-This is a **private repo**. Use a GitHub Classic Personal Access Token
-with `repo` scope. It is stored as `Github_Classic_Token` in `.env`.
+## Reproducing the results
 
 ```bash
-# Read your token (from your local .env or paste directly)
-GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxx"
+# 1. Environment
+python3 -m venv ~/venv && ~/venv/bin/pip install -r requirements.txt
 
-# Clone
-git clone https://${GITHUB_TOKEN}@github.com/DevDaring/Platos_ship.git
-cd Platos_ship
+# 2. Secrets — copy the template and fill your own API keys
+cp .env.example .env      # DeepSeek + OpenRouter keys are the minimum
 
-# Embed token in remote URL so git pull works without prompts
-git remote set-url origin https://${GITHUB_TOKEN}@github.com/DevDaring/Platos_ship.git
-```
-
-### 5.2 Upload Your .env File
-
-The `.env` is never committed. Upload it manually after each VM provision.
-
-**Windows PowerShell (from local machine):**
-```powershell
-scp -i C:\Users\YourName\.ssh\id_rsa_gcp `
-    D:\path\to\Platos_ship\Code\.env `
-    debz@<VM_IP>:/home/debz/Platos_ship/.env
-```
-
-**Linux / macOS:**
-```bash
-scp -i ~/.ssh/id_rsa_gcp .env debz@<VM_IP>:/home/debz/Platos_ship/.env
-```
-
-### 5.3 Install Python Dependencies (CPU VM)
-
-Ubuntu 24.04 enforces PEP 668 and blocks system-wide pip installs.
-**Use a virtual environment:**
-
-```bash
-# Create venv (one-time)
-python3 -m venv ~/venv
-
-# Install all dependencies
-~/venv/bin/pip install -r /home/debz/Platos_ship/requirements.txt
-```
-
-The project scripts are pre-configured to call `~/venv/bin/python3` directly,
-so you do not need to `source activate` the venv to run them.
-
-> torch, bitsandbytes, and flash_attn are NOT installed.
-> All inference is via API only.
-
-### 5.4 Verify Imports
-
-```bash
-~/venv/bin/python3 -c "import openai, datasets, pandas, scipy, statsmodels; print('imports ok')"
-```
-
-### 5.5 Run Pre-Flight Checks
-
-```bash
-bash scripts/run_environment_check.sh
-```
-
-| Check | What it verifies |
-|-------|-----------------|
-| Python version | >= 3.10 |
-| DeepSeek | Model listing; both model names present |
-| OpenRouter | Model listing; GPT-4o-mini + Llama + Gemma all available |
-| Gemini | Test call on each of the 4 keys |
-| Mistral | Test call |
-| HuggingFace | whoami() succeeds |
-| Paths | All required directories created |
-| Disk | >= 10 GB free |
-
-**Fix every failure before continuing.**
-
-### 5.6 Run the Dry Run (Mandatory)
-
-```bash
-bash scripts/run_dry_run.sh
-```
-
-What the dry run does:
-- 2 questions (1 MMLU-Pro + 1 GSM8K)
-- All 5 conditions (C5 force-enabled)
-- 1 trial per question
-- Every model invoked at least once
-- Judge fallback path triggered deliberately
-- C5 empty-peer-messages branch tested
-
-Expected time: **under 5 minutes**.
-
-Acceptance criteria (all must pass before full run):
-- [ ] All API keys return valid responses
-- [ ] trial_log.parquet has >= 1 row per model
-- [ ] All output column names match schema exactly
-- [ ] Metrics + stats run without error
-- [ ] mitigation_summary.parquet has >= 1 C5 row
-
----
-
-## 6. Secrets - .env File
-
-```dotenv
-# DeepSeek - 2 keys round-robin
-DEEPSEEK_API_KEY_1=sk-...
-DEEPSEEK_API_KEY_2=sk-...
-DEEPSEEK_API_BASE_URL=https://api.deepseek.com/v1
-DEEPSEEK_PRIMARY_MODEL_NAME=deepseek-chat
-DEEPSEEK_JUDGE_MODEL_NAME=deepseek-chat
-
-# OpenRouter - 2 keys round-robin (GPT-4o-mini + Llama + Gemma)
-OPENROUTER_API_KEY_1=sk-or-v1-...
-OPENROUTER_API_KEY_2=sk-or-v1-...
-OPENROUTER_API_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_PRIMARY_MODEL_NAME=openai/gpt-4o-mini
-OPENROUTER_LLAMA_MODEL_NAME=meta-llama/llama-3.1-8b-instruct
-OPENROUTER_GEMMA_MODEL_NAME=google/gemma-3-4b-it
-
-# Gemini - 4 keys round-robin (primary judge)
-GEMINI_API_KEY_1=AIzaSy...
-GEMINI_API_KEY_2=AIzaSy...
-GEMINI_API_KEY_3=AIzaSy...
-GEMINI_API_KEY_4=AIzaSy...
-GEMINI_MODEL_NAME=gemini-2.5-flash-lite
-
-# Mistral - secondary judge
-MISTRAL_API_KEY=...
-MISTRAL_MODEL_NAME=mistral-small-latest
-
-# HuggingFace
-HUGGINGFACE_TOKEN=hf_...
-
-# GitHub Classic Token (repo scope) - clone private repo
-Github_Classic_Token=ghp_...
-
-# Reproducibility
-RANDOM_SEED=20260502
-
-# SMS (optional)
-PHONE_NO=+91XXXXXXXXXX
-TextBelt_API_KEY=...
-```
-
----
-
-## 7. Configuration Files
-
-### config/experiment.yaml
-
-| Parameter | Default | Meaning |
-|-----------|---------|---------|
-| random_seed | 20260502 | Master seed |
-| total_questions_in_pool | 300 | 200 MMLU-Pro + 100 GSM8K |
-| trials_per_question_main_conditions | 5 | C1-C4 |
-| trials_per_question_mitigation_condition | 3 | C5 |
-| calibration_gate.precondition_metric_threshold | 0.40 | Gate threshold |
-| calibration_gate.high_confidence_threshold | 60 | Confidence cutoff |
-
-### config/models.yaml
-
-Model registry: provider, env-var names, temperature, timeouts, retry backoff.
-No model names hardcoded in source.
-
-### config/paths.yaml
-
-Every filesystem path. Resolved and asserted at startup.
-
----
-
-## 8. Running the Pipeline
-
-```bash
-cd /home/debz/Platos_ship
-
-# Pre-flight
-bash scripts/run_environment_check.sh
-
-# Mandatory dry run
-bash scripts/run_dry_run.sh
-
-# Stage 1: main experiment (C1-C4, 7000 trials)
-bash scripts/run_main_experiment.sh
-
-# Stage 2: calibration gate (< 5 min)
-bash scripts/run_calibration_gate.sh
-
-# Stage 3: C5 mitigation (only runs if gate passed)
-bash scripts/run_mitigation_experiment.sh
-```
-
-Or all stages at once:
-```bash
+# 3. Main experiment (C1–C4, calibration gate, then C5 if the gate passes)
 python3 -m src.pipeline_orchestrator --stage all
-```
 
-### Stage Timing (CPU VM)
-
-| Stage | Trials | Est. time |
-|-------|--------|-----------|
-| Dry run | ~10 | < 5 min |
-| Stage 1 (C1-C4, DeepSeek + GPT-4o-mini) | 7 000 | 18-28 h |
-| Stage 2 (gate) | 0 | < 5 min |
-| Stage 3 (C5, DeepSeek only) | 300 | 2-4 h |
-| **Total** | **7 300** | **20-32 h** |
-
-### Crash Recovery
-
-The runner is **idempotent**. Re-run any script after a crash - completed
-trials in `data/outputs/completed_trials.parquet` are automatically skipped.
-
----
-
-## 9. SMS Notifications
-
-`TextBelt.py` sends SMS to `PHONE_NO` on:
-
-| Event | Message |
-|-------|---------|
-| Completed | Plato's Ship pipeline completed |
-| Exception | Plato's Ship FAILED: <error summary> |
-| SIGTERM/Ctrl-C | Plato's Ship: interrupted |
-| Unexpected exit | Plato's Ship: unexpected exit |
-
-Loaded from `.env` automatically. Silent if keys missing.
-
-> **Note:** TextBelt's default plan covers US/Canada numbers only.
-> For Indian (+91) or other international numbers, purchase an international
-> plan at https://textbelt.com or use a different SMS provider.
-
----
-
-## 10. Output Files
-
-Runtime pipeline output lives in `data/outputs/` (gitignored); the
-committed snapshot of the May 2026 experiment lives in
-`results/data/outputs/`.
-
-| File | Row = | Purpose |
-|------|-------|---------|
-| trial_log.parquet | Agent response | Raw record of every call (35,050 rows) |
-| final_answers.parquet | (question, condition, trial, focal) | Analysis view (7,300 rows) |
-| completed_trials.parquet | Trial tuple | Resume checkpoint |
-| metrics_summary.parquet | (condition, focal) | Accuracy, flip rates, CIs |
-| statistical_tests.parquet | Condition pair | McNemar (paired) + Holm-Bonferroni |
-| calibration_gate_report.parquet | Gate run | P(loud-and-wrong) + decision |
-| mitigation_summary.parquet | C4 vs C5 | Filter outcome (100% peer removal) |
-| experiment_metadata.json | Run | Full provenance |
-
-Paper-side analysis artefacts (in `Submission/Analyse/`):
-
-| File | Purpose |
-|------|---------|
-| analysis.md | Narrative walkthrough of every number reported in the paper |
-| generate_analysis.py | Original printer that produced analysis.md |
-| free_analyses.py | SC-of-3 baseline, GEE clustered regression, Cohen's h + power, difficulty/subject/dataset stratifications, trial-level McNemar with Holm-Bonferroni, net-flip arithmetic audit, calibration-by-model |
-| free_analyses_output.json | Output JSON cited throughout the paper |
-| inter_agent_dependence.py | Pairwise Cohen's κ on R0 correctness, AUROC of confidence-to-correctness |
-| inter_agent_dependence_output.json | Output JSON for §4.5 of the paper |
-
----
-
-## 11. Reproducing Results
-
-Recompute paper numbers from the saved parquet artefacts without
-rerunning any model:
-
-```bash
-# Original pipeline-side metrics (uses the runtime outputs)
+# 4. Recompute metrics/statistics from saved logs without re-running models
 python3 -m src.metrics_calculator
 python3 -m src.statistical_analyzer
-python3 -m src.calibration_gate
 
-# Paper-side analyses (loads results/data/outputs/, no API calls)
-python3 Submission/Analyse/free_analyses.py
-python3 Submission/Analyse/inter_agent_dependence.py
-python3 Submission/Analyse/generate_analysis.py
+# 5. Follow-up experiments (causal controls, 8-model sweep, corrected filter, …)
+cd Code_Phase_2/CPU_Only
+pip install -r requirements_cpu.txt
+python3 run_all.py --list      # show the experiment plan
+python3 run_all.py --p1        # run the recommended set
 ```
 
-Every numerical claim in `Submission/CSR_Paper.tex` and
-`Submission/CSR_Supplement.tex` can be re-derived from
-`results/data/outputs/*.parquet` by running the two analysis scripts
-above. The outputs are committed for inspection.
+All model access is via commercial APIs; **no GPU is required** for the main
+results (the optional mechanistic probe in `Code_Phase_2/GPU_Only` is the only
+GPU component). The runner is checkpointed and idempotent: re-running any stage
+after a crash skips completed `(question, condition, trial, focal)` tuples.
 
----
+## Released data
 
-## 12. Cost Estimate
+`results/` and `Code_Phase_2/results/` contain the per-trial logs and analysis
+outputs behind the paper:
 
-| Provider | ~Calls | ~Cost |
-|----------|--------|-------|
-| DeepSeek (focal) | 14 000 | $4-8 |
-| OpenRouter GPT-4o-mini | 2 000 | $1-2 |
-| OpenRouter Llama 3.1 8B | 4 500 | $0.50-1 |
-| OpenRouter Gemma 3 4B | 4 500 | $0.50-1 |
-| Gemini (judge) | 500 | ~$0.10 |
-| Mistral (judge) | 100 | ~$0.05 |
-| **Total API** | | **~$6-13** |
+| File | Grain | Contents |
+|------|-------|----------|
+| `trial_log.parquet` | one agent-round | every agent's raw + parsed response, per round |
+| `final_answers.parquet` | one focal trial | Round-0/Round-1 answers, correctness, flip flags |
+| `metrics_summary.parquet` | one (condition, focal) | accuracy and flip rates |
+| `statistical_tests.parquet` | one contrast | paired McNemar, corrected p-values |
+| `capability_sweep_*` | one focal model | solo accuracy vs. flip outcome (8 models) |
+| `corrected_calibration_gate_report.parquet` | one substrate | discriminative gap + AUROC |
 
-GCP VM (n2-highmem-8): ~$0.38/h x 28h = ~$11.
+Column names are full-form and self-describing (e.g.
+`extracted_self_reported_confidence_integer`, `condition_identifier`). A single
+random seed propagates to every randomised step, so runs are deterministic.
 
----
+## Cost
+
+The entire study — all conditions and eight focal models — runs for well under
+US$100 of API inference, on a single CPU machine. No model training is
+performed.
 
 ## Licence
 
-Research use only.
+Code released under the MIT Licence; benchmark data (MMLU-Pro, GSM8K) retains
+its original licence. See the paper for full dataset and model citations.
