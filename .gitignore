@@ -48,3 +48,5 @@ Submission/.build/
 *.fls
 *.synctex.gz
 *.toc
+# ── Paper drafts — keep OFF GitHub (private) ──
+Submission/
