@@ -39,13 +39,11 @@ weakness the reviewers penalised.
 
 ---
 
-## 2. 🟠 Recharge — DeepSeek
+## 2. ✅ Recharge — no longer needed (my earlier ask was wrong)
 
-See `Recharge.md` for the full table. Short version: **DeepSeek is at $10.41**
-and the planned runs need ~$11. **Top up $15** at
-<https://platform.deepseek.com/top_up>.
-
-Everything else is funded: OpenRouter ~$40 across two keys, Vast.ai $23 credit.
+I asked for a $15 DeepSeek top-up based on an estimate. Having measured the
+actual burn rate, the whole remaining workload costs **well under $2**. See
+`Recharge.md` for the measured figures. Nothing to do.
 
 ---
 
