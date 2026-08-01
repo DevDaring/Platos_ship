@@ -12,8 +12,18 @@
 *.pyo
 
 # ── Large outputs ──
+# Runtime copies under data/ are already excluded above. These patterns keep
+# stray parquet/log files out of the tree generally...
 *.parquet
 *.log
+
+# ...but results/ IS the released artefact — the per-trial logs and analysis
+# outputs the paper cites. Without these negations new result files (e.g. the
+# GPU probe outputs) are silently dropped from every commit.
+!results/**/*.parquet
+!results/**/*.json
+!results/**/*.log
+!results/**/*.md
 
 # ── OS / editor ──
 .DS_Store

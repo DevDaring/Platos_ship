@@ -1,0 +1,20 @@
+2026-08-01 06:26:23,593 [INFO] platos_ship.logprob_probe: Probe over 2 questions x 1 reps, conditions=['C1_smart_solo', 'C2_three_smart', 'C4_one_smart_two_dumb']
+2026-08-01 06:26:31,490 [INFO] platos_ship.vllm_focal: Loading meta-llama/Llama-3.1-8B-Instruct in bfloat16 via vLLM (max_len=4096)
+2026-08-01 06:47:44,641 [INFO] platos_ship.logprob_probe: Probe complete. Mean R0->R1 mass shift toward the peer-wrong answer:
+2026-08-01 06:47:44,642 [INFO] platos_ship.logprob_probe:   C1_smart_solo: toward-wrong +nan (n=0), toward-correct +0.0000, R0 acc 1.000 -> R1 acc 1.000
+2026-08-01 06:47:44,642 [INFO] platos_ship.logprob_probe:   C2_three_smart: toward-wrong +nan (n=0), toward-correct +0.1617, R0 acc 1.000 -> R1 acc 1.000
+2026-08-01 06:47:44,642 [INFO] platos_ship.logprob_probe:   C4_one_smart_two_dumb: toward-wrong +0.0451 (n=2), toward-correct -0.0464, R0 acc 1.000 -> R1 acc 0.500
+2026-08-01 06:47:45,834 [INFO] platos_ship.gpu_run: GPU probe done. Outputs in GPU_Only/data/outputs/.
+2026-08-01 06:48:38,760 [INFO] platos_ship.logprob_probe: Probe over 300 questions x 3 reps, conditions=['C1_smart_solo', 'C2_three_smart', 'C4_one_smart_two_dumb']
+2026-08-01 06:48:46,457 [INFO] platos_ship.vllm_focal: Loading meta-llama/Llama-3.1-8B-Instruct in bfloat16 via vLLM (max_len=4096, enforce_eager=False)
+2026-08-01 06:49:31,147 [INFO] platos_ship.logprob_probe: stage A1_r0_dist: computing
+2026-08-01 06:49:37,693 [INFO] platos_ship.logprob_probe: stage A2_r0_text: computing
+2026-08-01 06:50:15,603 [INFO] platos_ship.logprob_probe: stage B_c2_peers: computing
+2026-08-01 06:51:26,068 [INFO] platos_ship.logprob_probe: stage C1_r1_dist: computing
+2026-08-01 06:52:34,079 [INFO] platos_ship.logprob_probe: stage C2_r1_text: computing
+2026-08-01 06:57:17,734 [INFO] platos_ship.logprob_probe: Probe complete. Mean R0->R1 mass shift toward the peer-asserted wrong answer:
+2026-08-01 06:57:17,735 [INFO] platos_ship.logprob_probe:   C1_smart_solo: toward-wrong +0.0000 (n=900), toward-correct +0.0000, R0 acc 0.517 -> R1 acc 0.517
+2026-08-01 06:57:17,735 [INFO] platos_ship.logprob_probe:   C2_three_smart: toward-wrong -0.0179 (n=898), toward-correct +0.0970, R0 acc 0.517 -> R1 acc 0.487
+2026-08-01 06:57:17,735 [INFO] platos_ship.logprob_probe:   C4_one_smart_two_dumb: toward-wrong +0.0636 (n=900), toward-correct -0.0333, R0 acc 0.517 -> R1 acc 0.510
+2026-08-01 06:57:17,735 [WARNING] platos_ship.logprob_probe: paired contrast skipped: No module named 'scipy'
+2026-08-01 06:57:19,178 [INFO] platos_ship.gpu_run: GPU probe done. Outputs in GPU_Only/data/outputs/.
