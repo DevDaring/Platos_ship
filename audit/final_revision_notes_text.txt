@@ -1,0 +1,362 @@
+Explanation of Revisions
+Resubmission of ARR submission 1656:
+“Correction and Corruption Signals: A Controlled Study of Capability-Asymmetric Multi-Agent
+LLM Debate
+Under Adversarial Wrong-Peer Exposure”
+
+Summary
+We thank the three reviewers and the Area Chair. The meta-review’s decision text identified the crux precisely:
+“Although the authors stated in their response that additional model runs have been completed,
+in-cycle ACL policies reserve these for future revisions, leaving the current paper scope undersupported.”
+Every experiment the reviewers asked for had been run but could not be reported in an author response.
+This revision puts all of them in the manuscript. The follow-up experiments reuse the same core question
+pool, deterministic seed framework and evaluation pipeline, with the condition-specific prompt changes each
+requested control requires. Three further experiments go beyond what was asked.
+What is new in the manuscript.
+1. A solo re-answering control (C1R) — the causal baseline sTG4 and the AC identified as the central
+methodological gap. Section 4.2.
+2. An honest-peer control (C3H, C4H) — the same weak models answering naturally, addressing
+Tf6M’s and sTG4’s objection that persona-anchored peers are adversarial distractors rather than natural
+low-capability output. Section 4.2.
+3. A confidence-filter re-run with confidence actually elicited (C5R, C5H) plus a corrected pre-flight
+test — the “properly designed follow-up” Tf6M asked for. Section 3.4, Section 4.4.
+4. An eight-model capability sweep — the systematic sweep including open-weight models that Tf6M
+argued was necessary to show a general phenomenon rather than a pairwise anomaly. Section 4.3,
+Table 4 and Appendix Figure 2.
+5. GPT-4o-mini extended from 50 to the full 300-question pool, answering gL73’s concern about
+limited questions.
+6. A contamination probe on numerically perturbed GSM8K.
+7. A controlled split-peer condition (C4split) — tests whether a visible correct peer changes harmful
+revision, removing the last “deferred to future work” in the previous version. Section 4.6.
+8. A heterogeneous-smart debate control (C2het) — three architecturally distinct strong models,
+converting the “homogeneous debate is close to sampling” limitation into a result.
+
+1
+
+9. An output-distribution probe on an open-weight focal model, measuring the probability mass that
+moves onto the peer-asserted wrong answer between rounds — evidence beneath the discrete choice.
+We call it an output-distribution probe, not a mechanism: it observes output probabilities and does not
+identify a representation-level cause.
+What is new in the writing. The term focal model is now defined at first use in both the abstract and
+Section 1 (gL73 W1); Section 1 is restructured around three explicit research questions and the contributions
+each end with a pointer to the section, table or figure that supports it (gL73 W2, W5); the conditions are given
+in a table rather than in prose; and Section 2.2 gains a paragraph on debate as an error detector, the specific
+prior-work area the meta-review named as under-discussed (M7, gL73 W4).
+Corrections we made to the previous version. In preparing this revision we re-derived every number in
+the manuscript directly from the released per-trial logs, and corrected fourteen discrepancies that survived the
+reviewed version. The full list is in the released audit/numerical_consistency_report.md; the
+ones that change a reported number are:
+• Table 3 previously reported raw McNemar p-values under a caption stating they were Holm-corrected.
+Both are now reported in separate columns. The principal conclusions reported in the revised manuscript
+are unchanged after the corrected multiplicity procedure.
+• The contamination-probe contrast was reported as p = 0.07 without noting that this question-level
+test rests on eight discordant pairs. Section 4.5 now states plainly that the probe is underpowered at
+the question level (p = 0.23 after correction) while significant at the trial level, and no longer claims
+significance for it.
+• Appendix S1’s trial-count table still carried the superseded 50-question GPT-4o-mini numbers, which
+contradicted Table 2. All data tables are now generated programmatically from the released logs by a
+released script, so they cannot drift from the data again.
+• Appendix S7 asserted that the weak models’ unprompted accuracy was “not measured in this study”.
+The honest-peer conditions measure it directly; the numbers are now given.
+• The released corrected-gate report substituted zero for P (loud | correct) on the wrong-anchored
+substrate, where that class is empty by construction. This produced an apparent discriminative gap of
+0.99 and a spurious “passed” verdict in the artefact, contradicting the paper’s own table. The report
+now records the substrate as undefined and gives per-class counts.
+• The capability-sweep Spearman ρ was computed on the 1-dp rounded table values, which tie four midrange models together and inflated it to −0.97 with p = 0.0001. On unrounded rates it is ρ = −0.95
+with exact permutation p = 0.0011.
+• Persona validation counts in Appendix S5 were each off by 14 (the failures were double-counted): the
+correct split is 1,116 passing first, 370 after regeneration, 14 failing.
+• The primary focal model was described as being of the DeepSeek-V3 family with a citation to that
+technical report. The API resolves the requested alias to the served snapshot deepseek-v4-flash,
+for which no such report exists, so the manuscript now reports the served snapshot recorded in the run
+metadata and makes no architectural claim.
+
+2
+
+Point-by-point response
+Meta-review (Area Chair QTRJ)
+Point
+
+Status
+
+Where it is answered
+
+Only two focal models; a system- New experi- Eight focal models spanning 44.9–76.2% solo accuatic sweep across a wider set, in- ment
+racy, on the same 300-question pool. All eight point
+cluding open-weight models, is
+estimates of the accuracy change under two confinecessary to show a general phedently wrong peers are non-negative, and harmful renomenon.
+vision rises steeply as solo accuracy falls (Spearman
+ρ = −0.95, exact permutation p = 0.001; leave-onemodel-out ρ ∈ [−0.96, −0.93]; ρ = −0.94 excluding
+the two weakest). Section 4.3, Table 4, Appendix Figure 2.
+Persona prompts turn weak peers New experiinto deliberate adversarial dis- ment Scoped
+tractors; the manuscript remained scoped to distractors.
+
+Honest-peer conditions (C3H, C4H) run the same weak
+models with the standard prompt. Their unprompted
+accuracy is 50.4% and 45.1%. Honest peers leave focal accuracy at solo level (−0.3 pp, p = 1.00) and are
+clearly below the wrong-anchored condition (−7.3 pp,
+p = 0.006 Holm). The claims are scoped to confidently wrong peers throughout. Section 3.1, Section 4.2.
+
+Major flaw in causal attribution: New experi- C1R gives the focal model the Round-1 revision inthe +7.9 pp gain cannot be at- ment
+struction with no peer messages. Re-answering alone
+tributed to peer exposure without
+is indistinguishable from solo (+0.3 pp, p = 1.00);
+a re-examine/re-answer control.
+adding two wrong peers on top of that same second
+attempt gains +6.7 pp (p = 0.013 Holm). Section 4.2,
+Table 3.
+C5 removed 100% of peer mes- New experi- The persona prompt was repaired and the filter re-run
+sages because the weak-peer ment
+on peers that do state confidence (C5R), plus an honest
+prompt omitted the Round-0 convariant (C5H). Peers now emit confidence in essentially
+fidence instruction; this renders
+every Round-0 message. The filter still removes almost
+C5 uninformative.
+nothing, now for a signal reason rather than a parsing
+one: confidence does not separate right from wrong
+(AUROC 0.58). Section 3.4, Section 4.4, Appendix S3,
+Appendix S4.
+“Focal agent” left undefined in
+the main text.
+
+Addressed
+
+Presentation of the research ques- Addressed
+tions was unclear.
+
+Defined at first use in the abstract and in Section 1.
+Explicit RQ1–RQ3 in Section 1, each mapped to the
+section that answers it.
+
+3
+
+Point
+
+Status
+
+Prior work on collaborative de- Addressed
+bate in error detection insufficiently discussed.
+
+Where it is answered
+New paragraph in Section 2.2 covering crossexamination as a factual-error detector, divergencepreserving debate, and the self-correction result that
+motivates external signal, with an explicit contrast:
+those works treat the peer as an examiner whose disagreement flags an error, whereas we find a confidently
+wrong peer supplies a usable prompt to recompute.
+
+Reviewer gL73
+Weakness
+
+Status
+
+Response
+
+W1. “What is the ‘focal agent’?”
+
+Addressed
+
+The focal model is the single designated agent whose
+Round-0 and Round-1 answers are scored; all other
+agents are peers whose Round-0 messages it sees. Defined in the abstract and at first use in Section 1.
+
+W2. The writing is poor and the Addressed
+main research problems are unclear.
+
+Section 1 rebuilt around RQ1–RQ3; the five-condition
+setting moved from prose into Table 1 with a plainlanguage “what it answers” column; statistics moved
+out of prose into tables; the abstract rewritten without
+condition codes.
+
+W3. Experiments limited to a
+limited number of questions and
+LLMs.
+
+New experi- Eight focal models instead of two, and GPT-4o-mini
+ment
+extended from 50 to all 300 questions (1,500 trials per
+condition instead of 250). The headline harmful-flip
+rise for GPT-4o-mini is now a well-powered 7.4% →
+13.4%.
+
+W4. A closely related work has
+not been sufficiently discussed.
+
+Addressed
+
+We asked which work was meant; the meta-review
+identified the area as collaborative debate for error
+detection. Section 2.2 now discusses it (see M7
+above). Section 2.2 also already added adversarial
+and capability-asymmetric debate.
+
+W5. Unclear how the experi- Addressed
+ments support the listed contributions.
+
+Four contributions, each ending with the section, table
+or figure that supports it.
+
+Datasets = 1, Software = 1, Re- Addressed
+producibility = 2.
+
+The full pipeline, all prompts, the question and persona
+pools, the per-trial logs for every trial, and the scripts
+that regenerate every number and figure are released
+now rather than on acceptance, through an anonymised
+repository linked in the Reproducibility section. The
+data tables in the paper are generated from those logs
+by a released script.
+
+4
+
+Reviewer Tf6M
+Point
+
+Status
+
+Response
+
+W1. The main claim rests on New experi- The sweep spans eight focal models, six of them openonly two focal models; a wider ment
+weight. The qualitative difference is predictable from
+sweep including open-weight
+a capability metric: solo accuracy predicts the harmfulmodels is needed to establish a
+flip rate almost monotonically (Spearman ρ = −0.95,
+general phenomenon rather than
+exact permutation p = 0.001, n = 8), from 6.5% for
+a pairwise difference. The pathe strongest model to 24.9% for the weakest. Notably
+per does not explore whether the
+the gain does not track ability (ρ = 0.33, p = 0.42) —
+difference is predictable from a
+it is the cost, not the benefit, that is graded by strength,
+capability metric.
+which is a sharper claim than the reviewed version
+made. Section 4.3, Table 4.
+W2. Anchored peers should be Scoped New
+read as adversarial distractors, experiment
+not honest low-capability outputs.
+
+We agree, and now demonstrate the distinction rather
+than only stating it. The honest-peer control shows the
+correction effect is specific to confidently wrong peers.
+Every conclusion is scoped accordingly, in the abstract,
+Section 1, Section 4.2 and Limitations.
+
+W3. The confidence-weighting New experi- Correct, and now fixed. With confidence elicited, the
+experiment is uninformative be- ment
+filter is tested on peers that state it, and still fails —
+cause the persona prompt omits
+because weak peers are equally loud when right and
+the confidence line, giving 100%
+when wrong. We also give a corrected pre-flight test
+peer exclusion; the failure canon the discriminative gap P (loud | wrong) − P (loud |
+not be attributed to the filtering
+correct), which fails in advance and would have premechanism.
+dicted the null, whereas the original loud-when-wrong
+test passes at 0.995 and does not.
+Suggestions 1–4 (re-answering New experi- All four carried out and reported: C1R; C3H/C4H;
+control; honest weak peers; re- ment
+C5R/C5H with the corrected gate; the eight-model
+run the filter with reliable Roundsweep.
+0 confidence; expand to more focal models).
+
+Reviewer sTG4
+Point
+
+Status
+
+W1. The study is not about Scoped New
+natural capability asymmetry — experiment
+the weak peers are deliberately
+wrong distractors, not natural
+mistakes.
+
+Response
+The honest-peer conditions supply the natural-mistake
+comparison directly, and the claims are re-scoped. The
+honest condition also yields a composition gradient
+that the anchored design cannot produce: harmful flips
+run 25.9% when both peers happen to be wrong, 7.9%
+when they disagree, and 1.4% when both are right.
+
+5
+
+Point
+
+Status
+
+Response
+
+W2 (main weakness).
+The New experi- This is exactly C1R, and it is now the paper’s second
++7.9 pp gain cannot be attributed ment
+experiment. Re-answering alone reproduces none of
+to peer exposure without a conthe gain. We had noted in our response that C5’s totrol where the focal model simtal peer removal made an accidental partial control;
+ply re-examines the question.
+that argument is withdrawn in favour of the dedicated,
+powered experiment the reviewer asked for.
+Suggestion 1: solo re-answering
+control with the same Round-1
+instruction and reasoning budget
+but no peer messages.
+
+New experi- Implemented exactly as specified: identical Round-1
+ment
+instruction and token budget, peer block absent. Section 3.1, Section 4.2.
+
+Suggestion 2: evaluate hon- New experi- C3H and C4H, 3,000 trials.
+est weak peers not anchored to ment
+wrong answers.
+Suggestion 3: rerun confidence New experi- C5R and C5H.
+filtering with a prompt that reli- ment
+ably elicits Round-0 confidence
+from all peers.
+Suggestion 4: expand the anal- New experi- Eight focal models.
+ysis to more focal models with ment
+different capability.
+
+Beyond what was requested
+Three experiments in this revision were not asked for. They close the two weaknesses the previous version
+conceded in its own Limitations, and add output-distribution evidence.
+• Split-peer control (C4split), 1,500 trials. The reviewed version admitted its design could not separate
+“a wrong answer is present” from “every visible peer is wrong”, and deferred a split-peer control
+to future work. It is now run: one wrong-anchored and one correct-anchored peer, same pool and
+replications. Adding a correct peer lowers harmful revision (4.8% → 3.4% paired, n = 1,042,
+p = 0.03) and raises accuracy to 86.3% — +4.7 points over two wrong peers (p = 0.013 corrected)
+and +11.7 over solo — while the correction rate is unchanged (56.0% vs 55.8%). We initially read
+this as evidence that unanimity drives the harm, then tested that directly and found it false: within C4
+the two anchored peers name the same wrong answer in only 16.4% of trials, and whether they agree
+makes no difference to harmful revision (5.95% vs 6.58%, p = 0.88). The manuscript therefore claims
+only that a visible correct peer reduces harmful revision, and states that C4split changes two things at
+once (removes a wrong peer, adds a correct one) so it isolates neither.
+• Heterogeneous-smart debate (C2het), 900 trials. The reviewed version conceded that its homogeneous condition was closer to self-consistency sampling than to debate (pairwise κ = 0.72, ESS ≈ 1.2).
+Three architecturally distinct strong models now debate on the same pool. This heterogeneous control
+did not improve performance: accuracy is indistinguishable from solo (+0.7, p = 0.87), the focal ends
+below where it started (79.0% → 77.3%) where self-sampling gains (75.8% → 78.7%), and harmful
+6
+
+revision rises from 3.3% to 5.8% (n = 638, p = 0.02). Because both distinct peers are also 9–10
+points weaker than the focal, diversity and peer strength are not separated and the control does not
+estimate the effect of diversity alone; the manuscript says so explicitly and keeps the corresponding
+limitation.
+• Output-distribution probe. Limitations previously said the study was “behavioural, not mechanistic”.
+On an open-weight focal model served locally (Llama-3.1-8B-Instruct, 2,700 trials) we measure the
+probability mass that moves onto the peer-asserted wrong answer between rounds. Homogeneous
+peers move the model away from that answer (−0.018); two confidently wrong peers move it toward it
+(+0.064). Paired by (question, replication) the shift is +0.082 (95% CI [+0.067, +0.097], Wilcoxon
+p ≈ 10−42 , n = 898). The pull is therefore present and measurable on trials where the stated answer
+never changes — which flip rates structurally cannot show.
+A matched observational comparison inside the honest control. Among matched questions where both
+honest peers happened to be wrong, naturally occurring weak-peer errors were associated with a higher
+harmful-revision rate than persona-anchored errors (29.7% against 14.4%, paired by question, p < 10−5 ),
+and this persists when stratified on whether the two peers named the same wrong answer. Because the
+comparison conditions on peers happening to err, and the two kinds of message differ in style, it does not
+identify whether the anchored design over- or under-estimates deployment risk. We report it as an association,
+and it speaks directly to Tf6M W2 and sTG4 W1 on the difference between instructed distractors and natural
+weak output.
+
+Reviewer and meta-reviewer preference
+We request the same reviewers and the same Area Chair. Every point raised is implemented in the
+manuscript rather than promised, on the identical pool, seed and protocol, and the returning reviewers are best
+placed to judge whether the prior weaknesses are resolved. The title is unchanged so the paper is recognisable.
+
+7
+
+
