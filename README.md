@@ -16,7 +16,7 @@ number and figure can be regenerated from scratch.
 
 ## Headline findings
 
-Across ~37,000 trials on MMLU-Pro + GSM8K, with **eight focal models** spanning
+Across 39,470 API focal trials (plus a 2,700-trial GPU probe) on MMLU-Pro + GSM8K, with **eight focal models** spanning
 a wide capability range:
 
 - **Correction, not corruption, for strong models.** No focal model loses
@@ -98,7 +98,9 @@ one assigned wrong answer, and in the honest control they answer naturally.
 
 ```bash
 # 1. Environment
-python3 -m venv ~/venv && ~/venv/bin/pip install -r requirements.txt
+# The experiment pipeline pins Python 3.12 (src/environment_check.py hard-fails
+# otherwise). The analysis scripts in analysis/ run on 3.10+.
+python3.12 -m venv ~/venv && ~/venv/bin/pip install -r requirements.txt
 
 # 2. Secrets — copy the template and fill your own API keys
 cp .env.example .env      # DeepSeek + OpenRouter keys are the minimum
@@ -138,7 +140,7 @@ outputs behind the paper:
 | `gpu_probe/logprob_probe_trials.parquet` | one probe trial | per-round probability mass on the correct and peer-asserted wrong answers |
 | `gpu_probe/logprob_probe_contrast.parquet` | one contrast | paired C4−C2 mass shift with bootstrap CI |
 
-Analysis scripts live in `Submission/Analyse/`: `verify_paper_numbers.py`
+Analysis scripts live in `analysis/`: `verify_paper_numbers.py`
 recomputes every headline number from the logs, `make_tables.py` emits the
 paper's data tables as LaTeX, and `make_figures.py` regenerates the figures.
 The paper `\input`s the generated tables, so the manuscript cannot drift from
