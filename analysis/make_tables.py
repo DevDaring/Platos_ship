@@ -220,6 +220,7 @@ def table_fullcounts(rep) -> str:
         r"\caption{Full trial counts and per-round accuracy for every focal model",
         r"and condition actually run. $N$ is the number of focal trials.",
         r"\label{stab:fullcounts}}",
+        r"\begin{adjustbox}{max width=\linewidth}",
         r"\begin{tabular}{@{}llrrrr@{}}", r"\toprule",
         r"Focal & Cond. & $N$ & R0 (\%) & R1 (\%) & $\Delta$ \\", r"\midrule",
     ]
@@ -240,7 +241,7 @@ def table_fullcounts(rep) -> str:
                 f"{name} & {COND_LABEL[c]} & {r['n']:,} & {fmt(r['r0_accuracy_pct'])} & "
                 f"{fmt(r['r1_accuracy_pct'])} & {fmt(d, signed=True)} ".replace(",", "{,}") + r"\\"
             )
-    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}", r"\end{table}"]
     return "\n".join(lines)
 
 
