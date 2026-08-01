@@ -1,9 +1,10 @@
 {
   "phase": 2,
-  "run_timestamp_utc": "2026-07-11T16:51:25.108763",
+  "run_timestamp_utc": "2026-08-01T07:04:54.158641",
   "random_seed_value": 20260502,
   "experiments_run": [
-    "E6_perturbed_gsm8k"
+    "E7_split_peer",
+    "E8_heterogeneous_smart"
   ],
   "smart_agents": {
     "deepseek_primary": {
@@ -26,6 +27,19 @@
     }
   },
   "sweep_focal_agents": {},
-  "heterogeneous_agents": {},
+  "heterogeneous_agents": {
+    "het_deepseek": {
+      "provider": "deepseek",
+      "model": "deepseek-chat"
+    },
+    "het_llama_70b": {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.1-70b-instruct"
+    },
+    "het_qwen_72b": {
+      "provider": "openrouter",
+      "model": "qwen/qwen-2.5-72b-instruct"
+    }
+  },
   "note_deepseek_alias": "deepseek-chat alias retires 2026-07-24; pin deepseek-v4-flash for later runs."
 }

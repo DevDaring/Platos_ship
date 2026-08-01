@@ -37,6 +37,15 @@ a wide capability range:
   before any filtering is run.
 - **Not memorisation.** The math gain survives when GSM8K numbers are perturbed
   and answers recomputed, supporting the recomputation mechanism.
+- **The pull is real, below the answer.** Reading an open-weight focal model's
+  output distribution, two confidently wrong peers move probability mass *onto*
+  their answer (+0.064) where homogeneous peers move it *away* (−0.018);
+  paired, the shift is +0.082 (Wilcoxon p ≈ 1e-42). Flip rates cannot see this,
+  because it happens on trials where the stated answer never changes.
+- **Adversarial framing is conservative, not alarmist.** Weak peers that are
+  wrong *naturally* flip the focal model about twice as often as peers
+  *instructed* to be wrong (29.7% vs 14.4%, paired by question). The reported
+  harmful-flip rates are therefore a floor on real mixed-ability ensembles.
 
 ## Repository layout
 
@@ -72,8 +81,10 @@ question pool, seed, prompts, and schemas, so results are directly comparable.
 | C1   | 1 | 0                | solo baseline, no debate |
 | C1R  | 1 | 0 (own answer)   | control: is a gain just a second attempt? |
 | C2   | 3 | 0                | homogeneous debate (equal peers) |
+| C2het | 3 | 0               | control: three *architecturally distinct* strong models |
 | C3   | 2 | 1 wrong-anchored | one confidently wrong peer |
 | C4   | 1 | 2 wrong-anchored | two confidently wrong peers |
+| C4split | 1 | 1 wrong + 1 correct | control: unanimity vs. a wrong answer being present |
 | C4H  | 1 | 2 honest         | control: wrong-anchored vs. natural peers |
 | C5   | 1 | 2 wrong + filter | confidence-weighted peer filtering |
 
@@ -124,6 +135,14 @@ outputs behind the paper:
 | `statistical_tests.parquet` | one contrast | paired McNemar, corrected p-values |
 | `capability_sweep_*` | one focal model | solo accuracy vs. flip outcome (8 models) |
 | `corrected_calibration_gate_report.parquet` | one substrate | discriminative gap + AUROC |
+| `gpu_probe/logprob_probe_trials.parquet` | one probe trial | per-round probability mass on the correct and peer-asserted wrong answers |
+| `gpu_probe/logprob_probe_contrast.parquet` | one contrast | paired C4−C2 mass shift with bootstrap CI |
+
+Analysis scripts live in `Submission/Analyse/`: `verify_paper_numbers.py`
+recomputes every headline number from the logs, `make_tables.py` emits the
+paper's data tables as LaTeX, and `make_figures.py` regenerates the figures.
+The paper `\input`s the generated tables, so the manuscript cannot drift from
+the released data.
 
 Column names are full-form and self-describing (e.g.
 `extracted_self_reported_confidence_integer`, `condition_identifier`). A single
