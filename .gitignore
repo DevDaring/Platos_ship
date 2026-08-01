@@ -57,3 +57,6 @@ results/logs/
 # (they name the real repository, balances, and submission strategy).
 ACTION_REQUIRED.md
 Recharge.md
+
+# Frozen pre-audit copies of the private manuscript
+audit/baseline/
