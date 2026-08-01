@@ -78,26 +78,38 @@ def compute_corrected_gate(
 
     loud = conf >= high_confidence_threshold
     wrong = ~correct
-    loud_when_wrong = float(loud[wrong].mean()) if wrong.any() else 0.0
-    loud_when_correct = float(loud[correct].mean()) if correct.any() else 0.0
-    gap = loud_when_wrong - loud_when_correct
 
-    auroc = _auroc(conf, correct.astype(int))
+    # A discriminative gap needs BOTH classes to exist. Wrong-anchored peers are
+    # never correct by construction, so P(loud | correct) is undefined, not zero
+    # — treating it as zero yields a gap of ~0.99 and a spurious "passed", which
+    # is the opposite of what this substrate shows.
+    n_wrong, n_correct = int(wrong.sum()), int(correct.sum())
+    loud_when_wrong = float(loud[wrong].mean()) if n_wrong else None
+    loud_when_correct = float(loud[correct].mean()) if n_correct else None
 
-    passed = (gap > discriminative_gap_threshold) and (
-        np.isnan(auroc) or auroc > auroc_floor
-    )
-    decision = "passed" if passed else "failed"
+    if loud_when_wrong is None or loud_when_correct is None:
+        gap = None
+        auroc = float("nan")
+        decision = "undefined_single_class"
+    else:
+        gap = loud_when_wrong - loud_when_correct
+        auroc = _auroc(conf, correct.astype(int))
+        passed = (gap > discriminative_gap_threshold) and (
+            np.isnan(auroc) or auroc > auroc_floor
+        )
+        decision = "passed" if passed else "failed"
 
     return {
         "n_responses": int(n),
+        "n_wrong_responses": n_wrong,
+        "n_correct_responses": n_correct,
         "conditions": conditions,
         "roles": roles,
         "rounds": rounds,
         "high_confidence_threshold": high_confidence_threshold,
-        "loud_when_wrong": round(loud_when_wrong, 4),
-        "loud_when_correct": round(loud_when_correct, 4),
-        "discriminative_gap": round(gap, 4),
+        "loud_when_wrong": None if loud_when_wrong is None else round(loud_when_wrong, 4),
+        "loud_when_correct": None if loud_when_correct is None else round(loud_when_correct, 4),
+        "discriminative_gap": None if gap is None else round(gap, 4),
         "discriminative_gap_threshold": discriminative_gap_threshold,
         "auroc_confidence_vs_correct": None if np.isnan(auroc) else round(auroc, 4),
         "auroc_floor": auroc_floor,

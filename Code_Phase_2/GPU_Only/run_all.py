@@ -49,6 +49,8 @@ def main():
                     help="Ignore the stage cache and recompute every stage")
     ap.add_argument("--max-model-len", type=int, default=4096)
     ap.add_argument("--gpu-mem-util", type=float, default=0.90)
+    ap.add_argument("--eager", action="store_true",
+                    help="Skip torch.compile/CUDA graphs (avoids a long cold-start compile)")
     args = ap.parse_args()
 
     if args.dry_run:
@@ -85,6 +87,7 @@ def main():
         resume=not (args.no_resume or args.dry_run),
         max_model_len=args.max_model_len,
         gpu_memory_utilization=args.gpu_mem_util,
+        enforce_eager=args.eager,
     )
     log.info("GPU probe done. Outputs in GPU_Only/data/outputs/.")
 

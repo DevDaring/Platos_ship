@@ -39,13 +39,20 @@ class VLLMFocalAgent:
         gpu_memory_utilization: float = 0.90,
         seed: int = 20260502,
         hf_token: Optional[str] = None,
+        enforce_eager: bool = False,
     ):
         from vllm import LLM  # imported lazily so CPU machines can import this module
         self.model_repo = model_repo
         self.provider = "vllm_local"
         self.model_name = model_repo
         self.seed = seed
-        logger.info(f"Loading {model_repo} in {dtype} via vLLM (max_len={max_model_len})")
+        logger.info(
+            f"Loading {model_repo} in {dtype} via vLLM "
+            f"(max_len={max_model_len}, enforce_eager={enforce_eager})"
+        )
+        # enforce_eager skips torch.compile and CUDA-graph capture. That costs
+        # some throughput but avoids a cold-start compile that can run for tens
+        # of minutes on a fresh box — worth it for a one-shot rented GPU.
         self.llm = LLM(
             model=model_repo,
             dtype=dtype,
@@ -53,6 +60,7 @@ class VLLMFocalAgent:
             gpu_memory_utilization=gpu_memory_utilization,
             seed=seed,
             trust_remote_code=True,
+            enforce_eager=enforce_eager,
         )
         self.tokenizer = self.llm.get_tokenizer()
 

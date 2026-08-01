@@ -142,6 +142,7 @@ def run_logprob_probe(
     resume: bool = True,
     max_model_len: int = 4096,
     gpu_memory_utilization: float = 0.90,
+    enforce_eager: bool = False,
 ) -> pd.DataFrame:
     """
     Run the probe. Reuses CPU_Only's question pool + personas + prompt builders
@@ -193,6 +194,7 @@ def run_logprob_probe(
     focal = VLLMFocalAgent(
         model_repo=model_repo, seed=seed,
         max_model_len=max_model_len, gpu_memory_utilization=gpu_memory_utilization,
+        enforce_eager=enforce_eager,
     )
 
     cands_by_q = {q["question_identifier"]: _candidates_for(q) for q in questions}
