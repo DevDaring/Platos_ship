@@ -4,7 +4,7 @@ vllm_focal_agent.py — Local vLLM focal agent with answer-distribution logging.
 Experiment E9 (mechanistic probe). Serves one open-weight focal model (default
 Llama-3.1-8B-Instruct) locally in bf16 via vLLM, and exposes two things:
 
-  generate(system, user)                 -> free-form debate response (as usual)
+  generate(system, user)                   -> free-form debate response (as usual)
   answer_distribution(system, user, cands) -> P(answer = c) for each candidate c
 
 The second method is the mechanistic instrument. It appends "Final answer:" to
@@ -14,13 +14,18 @@ Round 0 (independent) vs Round 1 (after wrong peers) quantifies how much
 probability mass the focal moves toward the peer-asserted WRONG answer — a
 representation-level sycophancy signal beneath the behavioural flip.
 
+Both methods have `_batch` variants. vLLM's throughput comes almost entirely
+from continuous batching, so the probe issues one call per *stage* over
+thousands of prompts rather than one call per prompt; the single-prompt methods
+are thin wrappers kept for readability and tests.
+
 # Implements the GPU logprob probe from Review_Fix.md E9.
-# Requires: vllm, torch (CUDA). Runs on a single 24 GB card (RTX 4090) for 8B.
+# Requires: vllm, torch (CUDA). Runs on a single 24 GB card for an 8B focal.
 """
 
 import math
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence
 
 logger = logging.getLogger("platos_ship.vllm_focal")
 
@@ -51,6 +56,7 @@ class VLLMFocalAgent:
         )
         self.tokenizer = self.llm.get_tokenizer()
 
+    # ── prompt rendering ───────────────────────────────────────────────────
     def _chat_prefix(self, system: str, user: str, assistant_prefix: str = "") -> str:
         """Render the chat template, leaving an open assistant turn we can continue."""
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
@@ -59,41 +65,49 @@ class VLLMFocalAgent:
         )
         return text + assistant_prefix
 
+    # ── free-form generation ───────────────────────────────────────────────
+    def generate_batch(
+        self,
+        prompts: Sequence[tuple],
+        temperature: float = 0.7,
+        max_tokens: int = 600,
+        seeds: Optional[Sequence[int]] = None,
+    ) -> List[str]:
+        """
+        Generate for many (system, user) pairs in one vLLM call.
+
+        `seeds` must vary across replications of the same prompt — vLLM's `seed`
+        is per-request, so reusing one seed would make every replication of a
+        question return byte-identical text and collapse the replication
+        dimension of the experiment.
+        """
+        from vllm import SamplingParams
+        if not prompts:
+            return []
+        rendered = [self._chat_prefix(s, u) for (s, u) in prompts]
+        if seeds is None:
+            seeds = [self.seed + i for i in range(len(rendered))]
+        params = [
+            SamplingParams(temperature=temperature, max_tokens=max_tokens, seed=int(sd))
+            for sd in seeds
+        ]
+        out = self.llm.generate(rendered, params, use_tqdm=True)
+        return [o.outputs[0].text for o in out]
+
     def generate(self, system: str, user: str, temperature: float = 0.7,
-                 max_tokens: int = 600) -> str:
-        from vllm import SamplingParams
-        prompt = self._chat_prefix(system, user)
-        sp = SamplingParams(temperature=temperature, max_tokens=max_tokens, seed=self.seed)
-        out = self.llm.generate([prompt], sp, use_tqdm=False)
-        return out[0].outputs[0].text
+                 max_tokens: int = 600, seed: Optional[int] = None) -> str:
+        seeds = None if seed is None else [seed]
+        return self.generate_batch([(system, user)], temperature, max_tokens, seeds)[0]
 
-    def answer_distribution(
-        self, system: str, user: str, candidates: List[str],
-        assistant_prefix: str = "Final answer:",
-    ) -> Dict[str, float]:
-        """
-        P(next answer token = candidate) for each candidate string.
-
-        Reads the next-token logprob distribution right after "Final answer:".
-        Candidates are matched on their FIRST token id (a single letter A..J, or
-        the leading digit of a numeric answer), then softmax-normalised over the
-        candidate set so the returned values sum to 1 across `candidates`.
-        """
-        from vllm import SamplingParams
-        prompt = self._chat_prefix(system, user, assistant_prefix=f" {assistant_prefix} ")
-        sp = SamplingParams(temperature=0.0, max_tokens=1, logprobs=20, seed=self.seed)
-        out = self.llm.generate([prompt], sp, use_tqdm=False)
-
-        logprobs_obj = out[0].outputs[0].logprobs
+    # ── answer distribution (the mechanistic instrument) ───────────────────
+    def _dist_from_logprobs(self, output, candidates: List[str]) -> Dict[str, float]:
+        logprobs_obj = output.outputs[0].logprobs
         if not logprobs_obj:
             return {c: float("nan") for c in candidates}
         first_pos = logprobs_obj[0]  # dict: token_id -> Logprob
 
-        # Map token_id -> logprob and token_id -> decoded string
         id_to_lp = {tid: lp.logprob for tid, lp in first_pos.items()}
-        id_to_str = {}
-        for tid in id_to_lp:
-            id_to_str[tid] = self.tokenizer.decode([tid]).strip().upper()
+        id_to_str = {tid: self.tokenizer.decode([tid]).strip().upper() for tid in id_to_lp}
 
         raw = {}
         for cand in candidates:
@@ -106,12 +120,37 @@ class VLLMFocalAgent:
                         best_lp = lp
             raw[cand] = best_lp
 
-        # Softmax-normalise over candidates that were found; missing -> very low
+        # Softmax-normalise over candidates that were found; missing -> 0.
         present = {c: lp for c, lp in raw.items() if lp is not None}
         if not present:
             return {c: float("nan") for c in candidates}
         mx = max(present.values())
         exps = {c: math.exp(lp - mx) for c, lp in present.items()}
         z = sum(exps.values())
-        dist = {c: (exps[c] / z if c in exps else 0.0) for c in candidates}
-        return dist
+        return {c: (exps[c] / z if c in exps else 0.0) for c in candidates}
+
+    def answer_distribution_batch(
+        self,
+        prompts: Sequence[tuple],
+        candidate_sets: Sequence[List[str]],
+        assistant_prefix: str = "Final answer:",
+    ) -> List[Dict[str, float]]:
+        """P(next answer token = candidate) for many prompts in one vLLM call."""
+        from vllm import SamplingParams
+        if not prompts:
+            return []
+        rendered = [
+            self._chat_prefix(s, u, assistant_prefix=f" {assistant_prefix} ")
+            for (s, u) in prompts
+        ]
+        sp = SamplingParams(temperature=0.0, max_tokens=1, logprobs=20, seed=self.seed)
+        out = self.llm.generate(rendered, sp, use_tqdm=True)
+        return [self._dist_from_logprobs(o, list(c)) for o, c in zip(out, candidate_sets)]
+
+    def answer_distribution(
+        self, system: str, user: str, candidates: List[str],
+        assistant_prefix: str = "Final answer:",
+    ) -> Dict[str, float]:
+        return self.answer_distribution_batch(
+            [(system, user)], [candidates], assistant_prefix
+        )[0]

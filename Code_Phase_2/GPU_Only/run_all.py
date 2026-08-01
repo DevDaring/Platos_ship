@@ -43,7 +43,17 @@ def main():
     ap.add_argument("--conditions", default="C1_smart_solo,C2_three_smart,C4_one_smart_two_dumb")
     ap.add_argument("--reps", type=int, default=3)
     ap.add_argument("--max-questions", type=int, default=None)
+    ap.add_argument("--dry-run", action="store_true",
+                    help="2 questions x 1 replication, no stage cache — full code path")
+    ap.add_argument("--no-resume", action="store_true",
+                    help="Ignore the stage cache and recompute every stage")
+    ap.add_argument("--max-model-len", type=int, default=4096)
+    ap.add_argument("--gpu-mem-util", type=float, default=0.90)
     args = ap.parse_args()
+
+    if args.dry_run:
+        args.max_questions = args.max_questions or 2
+        args.reps = 1
 
     setup_logging()
     log = logging.getLogger("platos_ship.gpu_run")
@@ -72,6 +82,9 @@ def main():
         trials_per_question=args.reps,
         model_repo=args.model,
         max_questions=args.max_questions,
+        resume=not (args.no_resume or args.dry_run),
+        max_model_len=args.max_model_len,
+        gpu_memory_utilization=args.gpu_mem_util,
     )
     log.info("GPU probe done. Outputs in GPU_Only/data/outputs/.")
 
