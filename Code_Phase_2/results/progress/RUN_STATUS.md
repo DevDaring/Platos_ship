@@ -1,8 +1,8 @@
 # Run status
 
-_Auto-generated 2026-08-01T07:22:59+00:00 by `scripts/run_status.py`; refreshed by the 15-minute auto-push._
+_Auto-generated 2026-08-01T07:27:11+00:00 by `scripts/run_status.py`; refreshed by the 15-minute auto-push._
 
-**Total completed trials (Phase 2 checkpoint): 30,170**
+**Total completed trials (Phase 2 checkpoint): 30,270**
 
 | Focal model | Condition | Trials |
 |---|---|---:|
@@ -11,7 +11,7 @@ _Auto-generated 2026-08-01T07:22:59+00:00 by `scripts/run_status.py`; refreshed 
 | deepseek_primary | C3H_two_smart_one_honest | 1,500 |
 | deepseek_primary | C4H_one_smart_two_honest | 1,500 |
 | deepseek_primary | C4_one_smart_two_dumb | 485 |
-| deepseek_primary | C4split_one_wrong_one_correct | 400 |
+| deepseek_primary | C4split_one_wrong_one_correct | 500 |
 | deepseek_primary | C5H_honest_with_confidence_filter | 300 |
 | deepseek_primary | C5R_anchored_with_confidence_filter | 300 |
 | gpt4o_mini | C1R_solo_reanswer | 1,500 |
@@ -41,18 +41,18 @@ _Auto-generated 2026-08-01T07:22:59+00:00 by `scripts/run_status.py`; refreshed 
 ## Last log lines
 
 ```
-2026-08-01 07:22:51,622 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:51,779 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:51,858 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:51,930 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:53,840 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:54,591 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:54,759 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:55,226 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:55,783 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:56,630 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:57,134 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-08-01 07:22:58,093 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:07,500 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:07,546 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:07,891 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:07,990 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:09,049 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:09,390 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:09,440 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:09,940 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:09,987 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:09,992 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:11,544 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-01 07:27:11,809 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 ```
 
 ## Recent API failures
