@@ -79,6 +79,34 @@ def _candidates_for(question: Dict) -> List[str]:
     return out
 
 
+def _load_cpu_pipeline(cpu_project_root: Path, alias: str = "cpu_pipeline"):
+    """
+    Import CPU_Only/src as a package named `alias`, avoiding the name clash with
+    GPU_Only's own `src` package. Returns the package with `debate_protocol` and
+    `agent_wrappers.judge_agent` already imported as attributes.
+    """
+    import importlib
+    import importlib.util
+
+    if alias in sys.modules:
+        return sys.modules[alias]
+
+    src_dir = cpu_project_root / "src"
+    if not (src_dir / "__init__.py").exists():
+        raise FileNotFoundError(f"CPU_Only package not found at {src_dir}")
+
+    spec = importlib.util.spec_from_file_location(
+        alias, src_dir / "__init__.py", submodule_search_locations=[str(src_dir)]
+    )
+    pkg = importlib.util.module_from_spec(spec)
+    sys.modules[alias] = pkg
+    spec.loader.exec_module(pkg)
+
+    importlib.import_module(f"{alias}.debate_protocol")
+    importlib.import_module(f"{alias}.agent_wrappers.judge_agent")
+    return pkg
+
+
 class _Stages:
     """Tiny on-disk stage cache so a crash resumes at the last completed stage."""
 
@@ -119,12 +147,15 @@ def run_logprob_probe(
     Run the probe. Reuses CPU_Only's question pool + personas + prompt builders
     so the setup matches the main experiment exactly.
     """
-    # Reuse the CPU_Only prompt builders and pools (single source of truth)
-    cpu_src = str(cpu_project_root)
-    if cpu_src not in sys.path:
-        sys.path.insert(0, cpu_src)
-    from src.debate_protocol import build_round0_prompt, build_round1_prompt  # type: ignore
-    from src.agent_wrappers.judge_agent import extract_answer_regex  # type: ignore
+    # Reuse the CPU_Only prompt builders and pools (single source of truth).
+    # CPU_Only's package is also called `src`, which this module already
+    # occupies, so a plain `sys.path` insert would resolve `src.debate_protocol`
+    # inside GPU_Only. Load it under a distinct package name instead; the CPU
+    # modules use relative imports, so the alias is transparent to them.
+    cpu_pkg = _load_cpu_pipeline(cpu_project_root)
+    build_round0_prompt = cpu_pkg.debate_protocol.build_round0_prompt
+    build_round1_prompt = cpu_pkg.debate_protocol.build_round1_prompt
+    extract_answer_regex = cpu_pkg.agent_wrappers.judge_agent.extract_answer_regex
 
     from .vllm_focal_agent import VLLMFocalAgent
 

@@ -25,12 +25,30 @@ apt-get update -qq && apt-get install -y -qq git curl rsync >/dev/null
 
 log "python deps (vllm brings its own torch build)"
 pip install -q --upgrade pip
-pip install -q vllm pandas pyarrow python-dotenv pyyaml transformers
+# `openai` is needed because CPU_Only's judge_agent (whose regex extractor the
+# probe reuses) imports the OpenAI-compatible client at module load.
+pip install -q vllm pandas pyarrow python-dotenv pyyaml transformers openai
+
+log "secrets (loaded before the clone — the repo is private)"
+if [ -f "$WORK/gpu.env" ]; then
+    set -a; . "$WORK/gpu.env"; set +a
+    export HF_TOKEN="${HUGGINGFACE_TOKEN:-}"
+else
+    echo "FATAL: $WORK/gpu.env not found (needs HUGGINGFACE_TOKEN + Github_Classic_Token)" >&2
+    exit 1
+fi
 
 log "clone repo"
 mkdir -p "$WORK" && cd "$WORK"
-[ -d "$REPO/.git" ] || git clone --depth 1 "$REPO_URL" "$REPO"
-cd "$REPO" && git pull --ff-only 2>/dev/null || true
+AUTH_URL="https://${Github_Classic_Token}@github.com/DevDaring/Platos_ship.git"
+if [ ! -d "$REPO/.git" ]; then
+    git clone --depth 1 "$AUTH_URL" "$REPO" 2>&1 | sed "s/${Github_Classic_Token}/***/g"
+fi
+cd "$REPO"
+# Keep the token out of .git/config; fetch with it explicitly instead.
+git remote set-url origin "$REPO_URL"
+git fetch -q "$AUTH_URL" main 2>&1 | sed "s/${Github_Classic_Token}/***/g" || true
+git reset -q --hard FETCH_HEAD || true
 
 log "stage the CPU_Only pools the probe reuses"
 mkdir -p "$CPU_DIR/data/processed" "$GPU_DIR/data/outputs" "$GPU_DIR/logs"
@@ -38,15 +56,9 @@ cp -n "$REPO/Code_Phase_2/results/processed/question_pool.parquet"  "$CPU_DIR/da
 cp -n "$REPO/Code_Phase_2/results/processed/dumb_personas.parquet"  "$CPU_DIR/data/processed/"
 ls -la "$CPU_DIR/data/processed/"
 
-log "secrets"
-if [ -f "$WORK/gpu.env" ]; then
-    cp "$WORK/gpu.env" "$REPO/Code_Phase_2/.env"
-    chmod 600 "$REPO/Code_Phase_2/.env"
-    set -a; . "$REPO/Code_Phase_2/.env"; set +a
-    export HF_TOKEN="${HUGGINGFACE_TOKEN:-}"
-else
-    echo "WARNING: $WORK/gpu.env not found — a gated model download will fail." >&2
-fi
+log "place secrets inside the repo for the autopush loop (gitignored)"
+cp "$WORK/gpu.env" "$REPO/Code_Phase_2/.env"
+chmod 600 "$REPO/Code_Phase_2/.env"
 
 log "GPU visible?"
 nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv || true
