@@ -103,7 +103,7 @@ def build_registry(rep):
 
     # --- natural vs instructed
     if nat:
-        add("natural flip rate", r"errors \(\$([0-9.]+)\\%\$ against",
+        add("natural flip rate", r"persona-anchored ones \(\$([0-9.]+)\\%\$ against",
             nat["honest_unanimous_wrong_flip_pct"], 0.05)
         add("instructed flip rate", r"against \$([0-9.]+)\\%\$\s*\n?over the \$111\$",
             nat["anchored_wrong_flip_pct"], 0.05)
@@ -115,6 +115,41 @@ def build_registry(rep):
               cond(rep, "deepseek_primary", "C4split_one_wrong_one_correct", "r1_accuracy_pct"),
               0.05))
 
+    # --- contamination probe: the matched original-vs-perturbed comparison.
+    # This is the claim a reviewer showed was inverted by using a full-pool
+    # comparator, so both sides of it are now guarded.
+    pm = rep.get("perturbed_matched", {})
+    if pm:
+        add("perturbed: original-item solo", r"falls from \$([0-9.]+)\\%\$ to \$21\.6\\%\$",
+            pm["original_solo_pct"], 0.05)
+        add("perturbed: original-item gain",
+            r"On the original items it is \$\+([0-9.]+)\$ points", pm["original_gain_pp"], 0.05)
+        add("perturbed: perturbed-item gain",
+            r"of the same items it is \$\+([0-9.]+)\$", pm["perturbed_gain_pp"], 0.05)
+
+    # --- capability gradient against the C2 baseline (the "excess" association)
+    ex = rep.get("sweep_spearman_excess", {})
+    if ex:
+        add("rho vs C2 baseline", r"homogeneous-peer baseline \(C2\) is\s+\$\\rho = -([0-9.]+)\$",
+            abs(ex["rho_c2_baseline"]), 0.005)
+        add("rho of the excess", r"weakly: \$\\rho = -([0-9.]+)\$", abs(ex["rho_excess"]), 0.005)
+        add("excess exact p", r"weakly: \$\\rho = -[0-9.]+\$ \(exact \$p = ([0-9.]+)\$\)",
+            ex["p_exact_excess"], 0.001)
+
+    # --- the deployed filter gap (reported value must be the deployed one)
+    gate = {g["substrate"]: g for g in rep.get("filter_gate", [])}
+    dep = gate.get("Honest weak, filter as deployed (C5H, R0)")
+    if dep:
+        add("deployed retention gap",
+            r"\$\\Delta_\{\\mathrm\{ret\}\}\$ to \$\+0\.([0-9]{3})\$ over all \$600\$",
+            round(dep["retention_gap"] * 1000), 0.6)
+
+    # --- revision-rate family: the paper must state the failures as failures
+    rev = rep.get("revision_rate_family", [])
+    add("n revision contrasts", r"contains the (seven|six|eight) paired harmful-revision", len(rev), 0)
+    add("n revision failures", r"(three|two|four)\s+of the seven\s+do not survive correction",
+        sum(1 for r in rev if not r.get("survives_holm")), 0)
+
     # --- counts
     add("total API focal trials", r"\$39\{,\}(470)\$ API focal trials", 470, 0)
     add("main pool trials", r"\(\$37\{,\}(500)\$ on the main", 500, 0)
@@ -122,13 +157,25 @@ def build_registry(rep):
     return R
 
 
+def _flat(s: str) -> str:
+    """Collapse all runs of whitespace to single spaces.
+
+    Registry patterns are written against flowing prose. Without this, re-wrapping
+    a paragraph moves a newline into the middle of a pattern and the check stops
+    matching — which used to be reported as a benign NOT FOUND rather than as the
+    silent loss of coverage it actually is.
+    """
+    return re.sub(r"\s+", " ", s)
+
+
 def run_registry(tex, registry):
+    tex = _flat(tex)
     tables = REPO / "Submission" / "tables"
     rows = []
     for cid, pat, expected, tol in registry:
         if isinstance(pat, tuple) and pat[0] == "TABLE":
             f = tables / f"{pat[1]}.tex"
-            src = f.read_text(errors="replace") if f.exists() else ""
+            src = _flat(f.read_text(errors="replace")) if f.exists() else ""
             m = re.search(pat[2], src)
         else:
             m = re.search(pat, tex)
@@ -196,7 +243,19 @@ def main():
     args = ap.parse_args()
 
     rep = json.loads(NUMBERS.read_text())
-    paper, notes = PAPER.read_text(errors="replace"), NOTES.read_text(errors="replace")
+
+    # Submission/ is not part of the released artefact (the manuscript source is
+    # not redistributed), so this script has nothing to check against in a clean
+    # clone. Say so and exit 0 rather than dying on FileNotFoundError: a missing
+    # manuscript is not a failed check.
+    if not PAPER.exists():
+        print("Submission/ACL_Paper.tex not present — this script compares the "
+              "manuscript against the analysis output and is therefore "
+              "authors-only. Nothing to check.")
+        return 0
+
+    paper = PAPER.read_text(errors="replace")
+    notes = NOTES.read_text(errors="replace") if NOTES.exists() else ""
 
     rows = (run_registry(paper, build_registry(rep))
             + cross_document(paper, notes)
@@ -205,7 +264,7 @@ def main():
     width = max(len(r[0]) for r in rows) + 2
     bad = 0
     for cid, status, found, expected, note in rows:
-        if status == "MISMATCH":
+        if status in ("MISMATCH", "NOT FOUND"):
             bad += 1
         mark = {"OK": "ok  ", "SKIP": "skip", "NOT FOUND": "MISS", "MISMATCH": "FAIL"}[status]
         print(f"  {mark} {cid:<{width}} found={found:<10} expected={expected:<10} {note}")
@@ -218,7 +277,8 @@ def main():
         print(f"\nwritten: {args.csv}")
 
     n_ok = sum(1 for r in rows if r[1] == "OK")
-    print(f"\n{n_ok}/{len(rows)} checks pass; {bad} mismatch(es)")
+    print(f"\n{n_ok}/{len(rows)} checks pass; {bad} failure(s) "
+          f"(mismatched or no longer matching the manuscript)")
     return 1 if bad else 0
 
 

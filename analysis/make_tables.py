@@ -19,7 +19,10 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 NUMBERS = HERE / "paper_numbers.json"
-OUT = HERE.parent / "tables"
+# The manuscript lives in Submission/ and \input{tables/...} resolves relative
+# to it, so that is where the generated tables have to land. Writing to
+# <repo>/tables produced files nothing read.
+OUT = HERE.parent / "Submission" / "tables"
 
 # Display names, in the order the paper presents them.
 COND_LABEL = {
@@ -162,13 +165,14 @@ def table_stats(rep) -> str:
         r"McNemar $p$-value and $p_{\mathrm{H}}$ its Holm-corrected value within",
         r"this family of contrasts. $^{\ast}$ significant at $\alpha=0.05$ after",
         r"correction.\label{tab:stats}}",
+        r"\begin{adjustbox}{max width=\linewidth}",
         r"\begin{tabular}{@{}lrrl@{}}", r"\toprule",
         r"Contrast & $\Delta$ & $p$ & $p_{\mathrm{H}}$ \\", r"\midrule",
     ]
     for label, d, p, ph in rows:
         star = r"$^{\ast}$" if (ph is not None and ph < 0.05) else ""
         lines.append(f"{label} & {fmt(d, signed=True)} & {fmt_p(p)} & {fmt_p(ph)}{star} " + r"\\")
-    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}", r"\end{table}"]
     return "\n".join(lines)
 
 
@@ -180,13 +184,16 @@ def table_sweep(rep) -> str:
     lines = [
         r"\begin{table}[t]", r"\centering", r"\small",
         r"\caption{Capability sweep. Solo = C1 accuracy; C4 = accuracy under two",
-        r"confidently wrong peers; C$\to$I = harmful-flip rate in C4, conditional",
-        r"on a correct round-0 answer. All eight $\Delta_{\mathrm{solo}}$ point",
-        r"estimates are non-negative; the harmful-flip",
-        r"rate rises steeply as solo ability falls.\label{tab:sweep}}",
+        r"confidently wrong peers; C$\to$I = harmful-flip rate, conditional",
+        r"on a correct round-0 answer, under homogeneous peers (C2) and under two",
+        r"wrong peers (C4). All eight $\Delta_{\mathrm{solo}}$ point estimates are",
+        r"non-negative. The C4 flip rate rises steeply as solo ability falls; the",
+        r"C2 column shows how much of that gradient is present without wrong",
+        r"peers.\label{tab:sweep}}",
         r"\begin{adjustbox}{max width=\linewidth}",
-        r"\begin{tabular}{@{}lrrll@{}}", r"\toprule",
-        r"Focal model & Solo & C4 & $\Delta_{\mathrm{solo}}$ [95\% CI] & C$\to$I [95\% CI] \\",
+        r"\begin{tabular}{@{}lrrlrl@{}}", r"\toprule",
+        r"Focal model & Solo & C4 & $\Delta_{\mathrm{solo}}$ [95\% CI] & "
+        r"C2 C$\to$I & C4 C$\to$I [95\% CI] \\",
         r"\midrule",
     ]
     for r in sw:
@@ -202,6 +209,7 @@ def table_sweep(rep) -> str:
             f"{FOCAL_LABEL.get(r['focal'], r['focal'])} & "
             f"{fmt(r['solo_accuracy_pct'])} & {fmt(r['c4_accuracy_pct'])} & "
             f"{fmt(r['c4_delta_pp'], signed=True)}{dci} & "
+            f"{fmt(r.get('c2_flip_pct'))} & "
             f"{fmt(r['c4_flip_correct_to_incorrect_pct'])}{ci} " + r"\\"
         )
     rho = rep.get("sweep_spearman_solo_vs_harmful_flip", {})
@@ -252,6 +260,41 @@ def table_fullcounts(rep) -> str:
     return "\n".join(lines)
 
 
+def table_gate(rep):
+    """Appendix Table: retention gate for the confidence filter."""
+    rows = rep.get("filter_gate", [])
+    if not rows:
+        return None
+    lines = [
+        r"\begin{table}[t]", r"\centering", r"\small",
+        r"\caption{Retention gate for the confidence filter, recomputed from the",
+        r"pooled trial logs. $\Delta_{\mathrm{ret}} = P(\text{ret}\mid\text{corr.})",
+        r"- P(\text{ret}\mid\text{wrong})$ is positive when the filter keeps correct",
+        r"peers more often; AUROC uses \emph{correct} as the positive class.",
+        r"The last row scores an unparseable confidence as a drop, which is what",
+        r"the deployed rule does; it is the headline figure. Wrong-anchored peers",
+        r"are never correct, so no gap is defined for that substrate.",
+        r"All rows fail the $0.10$ threshold.\label{tab:gate}}",
+        r"\begin{adjustbox}{max width=\linewidth}",
+        r"\begin{tabular}{@{}lrcccc@{}}", r"\toprule",
+        r"Substrate & $n$ & $P(\text{ret}\!\mid\!\text{corr.})$ & "
+        r"$P(\text{ret}\!\mid\!\text{wrong})$ & $\Delta_{\mathrm{ret}}$ & AUROC \\",
+        r"\midrule",
+    ]
+    def num(v, signed=False, nd=3):
+        if v is None:
+            return "---"
+        return f"${v:+.{nd}f}$" if signed else f"${v:.{nd}f}$"
+    for r in rows:
+        lines.append(
+            f"{r['substrate']} & {r['n']:,} & {num(r['p_retained_correct'])} & "
+            f"{num(r['p_retained_wrong'])} & {num(r['retention_gap'], signed=True)} & "
+            f"{num(r['auroc'], nd=2)} ".replace(",", "{,}") + r"\\"
+        )
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}", r"\end{table}"]
+    return "\n".join(lines)
+
+
 def main():
     rep = load()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -260,9 +303,14 @@ def main():
         ("tab_stats", table_stats),
         ("tab_sweep", table_sweep),
         ("tab_fullcounts", table_fullcounts),
+        ("tab_gate", table_gate),
     ]:
+        body = fn(rep)
+        if body is None:
+            print(f"skipped {name} (no data in paper_numbers.json)")
+            continue
         p = OUT / f"{name}.tex"
-        p.write_text(fn(rep) + "\n")
+        p.write_text(body + "\n")
         print(f"wrote {p.relative_to(OUT.parent.parent)}")
 
 

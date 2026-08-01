@@ -24,9 +24,13 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
+# HERE is <repo>/analysis, so the repo root is HERE.parent. `HERE.parents[1]`
+# pointed one level above the repo, where Code_Phase_2/ does not exist, so the
+# GPU probe was never found and main-text Figure 4 was silently skipped.
+REPO = HERE.parent
 NUMBERS = HERE / "paper_numbers.json"
-OUT = HERE.parent / "images"
+# Figures are \includegraphics-ed from Submission/, so they must land there.
+OUT = HERE.parent / "Submission" / "images"
 GPU_OUT = REPO / "Code_Phase_2" / "results" / "gpu_probe"
 
 plt.rcParams.update({
@@ -96,7 +100,7 @@ def figure1(rep):
     ax.set_xlabel("Solo accuracy (%)")
     ax.set_ylabel("Harmful flip rate under\ntwo wrong peers (%)")
     if rho:
-        ax.set_title(rf"Spearman $\rho$ = {rho['rho']:.2f} ($p$ = {rho['p']:.4f})",
+        ax.set_title(rf"Spearman $\rho$ = {rho['rho']:.2f} ($p$ = {rho['p_exact_permutation']:.4f})",
                      fontsize=8, pad=6)
     fig.savefig(OUT / "figure1_capability_corruption.png")
     plt.close(fig)

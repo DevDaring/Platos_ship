@@ -20,7 +20,7 @@ Source of truth: `results/data/outputs/*.parquet` (Phase 1),
 | 3 | Table 3 (p = 0.013) and Appendix S2 (p = 0.017) disagreed for the same C4–C1 contrast. | **High** | Two different multiplicity families were in use. Both families are now **declared explicitly** in §3.5 (causal family of 8; ladder family of 6), S2 reports the raw value plus both corrected values, and states which family the main text uses and why. |
 | 4 | Spearman ρ for the capability sweep was computed on the **1-dp rounded** table values, creating ties among four mid-range models and inflating the statistic to −0.97. | **High** | Correlations now use unrounded rates. **ρ = −0.95**, exact permutation p = 0.0011 (not the asymptotic 0.0003 previously quoted as 0.0001). |
 | 5 | Appendix S1's trial-count table still carried the superseded 50-question GPT-4o-mini numbers, contradicting Table 2. | **High** | All tables regenerated from logs; the superseded `openrouter_gpt4o_mini` focal is excluded from pooled analyses and reported separately. |
-| 6 | Appendix S5 persona counts (1,102 first-attempt / 384 regenerated) were each off by 14 — the failures were double-counted. | **Medium** | Correct values from `regeneration_attempts_used`: **1,116 / 370 / 14**. The correct-anchored pool (1,033 / 452 / 15) is now reported too. |
+| 6 | ~~Appendix S5 persona counts were each off by 14.~~ **This entry was itself wrong and is retracted.** The original 1,102 / 384 / 14 was correct; "correcting" it to 1,116 / 370 counted the 14 failed personas as first-attempt passes. | **Medium** | Reverted to **1,102 / 384 / 14**, recomputed as `regeneration_attempts_used` crossed with `validation_pass_status`. The correct-anchored pool is 1,033 / 452 / 15. |
 | 7 | Appendix S10's GPT-4o-mini persona-style rows used the superseded n≈40 subset. | **Medium** | Recomputed on the full pool (n ≈ 224–267). The style spread narrows from 11.6 pp to 7.0 pp, which *strengthens* the paper's own conclusion that style is not a driver. |
 | 8 | Appendix S7 asserted the weak models' unprompted accuracy "is not measured in this study". | **Medium** | The honest-peer conditions measure it directly: 50.4% (Llama-3.1-8B) and 45.1% (Gemma-3-4B). |
 | 9 | The released corrected-gate report substituted **0** for `P(loud | correct)` on the wrong-anchored substrate, where that class is empty by construction — producing a spurious gap of 0.99 and a "passed" verdict contradicting the paper's own table. | **High** | `corrected_gate.py` now emits `undefined_single_class` with per-class counts. Undefined stays undefined. |
@@ -112,3 +112,40 @@ preprint replaced by the Findings EMNLP 2024 version),
 the published version), `smit2024going` (wrong author order). `du2023improving`
 and `sharma2023towards` were also moved from arXiv preprints to their ICML 2024
 and ICLR 2024 versions.
+
+---
+
+## Second round: discrepancies found by adversarial re-review
+
+Three independent red-team reviews were run against the artefact after the
+first round of fixes. They found six further defects, all now resolved.
+
+| # | Discrepancy | Severity | Resolution |
+|---|---|---|---|
+| 15 | §4.5 claimed the math gain "persists at a similar size" under perturbation, under a section titled "The math gain is not memorisation". The comparison set a **GSM8K-only perturbed gain against a full-pool original gain**, concealing a two-thirds collapse. | **Critical** | On the matched comparator — the same 97 items in their original form — the gain falls from **+16.1 pp to +5.4 pp**. §4.5 is retitled to a question, reports the matched comparison, and states that the drop is consistent with partial contamination *and* with the items simply being harder, which the design cannot separate. |
+| 16 | Holm families covered the accuracy contrasts only, while harmful-revision contrasts were asserted uncorrected in the prose — letting the family boundary decide the outcome. | **Critical** | A third **revision-rate family** is declared, containing all seven revision contrasts stated anywhere in the paper. **Three do not survive correction** (C4split–C4, C2het–C2, C4–C2) and are reported as descriptive. The C4split claim now rests on its accuracy contrast, which does survive. |
+| 17 | The confidence-filter retention gap was reported over **parsed** confidences only. The deployed rule also drops peers whose confidence cannot be parsed, and all 22 such peers in C5H were wrong. | **High** | The deployed gap is **+0.072** over 600 messages, not +0.007 over 578, and is now the headline figure. Still far below the 0.10 threshold, and it arises from a parsing failure rather than from confidence — conclusion unchanged. |
+| 18 | The capability gradient was reported only against the wrong-peer condition, but weak models revise more under **any** debate. | **High** | The C2 baseline correlation is ρ = −0.45 and is now a column in Table 4. The wrong-peer-specific excess is **ρ = −0.83** (exact p = 0.015, leave-one-out [−0.96, −0.75]) — ordering preserved, estimate less stable, both stated. |
+| 19 | The peer-consensus comparison used a χ² test on trials that are not independent (five replications per question), and concluded that agreement "makes no difference". | **Medium** | Replaced with a question-clustered bootstrap: −0.65 pp, 95% CI [−4.2, +3.4]. The text now says the data cannot resolve a difference of this size, not that none exists. |
+| 20 | `make_figures.py` crashed on `rho['p']` and resolved `REPO` one level above the repository, so it regenerated **no** figures and silently skipped main-text Figure 1. Table 7 was hand-written, with a substrate label ("Phase-1") that did not match its own counts. | **High** | Both path bugs and the key error fixed; the script writes to `Submission/images/` and regenerates all three figures. Table 7 is now generated by `make_tables.py` from the pooled logs, with substrate labels that match the data. |
+
+**Artefact fixes in the same round.** Added the missing `LICENSE` (the README
+promised MIT and none shipped). `crosscheck_paper_numbers.py` now exits 0 with
+an explanation instead of `FileNotFoundError` when `Submission/` is absent, and
+a claim whose pattern no longer matches the manuscript is now a **failure**
+rather than a silently skipped check — rewrapping a paragraph had been quietly
+disabling checks. `make_tables.py` writes to `Submission/tables/` rather than a
+directory nothing read. README corrected to point at `analysis/` and to
+document the Python 3.12 requirement. Three team-authored bibliography entries
+changed to corporate authors, so `acl_natbib.bst` no longer renders "and 1
+others". The uncited `deepseekai2024v3` entry was removed rather than cited,
+because citing DeepSeek-V3 would contradict the paper's own statement that the
+served snapshot is not tied to any published report.
+
+**One reviewer claim checked and rejected.** A reviewer reported that Appendix
+S5's correct-anchored counts should be 1,048 / 437 / 15. The crosstab of
+`regeneration_attempts_used` against `validation_pass_status` shows all 15
+failures sit at zero regeneration attempts, so 1,048 counts them as
+first-attempt *passes*. The paper's 1,033 / 452 / 15 is correct. Checking it,
+however, exposed that entry 6 above had made the identical error in the
+wrong-anchored pool — see the retraction there.

@@ -18,6 +18,7 @@ final_answers.parquet, unions them, and prints:
 import argparse
 import json
 import pathlib
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -194,6 +195,76 @@ TRIAL_LOGS = [
 ]
 
 
+def _exact_perm_p(x, y) -> float:
+    """Exact permutation p for Spearman rho by enumerating all orderings of y.
+
+    With n = 8 the asymptotic p-value is unreliable; 8! = 40,320 is cheap.
+    """
+    import itertools
+    rho = stats.spearmanr(x, y).statistic
+    perms = [stats.spearmanr(x, np.array(pp)).statistic
+             for pp in itertools.permutations(y)]
+    return float(np.mean([abs(v) >= abs(rho) for v in perms]))
+
+
+def _pooled_trial_log() -> pd.DataFrame:
+    frames = [pd.read_parquet(p) for p in TRIAL_LOGS if p.exists()]
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+def _gate_rows() -> list:
+    """
+    Retention gate for the confidence filter, over the pooled logs.
+
+    Two accountings are reported for the honest substrate, because they answer
+    different questions. `parsed` restricts to peers whose confidence parsed,
+    which is what the diagnostic in the released report measures. `deployed`
+    scores an unparseable confidence as a drop, which is what the filter
+    actually does to that peer. The deployed figure is the headline one.
+    """
+    sys.path.insert(0, str(REPO / "Code_Phase_2" / "CPU_Only" / "src"))
+    try:
+        from corrected_gate import compute_corrected_gate
+    except Exception as exc:                      # pragma: no cover
+        print(f"(gate skipped: {exc})")
+        return []
+
+    tl = _pooled_trial_log()
+    if tl.empty:
+        return []
+
+    specs = [
+        ("Instructed weak peers (C3/C4, R1)",
+         ["C3_one_smart_one_dumb", "C4_one_smart_two_dumb"], [1], False),
+        ("Wrong-anchored (C5R, R0)", ["C5R_anchored_with_confidence_filter"], [0], False),
+        ("Honest weak, parsed only (C5H, R0)",
+         ["C5H_honest_with_confidence_filter"], [0], False),
+        ("Honest weak, filter as deployed (C5H, R0)",
+         ["C5H_honest_with_confidence_filter"], [0], True),
+    ]
+    rows = []
+    for label, conds, rounds, deployed in specs:
+        df = tl
+        if deployed:
+            # An unparseable confidence is dropped by the deployed rule, which
+            # is a retention decision, not a missing observation. Encode it as
+            # a confidence below any threshold so it counts as "not retained".
+            df = tl.copy()
+            m = (df.condition_identifier.isin(conds)
+                 & (df.responding_agent_role == "dumb")
+                 & df.debate_round_index.isin(rounds))
+            df.loc[m & df.extracted_self_reported_confidence_integer.isna(),
+                   "extracted_self_reported_confidence_integer"] = -1
+        r = compute_corrected_gate(df, conds, ["dumb"], rounds=rounds)
+        rows.append({"substrate": label, "n": r["n_responses"],
+                     "p_retained_correct": r["retained_when_correct"],
+                     "p_retained_wrong": r["retained_when_wrong"],
+                     "retention_gap": r["retention_gap_correct_minus_wrong"],
+                     "auroc": r["auroc_confidence_vs_correct"],
+                     "decision": r["gate_decision"]})
+    return rows
+
+
 def _peer_agreement_index() -> pd.Series:
     """
     For every (question, replication, condition), whether the two weak peers
@@ -337,6 +408,14 @@ def main():
         mm = (gc1[key + ["round_one_answer_was_correct"]]
               .merge(gc4[key + ["round_one_answer_was_correct"]], on=key,
                      suffixes=("_c1", "_c4")))
+        gc2 = df[(df.focal_smart_agent_name == focal)
+                 & (df.condition_identifier == "C2_three_smart")]
+        c2_flip = None
+        if not gc2.empty:
+            r0_2 = gc2["round_zero_answer_was_correct"].astype(bool)
+            ci_2 = gc2["focal_agent_flipped_correct_to_incorrect"].astype(bool)
+            c2_flip = float(100 * ci_2.sum() / max(r0_2.sum(), 1))
+
         d_lo = d_hi = None
         if not mm.empty:
             qs = mm["question_identifier"].unique()
@@ -359,6 +438,11 @@ def main():
             "c4_accuracy_pct_raw": float(c4_raw),
             "c4_delta_pp_raw": float(c4_raw - solo_raw),
             "c4_flip_pct_raw": float(flip_raw),
+            # Homogeneous-peer baseline. Weak models revise more under any
+            # debate, so the raw solo-vs-flip gradient is not by itself
+            # evidence about WRONG peers; this is the subtrahend.
+            "c2_flip_pct": None if c2_flip is None else round(c2_flip, 1),
+            "c2_flip_pct_raw": c2_flip,
             "c4_flip_ci_low": round(100 * lo, 1),
             "c4_flip_ci_high": round(100 * hi, 1),
             "c4_delta_ci_low": None if d_lo is None else round(float(d_lo), 1),
@@ -453,6 +537,16 @@ def main():
         ("deepseek_primary", "C4_one_smart_two_dumb", "C4H_one_smart_two_honest"),
     ]
     fres = [paired_flip_test(df, f, a, b) for (f, a, b) in flip_pairs]
+    # C2het carries its own focal label (`het_deepseek`) because its peer set
+    # differs, but the focal model is the same DeepSeek-chat as C2. Relabel a
+    # copy so the C2-vs-C2het revision contrast can be paired by question, and
+    # so it is corrected inside the revision-rate family like every other one.
+    if (df.condition_identifier == "C2het_three_distinct_smart").any():
+        dh = df.copy()
+        dh.loc[dh.focal_smart_agent_name == "het_deepseek",
+               "focal_smart_agent_name"] = "deepseek_primary"
+        fres.append(paired_flip_test(dh, "deepseek_primary", "C2_three_smart",
+                                     "C2het_three_distinct_smart"))
     report["flip_contrasts"] = fres
     print(pd.DataFrame(fres).to_string(index=False))
     print()
@@ -590,6 +684,76 @@ def main():
         print("perturbed C1 vs C4 (question-level):", json.dumps(pcq))
         print()
 
+    # ── contamination probe, matched to the SAME items in their original form ──
+    # Comparing the perturbed gain against the full-pool gain mixes MMLU-Pro in
+    # and makes a two-thirds collapse look like "a similar size". Each perturbed
+    # id is `gsm8k_perturbed_<n>` derived from `gsm8k_<n>`, so the matched
+    # comparator is those originals and nothing else.
+    if not pert.empty:
+        base_ids = pert.question_identifier.str.replace(
+            PERTURBED_PREFIX, "gsm8k_", regex=False).unique()
+        orig = df[(df.focal_smart_agent_name == "deepseek_primary")
+                  & df.question_identifier.isin(base_ids)]
+        pf = pert[pert.focal_smart_agent_name == "deepseek_primary"]
+
+        def acc(g, c):
+            s = g[g.condition_identifier == c]["round_one_answer_was_correct"]
+            return None if s.empty else round(100 * s.astype(bool).mean(), 1)
+
+        o1, o4 = acc(orig, "C1_smart_solo"), acc(orig, "C4_one_smart_two_dumb")
+        p1, p4 = acc(pf, "C1_smart_solo"), acc(pf, "C4_one_smart_two_dumb")
+        if None not in (o1, o4, p1, p4):
+            report["perturbed_matched"] = {
+                "n_items": int(len(base_ids)),
+                "original_solo_pct": o1, "original_c4_pct": o4,
+                "original_gain_pp": round(o4 - o1, 1),
+                "perturbed_solo_pct": p1, "perturbed_c4_pct": p4,
+                "perturbed_gain_pp": round(p4 - p1, 1),
+                "gain_retained_fraction": round((p4 - p1) / (o4 - o1), 3) if o4 != o1 else None,
+            }
+            print("=== Contamination probe, matched to the same items ===")
+            print(json.dumps(report["perturbed_matched"], indent=1))
+            print()
+
+    # ── capability gradient net of the homogeneous-peer baseline ───────────
+    # The raw solo-vs-C4-flip correlation partly reflects that weak models
+    # revise more under ANY debate. Subtracting each model's C2 flip rate
+    # isolates the wrong-peer-specific excess.
+    sw_rows = [r for r in report.get("capability_sweep", [])
+               if r.get("c2_flip_pct_raw") is not None and r.get("focal") != "het_deepseek"]
+    if len(sw_rows) >= 5:
+        solo = np.array([r["solo_accuracy_pct_raw"] for r in sw_rows], float)
+        c4f = np.array([r["c4_flip_pct_raw"] for r in sw_rows], float)
+        c2f = np.array([r["c2_flip_pct_raw"] for r in sw_rows], float)
+        excess = c4f - c2f
+        loo = []
+        for i in range(len(solo)):
+            k = [j for j in range(len(solo)) if j != i]
+            loo.append(float(stats.spearmanr(solo[k], excess[k]).statistic))
+        report["sweep_spearman_excess"] = {
+            "n": len(sw_rows),
+            "rho_c2_baseline": round(float(stats.spearmanr(solo, c2f).statistic), 3),
+            "rho_excess": round(float(stats.spearmanr(solo, excess).statistic), 3),
+            "p_exact_excess": round(_exact_perm_p(solo, excess), 4),
+            "leave_one_out_rho_min": round(min(loo), 3),
+            "leave_one_out_rho_max": round(max(loo), 3),
+        }
+        print("=== Capability gradient net of the C2 baseline ===")
+        print(json.dumps(report["sweep_spearman_excess"], indent=1))
+        print()
+
+    # ── confidence-filter gate, recomputed from the pooled trial logs ──────
+    # The released Phase-2 gate report was written from a single-phase snapshot
+    # and its substrate label said "phase1" while the counts covered both
+    # phases. Recomputing here, over every trial log, makes the label and the
+    # numbers agree and puts Table 7 under the same generator as the rest.
+    gate = _gate_rows()
+    if gate:
+        report["filter_gate"] = gate
+        print("=== Confidence-filter retention gate (pooled logs) ===")
+        print(pd.DataFrame(gate).to_string(index=False))
+        print()
+
     # ── Table 3 family: the causal contrasts, Holm-corrected together ──────
     # These five (six once the split-peer control lands) are ONE family; the
     # manuscript previously printed raw p-values under a "Holm-corrected"
@@ -624,6 +788,24 @@ def main():
         print(pd.DataFrame(fam)[["contrast", "delta_pp", "p_raw", "p_holm"]].to_string(index=False))
         print()
         report["table3_family"] = fam
+
+    # --- Third declared family: revision-rate (harmful-flip) contrasts. -------
+    # Reviewers correctly noted that correcting only the accuracy contrasts,
+    # while asserting flip-rate contrasts uncorrected in the prose, lets the
+    # family boundary do the work. Every paired harmful-revision contrast the
+    # paper states is therefore collected here and corrected within itself,
+    # whatever the outcome.
+    rev = [dict(r) for r in report.get("flip_contrasts", []) if "p_raw" in r]
+    if rev:
+        rev.sort(key=lambda r: r["p_raw"])
+        for r, a in zip(rev, holm([r["p_raw"] for r in rev])):
+            r["p_holm"] = a
+            r["survives_holm"] = bool(a < 0.05)
+        print("=== Revision-rate family, Holm-corrected within itself ===")
+        print(pd.DataFrame(rev)[["focal", "contrast", "flip_a_pct", "flip_b_pct",
+                                 "p_raw", "p_holm", "survives_holm"]].to_string(index=False))
+        print()
+        report["revision_rate_family"] = rev
 
     args.json.parent.mkdir(parents=True, exist_ok=True)
     args.json.write_text(json.dumps(report, indent=2, default=str))
