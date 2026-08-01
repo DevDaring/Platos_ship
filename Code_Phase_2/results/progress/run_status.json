@@ -1,0 +1,173 @@
+{
+  "generated_utc": "2026-08-01T05:23:44+00:00",
+  "checkpoint_exists": true,
+  "total_completed_trials": 29770,
+  "by_focal_and_condition": [
+    {
+      "focal_smart_agent_name": "deepseek_primary",
+      "condition_identifier": "C1R_solo_reanswer",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "deepseek_primary",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 485
+    },
+    {
+      "focal_smart_agent_name": "deepseek_primary",
+      "condition_identifier": "C3H_two_smart_one_honest",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "deepseek_primary",
+      "condition_identifier": "C4H_one_smart_two_honest",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "deepseek_primary",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 485
+    },
+    {
+      "focal_smart_agent_name": "deepseek_primary",
+      "condition_identifier": "C5H_honest_with_confidence_filter",
+      "trials": 300
+    },
+    {
+      "focal_smart_agent_name": "deepseek_primary",
+      "condition_identifier": "C5R_anchored_with_confidence_filter",
+      "trials": 300
+    },
+    {
+      "focal_smart_agent_name": "gpt4o_mini",
+      "condition_identifier": "C1R_solo_reanswer",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "gpt4o_mini",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "gpt4o_mini",
+      "condition_identifier": "C2_three_smart",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "gpt4o_mini",
+      "condition_identifier": "C3_two_smart_one_dumb",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "gpt4o_mini",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "sweep_gemma_3_27b",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_gemma_3_27b",
+      "condition_identifier": "C2_three_smart",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_gemma_3_27b",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_gemma_3_4b_focal",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_gemma_3_4b_focal",
+      "condition_identifier": "C2_three_smart",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_gemma_3_4b_focal",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_llama_3_1_70b",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_llama_3_1_70b",
+      "condition_identifier": "C2_three_smart",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_llama_3_1_70b",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_llama_3_1_8b_focal",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_llama_3_1_8b_focal",
+      "condition_identifier": "C2_three_smart",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_llama_3_1_8b_focal",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_mistral_small",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_mistral_small",
+      "condition_identifier": "C2_three_smart",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_mistral_small",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_qwen_2_5_72b",
+      "condition_identifier": "C1_smart_solo",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_qwen_2_5_72b",
+      "condition_identifier": "C2_three_smart",
+      "trials": 900
+    },
+    {
+      "focal_smart_agent_name": "sweep_qwen_2_5_72b",
+      "condition_identifier": "C4_one_smart_two_dumb",
+      "trials": 900
+    }
+  ],
+  "gpu_probe_trials": 0,
+  "recent_log_lines": [
+    "2026-08-01 05:23:12,097 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:12,798 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:13,164 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:22,051 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:28,453 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:29,459 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:30,589 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:31,101 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:34,594 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:37,660 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:38,595 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 05:23:42,381 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\""
+  ],
+  "recent_api_failures": []
+}
