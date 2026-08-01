@@ -184,18 +184,24 @@ def table_sweep(rep) -> str:
         r"on a correct round-0 answer. All eight $\Delta_{\mathrm{solo}}$ point",
         r"estimates are non-negative; the harmful-flip",
         r"rate rises steeply as solo ability falls.\label{tab:sweep}}",
-        r"\begin{tabular}{@{}lrrrl@{}}", r"\toprule",
-        r"Focal model & Solo & C4 & $\Delta_{\mathrm{solo}}$ & C$\to$I [95\% CI] \\",
+        r"\begin{adjustbox}{max width=\linewidth}",
+        r"\begin{tabular}{@{}lrrll@{}}", r"\toprule",
+        r"Focal model & Solo & C4 & $\Delta_{\mathrm{solo}}$ [95\% CI] & C$\to$I [95\% CI] \\",
         r"\midrule",
     ]
     for r in sw:
         ci = ""
         if r.get("c4_flip_ci_low") is not None:
             ci = f" [{r['c4_flip_ci_low']:.1f}, {r['c4_flip_ci_high']:.1f}]"
+        dci = ""
+        if r.get("c4_delta_ci_low") is not None:
+            lo = f"{r['c4_delta_ci_low']:+.1f}".replace("-", "$-$")
+            hi = f"{r['c4_delta_ci_high']:+.1f}".replace("-", "$-$")
+            dci = f" [{lo}, {hi}]"
         lines.append(
             f"{FOCAL_LABEL.get(r['focal'], r['focal'])} & "
             f"{fmt(r['solo_accuracy_pct'])} & {fmt(r['c4_accuracy_pct'])} & "
-            f"{fmt(r['c4_delta_pp'], signed=True)} & "
+            f"{fmt(r['c4_delta_pp'], signed=True)}{dci} & "
             f"{fmt(r['c4_flip_correct_to_incorrect_pct'])}{ci} " + r"\\"
         )
     rho = rep.get("sweep_spearman_solo_vs_harmful_flip", {})
@@ -208,7 +214,8 @@ def table_sweep(rep) -> str:
             r"]$, and excluding the two weakest models $\rho=-" +
             f"{abs(rho.get('rho_excluding_two_weakest', float('nan'))):.2f}" +
             r"$ ($p=" + f"{rho.get('p_excluding_two_weakest', float('nan')):.4f}" + r"$).}")
-    lines += [r"\bottomrule", r"\end{tabular}", r"\par\smallskip", foot, r"\end{table}"]
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}",
+              r"\par\smallskip", foot, r"\end{table}"]
     return "\n".join(lines)
 
 

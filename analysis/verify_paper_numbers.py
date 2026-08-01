@@ -330,6 +330,25 @@ def main():
         solo_raw = 100 * gc1["round_one_answer_was_correct"].mean()
         c4_raw = 100 * gc4["round_one_answer_was_correct"].mean()
         lo, hi = stats.binomtest(int(ci.sum()), int(r0.sum())).proportion_ci(0.95)
+        # Paired bootstrap CI for the accuracy change vs solo. Resampling unit is
+        # the QUESTION, so the within-question correlation induced by replication
+        # is preserved; C1 and C4 are matched on (question, replication).
+        key = ["question_identifier", "trial_replication_index"]
+        mm = (gc1[key + ["round_one_answer_was_correct"]]
+              .merge(gc4[key + ["round_one_answer_was_correct"]], on=key,
+                     suffixes=("_c1", "_c4")))
+        d_lo = d_hi = None
+        if not mm.empty:
+            qs = mm["question_identifier"].unique()
+            byq = {q: g for q, g in mm.groupby("question_identifier")}
+            rng = np.random.default_rng(20260502)
+            boots = []
+            for _ in range(2000):
+                pick = rng.choice(qs, len(qs), replace=True)
+                sub = pd.concat([byq[q] for q in pick])
+                boots.append(100 * (sub["round_one_answer_was_correct_c4"].mean()
+                                    - sub["round_one_answer_was_correct_c1"].mean()))
+            d_lo, d_hi = np.percentile(boots, [2.5, 97.5])
         sweep.append({
             "focal": focal,
             "solo_accuracy_pct": float(solo.iloc[0]["r1_accuracy_pct"]),
@@ -342,6 +361,8 @@ def main():
             "c4_flip_pct_raw": float(flip_raw),
             "c4_flip_ci_low": round(100 * lo, 1),
             "c4_flip_ci_high": round(100 * hi, 1),
+            "c4_delta_ci_low": None if d_lo is None else round(float(d_lo), 1),
+            "c4_delta_ci_high": None if d_hi is None else round(float(d_hi), 1),
         })
     sw = pd.DataFrame(sweep).sort_values("solo_accuracy_pct", ascending=False)
     print(sw.to_string(index=False))

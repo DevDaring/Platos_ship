@@ -1,16 +1,18 @@
 """
 corrected_gate.py — Experiment E3: the corrected confidence-filter pre-flight.
 
+Signed to match the deployed filter, which RETAINS peers with confidence >=
+threshold. The useful quantity is therefore
+    retention_gap = P(retained | correct) - P(retained | wrong)
+which is positive when the filter preferentially keeps correct peers.
+
 Phase 1's gate asked P(confidence >= 60 | wrong) and passed at 0.995 — but that
-number says nothing about whether confidence SEPARATES wrong from right. The
-corrected gate tests the discriminative quantity:
-
-    gap = P(loud | wrong) - P(loud | correct)
-
-and additionally requires AUROC(confidence -> correctness) to clear a floor.
-The filter is only worth deploying when confident-wrong is meaningfully MORE
-common than confident-correct. On Phase 1 data the gap was -0.003, so the
-corrected gate FAILS and predicts the filter's null effect in advance.
+number says nothing about whether confidence SEPARATES correct from wrong. The
+corrected gate tests the retention gap above, and additionally requires
+AUROC(confidence -> correct) to clear a floor. On Phase-1 data the gap is
++0.0036 and AUROC 0.62; on the honest substrate +0.0065 and AUROC 0.58. Both
+are far below the 0.10 threshold, so the gate FAILS and predicts the filter's
+null effect in advance.
 
 # Implements the corrected pre-flight gate from Review_Fix.md E3.
 """
@@ -76,23 +78,33 @@ def compute_corrected_gate(
     conf = df["extracted_self_reported_confidence_integer"].astype(float).values
     correct = df["extracted_answer_matches_ground_truth"].astype(bool).values
 
-    loud = conf >= high_confidence_threshold
+    # The deployed filter RETAINS a peer when confidence >= threshold and drops
+    # it otherwise (see confidence_weighted_protocol.filter_peers_by_confidence).
+    # The gate must therefore be signed to match: a retain-high filter is useful
+    # only when retention is MORE likely for correct peers than for wrong ones.
+    #
+    #     retention_gap = P(retained | correct) - P(retained | wrong)
+    #
+    # The earlier formulation P(loud|wrong) - P(loud|correct) has the opposite
+    # sign: a positive value there would mean the filter preferentially keeps
+    # WRONG peers, which is actively harmful rather than useful.
+    retained = conf >= high_confidence_threshold
     wrong = ~correct
 
-    # A discriminative gap needs BOTH classes to exist. Wrong-anchored peers are
-    # never correct by construction, so P(loud | correct) is undefined, not zero
-    # — treating it as zero yields a gap of ~0.99 and a spurious "passed", which
-    # is the opposite of what this substrate shows.
+    # A gap needs BOTH classes to exist. Wrong-anchored peers are never correct
+    # by construction, so P(retained | correct) is undefined, not zero.
     n_wrong, n_correct = int(wrong.sum()), int(correct.sum())
-    loud_when_wrong = float(loud[wrong].mean()) if n_wrong else None
-    loud_when_correct = float(loud[correct].mean()) if n_correct else None
+    retained_when_wrong = float(retained[wrong].mean()) if n_wrong else None
+    retained_when_correct = float(retained[correct].mean()) if n_correct else None
 
-    if loud_when_wrong is None or loud_when_correct is None:
+    if retained_when_wrong is None or retained_when_correct is None:
         gap = None
         auroc = float("nan")
         decision = "undefined_single_class"
     else:
-        gap = loud_when_wrong - loud_when_correct
+        gap = retained_when_correct - retained_when_wrong
+        # AUROC positive class = CORRECT: the probability that a randomly chosen
+        # correct peer is scored above a randomly chosen wrong one.
         auroc = _auroc(conf, correct.astype(int))
         passed = (gap > discriminative_gap_threshold) and (
             np.isnan(auroc) or auroc > auroc_floor
@@ -107,9 +119,10 @@ def compute_corrected_gate(
         "roles": roles,
         "rounds": rounds,
         "high_confidence_threshold": high_confidence_threshold,
-        "loud_when_wrong": None if loud_when_wrong is None else round(loud_when_wrong, 4),
-        "loud_when_correct": None if loud_when_correct is None else round(loud_when_correct, 4),
-        "discriminative_gap": None if gap is None else round(gap, 4),
+        "retained_when_correct": None if retained_when_correct is None else round(retained_when_correct, 4),
+        "retained_when_wrong": None if retained_when_wrong is None else round(retained_when_wrong, 4),
+        "retention_gap_correct_minus_wrong": None if gap is None else round(gap, 4),
+        "auroc_positive_class": "correct",
         "discriminative_gap_threshold": discriminative_gap_threshold,
         "auroc_confidence_vs_correct": None if np.isnan(auroc) else round(auroc, 4),
         "auroc_floor": auroc_floor,
