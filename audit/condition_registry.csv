@@ -1,0 +1,13 @@
+condition,focal_model(s),peer_models,n_peers,prompt_type,assigned_vs_natural,confidence_elicited,filtering,questions,replications,focal_trials_all_focals,in_headline_analysis
+C1_smart_solo,1,none,0,standard,n/a,n/a,none,300,5 (3 sweep),8400,yes
+C1R_solo_reanswer,1,none,0,standard + R1 revise,n/a,n/a,none,300,5,3000,yes
+C2_three_smart,1 + 2 copies,focal copies,2,standard,natural,n/a,none,300,5 (3 sweep),8400,yes
+C2het_three_distinct_smart,DeepSeek,"Llama-3.1-70B, Qwen2.5-72B",2,standard,natural,n/a,none,300,3,0,yes
+C3_two_smart_one_dumb,1 + 1 copy,1 weak,1,persona (wrong),assigned wrong,no,none,300,5,3000,yes
+C3H_two_smart_one_honest,1 + 1 copy,1 weak,1,standard,natural,no,none,300,5,1500,yes
+C4_one_smart_two_dumb,1,2 weak,2,persona (wrong),assigned wrong,no,none,300,5 (3 sweep),8400,yes
+C4H_one_smart_two_honest,1,2 weak,2,standard,natural,no,none,300,5,1500,yes
+C4split_one_wrong_one_correct,1,2 weak,2,"persona (1 wrong, 1 correct)",assigned,no,none,300,5,0,yes
+C5_one_smart_two_dumb_confidence_weighted,1,2 weak,2,"persona (wrong), NO confidence line",assigned wrong,absent (broken),retain conf>=60,100,3,300,NO - legacy diagnostic
+C5R_anchored_with_confidence_filter,1,2 weak,2,persona (wrong) + confidence line,assigned wrong,yes,retain conf>=60,100,3,300,yes
+C5H_honest_with_confidence_filter,1,2 weak,2,standard,natural,yes,retain conf>=60,100,3,300,yes

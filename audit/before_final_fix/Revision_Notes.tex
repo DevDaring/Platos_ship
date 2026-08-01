@@ -1,0 +1,420 @@
+%% ─────────────────────────────────────────────────────────────────────────
+%%  ARR "Explanation of Revisions" — required at resubmission.
+%%  Resubmission of ARR submission 1656.
+%%  Compile:  pdflatex Revision_Notes.tex  (twice)
+%% ─────────────────────────────────────────────────────────────────────────
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\done}{\textcolor{blue}{\textbf{Addressed}}}
+\newcommand{\newexp}{\textcolor{blue}{\textbf{New experiment}}}
+\newcommand{\scoped}{\textcolor{blue}{\textbf{Scoped}}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\title{\vspace{-2em}Explanation of Revisions\\
+\large Resubmission of ARR submission 1656:\\
+``Correction and Corruption Signals: A Controlled Study of
+Capability-Asymmetric Multi-Agent LLM Debate\\ Under Adversarial Wrong-Peer
+Exposure''}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-3em}
+
+\section*{Summary}
+
+We thank the three reviewers and the Area Chair. The meta-review's decision
+text identified the crux precisely:
+
+\begin{quote}
+``Although the authors stated in their response that additional model runs
+have been completed, in-cycle ACL policies reserve these for future revisions,
+leaving the current paper scope under-supported.''
+\end{quote}
+
+Every experiment the reviewers asked for had been run but could not be
+reported in an author response. This revision puts all of them
+\emph{in the manuscript}, on the identical question pool, random seed, prompts,
+and judge cascade as the reviewed version, and adds three further experiments
+that go beyond what was requested.
+
+\paragraph{What is new in the manuscript.}
+\begin{enumerate}\itemsep2pt
+  \item \textbf{A solo re-answering control (C1R)} --- the causal baseline
+        sTG4 and the AC identified as the central methodological gap. Section~4.2.
+  \item \textbf{An honest-peer control (C3H, C4H)} --- the same weak models
+        answering naturally, addressing Tf6M's and sTG4's objection that
+        persona-anchored peers are adversarial distractors rather than natural
+        low-capability output. Section~4.2.
+  \item \textbf{A confidence-filter re-run with confidence actually elicited
+        (C5R, C5H)} plus a corrected pre-flight test --- the ``properly designed
+        follow-up'' Tf6M asked for. Section~3.4, Section~4.4.
+  \item \textbf{An eight-model capability sweep} --- the systematic sweep
+        including open-weight models that Tf6M argued was necessary to show a
+        general phenomenon rather than a pairwise anomaly. Section~4.3,
+        Table~5, Figure~1.
+  \item \textbf{GPT-4o-mini extended from 50 to the full 300-question pool},
+        answering gL73's concern about limited questions.
+  \item \textbf{A contamination probe} on numerically perturbed GSM8K.
+  \item \textbf{A controlled split-peer condition (C4split)} --- tests whether
+        a visible correct peer changes harmful revision, removing the last
+        ``deferred to future work'' in the previous version. Section~4.6.
+  \item \textbf{A heterogeneous-smart debate control (C2het)} --- three
+        architecturally distinct strong models, converting the
+        ``homogeneous debate is close to sampling'' limitation into a result.
+  \item \textbf{An output-distribution probe} on an open-weight focal model,
+        measuring the probability mass that moves onto the peer-asserted wrong
+        answer between rounds --- evidence beneath the discrete choice. We call
+        it an output-distribution probe, not a mechanism: it observes output
+        probabilities and does not identify a representation-level cause.
+\end{enumerate}
+
+\paragraph{What is new in the writing.}
+The term \emph{focal model} is now defined at first use in both the abstract
+and Section~1 (gL73~W1); Section~1 is restructured around three explicit
+research questions and the contributions each end with a pointer to the
+section, table or figure that supports it
+(gL73~W2, W5); the conditions are given in a table rather than in prose; and
+Section~2.2 gains a paragraph on \textbf{debate as an error detector}, the
+specific prior-work area the meta-review named as under-discussed (M7,
+gL73~W4).
+
+\paragraph{Corrections we made to the previous version.}
+In preparing this revision we re-derived every number in the manuscript
+directly from the released per-trial logs, and corrected fourteen
+discrepancies that survived the reviewed version. The full list is in the
+released \texttt{audit/numerical\_consistency\_report.md}; the ones that change
+a reported number are:
+\begin{itemize}\itemsep2pt
+  \item Table~3 previously reported \emph{raw} McNemar $p$-values under a
+        caption stating they were Holm-corrected. Both are now reported in
+        separate columns. All conclusions that were claimed as significant
+        remain significant after correction.
+  \item The contamination-probe contrast was reported as $p=0.07$ without
+        noting that this question-level test rests on eight discordant pairs.
+        Section~4.5 now states plainly that the probe is underpowered at the
+        question level ($p=0.23$ after correction) while significant at the
+        trial level, and no longer claims significance for it.
+  \item Appendix~S1's trial-count table still carried the superseded
+        50-question GPT-4o-mini numbers, which contradicted Table~2. All data
+        tables are now generated programmatically from the released logs by a
+        released script, so they cannot drift from the data again.
+  \item Appendix~S7 asserted that the weak models' unprompted accuracy was
+        ``not measured in this study''. The honest-peer conditions measure it
+        directly; the numbers are now given.
+  \item The released corrected-gate report substituted zero for
+        $P(\text{loud}\mid\text{correct})$ on the wrong-anchored substrate,
+        where that class is empty by construction. This produced an apparent
+        discriminative gap of $0.99$ and a spurious ``passed'' verdict in the
+        artefact, contradicting the paper's own table. The report now records
+        the substrate as undefined and gives per-class counts.
+  \item The capability-sweep Spearman $\rho$ was computed on the 1-dp rounded
+        table values, which tie four mid-range models together and inflated it
+        to $-0.97$ with $p=0.0001$. On unrounded rates it is $\rho=-0.95$ with
+        exact permutation $p=0.0011$.
+  \item Persona validation counts in Appendix~S5 were each off by 14 (the
+        failures were double-counted): the correct split is $1{,}116$ passing
+        first, $370$ after regeneration, $14$ failing.
+  \item The primary focal model was described as being of the DeepSeek-V3
+        family with a citation to that technical report. The API resolves the
+        requested alias to the served snapshot \texttt{deepseek-v4-flash}, for
+        which no such report exists, so the manuscript now reports the served
+        snapshot recorded in the run metadata and makes no architectural claim.
+\end{itemize}
+
+\clearpage
+\section*{Point-by-point response}
+
+\subsection*{Meta-review (Area Chair QTRJ)}
+
+\begin{longtable}{@{}p{0.30\textwidth}p{0.14\textwidth}p{0.50\textwidth}@{}}
+\toprule
+\textbf{Point} & \textbf{Status} & \textbf{Where it is answered} \\
+\midrule
+\endhead
+Only two focal models; a systematic sweep across a wider set, including
+open-weight models, is necessary to show a general phenomenon.
+& \newexp
+& Eight focal models spanning $44.9$--$76.2\%$ solo accuracy, on the same
+  300-question pool. All eight point estimates of the accuracy change under two
+  confidently wrong peers are non-negative, and harmful revision rises steeply
+  as solo accuracy falls (Spearman $\rho=-0.95$, exact permutation $p=0.001$;
+  leave-one-model-out $\rho\in[-0.96,-0.93]$; $\rho=-0.94$ excluding the two
+  weakest). Section~4.3, Table~5, Appendix Figure. \\
+\addlinespace
+Persona prompts turn weak peers into deliberate adversarial distractors;
+the manuscript remained scoped to distractors.
+& \newexp\ \scoped
+& Honest-peer conditions (C3H, C4H) run the same weak models with the standard
+  prompt. Their unprompted accuracy is $50.4\%$ and $45.1\%$. Honest peers leave
+  focal accuracy at solo level ($-0.3$~pp, $p=1.00$) and are clearly below the
+  wrong-anchored condition ($-7.3$~pp, $p=0.004$ Holm). The claims are scoped to
+  confidently wrong peers throughout. Section~3.1, Section~4.2. \\
+\addlinespace
+Major flaw in causal attribution: the $+7.9$~pp gain cannot be attributed to
+peer exposure without a re-examine/re-answer control.
+& \newexp
+& C1R gives the focal model the Round-1 revision instruction with no peer
+  messages. Re-answering alone is indistinguishable from solo
+  ($+0.3$~pp, $p=1.00$); adding two wrong peers on top of that same second
+  attempt gains $+6.7$~pp ($p=0.011$ Holm). Section~4.2, Table~3. \\
+\addlinespace
+C5 removed 100\% of peer messages because the weak-peer prompt omitted the
+Round-0 confidence instruction; this renders C5 uninformative.
+& \newexp
+& The persona prompt was repaired and the filter re-run on peers that do state
+  confidence (C5R), plus an honest variant (C5H). Peers now emit confidence in
+  essentially every Round-0 message. The filter still removes almost nothing,
+  now for a \emph{signal} reason rather than a parsing one: confidence does not
+  separate right from wrong (AUROC $0.58$). Section~3.4, Section~4.4,
+  Appendix~S3, Appendix~S4. \\
+\addlinespace
+``Focal agent'' left undefined in the main text.
+& \done
+& Defined at first use in the abstract and in Section~1. \\
+\addlinespace
+Presentation of the research questions was unclear.
+& \done
+& Explicit RQ1--RQ3 in Section~1, each mapped to the section that answers it. \\
+\addlinespace
+Prior work on collaborative debate in error detection insufficiently
+discussed.
+& \done
+& New paragraph in Section~2.2 covering cross-examination as a factual-error
+  detector, divergence-preserving debate, and the self-correction result that
+  motivates external signal, with an explicit contrast: those works treat the
+  peer as an examiner whose disagreement flags an error, whereas we find a
+  \emph{confidently wrong} peer supplies a usable prompt to recompute. \\
+\bottomrule
+\end{longtable}
+
+\subsection*{Reviewer gL73}
+
+\begin{longtable}{@{}p{0.30\textwidth}p{0.14\textwidth}p{0.50\textwidth}@{}}
+\toprule
+\textbf{Weakness} & \textbf{Status} & \textbf{Response} \\
+\midrule
+\endhead
+W1. ``What is the `focal agent'?''
+& \done
+& The focal model is the single designated agent whose Round-0 and Round-1
+  answers are scored; all other agents are peers whose Round-0 messages it sees.
+  Defined in the abstract and at first use in Section~1. \\
+\addlinespace
+W2. The writing is poor and the main research problems are unclear.
+& \done
+& Section~1 rebuilt around RQ1--RQ3; the five-condition setting moved from prose
+  into Table~1 with a plain-language ``what it answers'' column; statistics moved
+  out of prose into tables; the abstract rewritten without condition codes. \\
+\addlinespace
+W3. Experiments limited to a limited number of questions and LLMs.
+& \newexp
+& Eight focal models instead of two, and GPT-4o-mini extended from 50 to all
+  300 questions ($1{,}500$ trials per condition instead of $250$). The headline
+  harmful-flip rise for GPT-4o-mini is now a well-powered $7.4\%\to13.4\%$. \\
+\addlinespace
+W4. A closely related work has not been sufficiently discussed.
+& \done
+& We asked which work was meant; the meta-review identified the area as
+  collaborative debate for error detection. Section~2.2 now discusses it (see
+  M7 above). Section~2.2 also already added adversarial and
+  capability-asymmetric debate. \\
+\addlinespace
+W5. Unclear how the experiments support the listed contributions.
+& \done
+& Three contributions instead of four, each ending with the section, table or
+  figure that supports it. \\
+\addlinespace
+Datasets $=1$, Software $=1$, Reproducibility $=2$.
+& \done
+& The full pipeline, all prompts, the question and persona pools, the per-trial
+  logs for every trial, and the scripts that regenerate every number and figure
+  are released now rather than on acceptance, through an anonymised repository
+  linked in the Reproducibility section. The data tables in the paper are
+  generated from those logs by a released script. \\
+\bottomrule
+\end{longtable}
+
+\subsection*{Reviewer Tf6M}
+
+\begin{longtable}{@{}p{0.30\textwidth}p{0.14\textwidth}p{0.50\textwidth}@{}}
+\toprule
+\textbf{Point} & \textbf{Status} & \textbf{Response} \\
+\midrule
+\endhead
+W1. The main claim rests on only two focal models; a wider sweep including
+open-weight models is needed to establish a general phenomenon rather than a
+pairwise difference. The paper does not explore whether the difference is
+predictable from a capability metric.
+& \newexp
+& The sweep spans eight focal models, six of them open-weight. The qualitative
+  difference \emph{is} predictable from a capability metric: solo accuracy
+  predicts the harmful-flip rate almost monotonically
+  (Spearman $\rho=-0.95$, exact permutation $p=0.001$, $n=8$), from $6.5\%$ for the strongest
+  model to $24.9\%$ for the weakest. Notably the \emph{gain} does not track
+  ability ($\rho=0.33$, $p=0.42$) --- it is the cost, not the benefit, that is
+  graded by strength, which is a sharper claim than the reviewed version made.
+  Section~4.3, Table~5. \\
+\addlinespace
+W2. Anchored peers should be read as adversarial distractors, not honest
+low-capability outputs.
+& \scoped\ \newexp
+& We agree, and now demonstrate the distinction rather than only stating it.
+  The honest-peer control shows the correction effect is specific to
+  confidently wrong peers. Every conclusion is scoped accordingly, in the
+  abstract, Section~1, Section~4.2 and Limitations. \\
+\addlinespace
+W3. The confidence-weighting experiment is uninformative because the persona
+prompt omits the confidence line, giving 100\% peer exclusion; the failure
+cannot be attributed to the filtering mechanism.
+& \newexp
+& Correct, and now fixed. With confidence elicited, the filter is tested on
+  peers that state it, and still fails --- because weak peers are equally loud
+  when right and when wrong. We also give a corrected pre-flight test on the
+  discriminative gap
+  $P(\text{loud}\mid\text{wrong})-P(\text{loud}\mid\text{correct})$, which fails
+  in advance and would have predicted the null, whereas the original
+  loud-when-wrong test passes at $0.995$ and does not. \\
+\addlinespace
+Suggestions 1--4 (re-answering control; honest weak peers; re-run the filter
+with reliable Round-0 confidence; expand to more focal models).
+& \newexp
+& All four carried out and reported: C1R; C3H/C4H; C5R/C5H with the corrected
+  gate; the eight-model sweep. \\
+\bottomrule
+\end{longtable}
+
+\subsection*{Reviewer sTG4}
+
+\begin{longtable}{@{}p{0.30\textwidth}p{0.14\textwidth}p{0.50\textwidth}@{}}
+\toprule
+\textbf{Point} & \textbf{Status} & \textbf{Response} \\
+\midrule
+\endhead
+W1. The study is not about natural capability asymmetry --- the weak peers are
+deliberately wrong distractors, not natural mistakes.
+& \scoped\ \newexp
+& The honest-peer conditions supply the natural-mistake comparison directly,
+  and the claims are re-scoped. The honest condition also yields a
+  composition gradient that the anchored design cannot produce: harmful flips
+  run $25.9\%$ when both peers happen to be wrong, $7.9\%$ when they disagree,
+  and $1.4\%$ when both are right. \\
+\addlinespace
+W2 (main weakness). The $+7.9$~pp gain cannot be attributed to peer exposure
+without a control where the focal model simply re-examines the question.
+& \newexp
+& This is exactly C1R, and it is now the paper's second experiment. Re-answering
+  alone reproduces none of the gain. We had noted in our response that C5's
+  total peer removal made an accidental partial control; that argument is
+  withdrawn in favour of the dedicated, powered experiment the reviewer asked
+  for. \\
+\addlinespace
+Suggestion 1: solo re-answering control with the same Round-1 instruction and
+reasoning budget but no peer messages.
+& \newexp
+& Implemented exactly as specified: identical Round-1 instruction and token
+  budget, peer block absent. Section~3.1, Section~4.2. \\
+\addlinespace
+Suggestion 2: evaluate honest weak peers not anchored to wrong answers.
+& \newexp
+& C3H and C4H, $3{,}000$ trials. \\
+\addlinespace
+Suggestion 3: rerun confidence filtering with a prompt that reliably elicits
+Round-0 confidence from all peers.
+& \newexp
+& C5R and C5H. \\
+\addlinespace
+Suggestion 4: expand the analysis to more focal models with different
+capability.
+& \newexp
+& Eight focal models. \\
+\bottomrule
+\end{longtable}
+
+\section*{Beyond what was requested}
+
+Three experiments in this revision were not asked for. They close the two
+weaknesses the previous version conceded in its own Limitations, and add
+mechanistic evidence.
+
+\begin{itemize}\itemsep3pt
+  \item \textbf{Split-peer control (C4split), 1{,}500 trials.} The reviewed
+        version admitted its design could not separate ``a wrong answer is
+        present'' from ``every visible peer is wrong'', and deferred a
+        split-peer control to future work. It is now run: one wrong-anchored
+        and one correct-anchored peer, same pool and replications. Adding a correct
+        peer lowers harmful revision ($4.8\%\to3.4\%$ paired, $n=1{,}042$,
+        $p=0.03$) \emph{and} raises accuracy to $86.3\%$ --- $+4.7$ points over
+        two wrong peers ($p=0.013$ corrected) and $+11.7$ over solo --- while
+        the correction rate is unchanged ($56.0\%$ vs $55.8\%$).
+        We initially read this as evidence that \emph{unanimity} drives the
+        harm, then tested that directly and found it false: within C4 the two
+        anchored peers name the same wrong answer in only $16.4\%$ of trials,
+        and whether they agree makes no difference to harmful revision
+        ($5.95\%$ vs $6.58\%$, $p=0.88$). The manuscript therefore claims only
+        that a \emph{visible correct peer} reduces harmful revision, and states
+        that C4split changes two things at once (removes a wrong peer, adds a
+        correct one) so it isolates neither.
+  \item \textbf{Heterogeneous-smart debate (C2het), 900 trials.} The reviewed
+        version conceded that its homogeneous condition was closer to
+        self-consistency sampling than to debate (pairwise $\kappa=0.72$,
+        ESS $\approx1.2$). Three architecturally distinct strong models now
+        debate on the same pool. This heterogeneous control did not improve
+        performance: accuracy is indistinguishable from solo ($+0.7$,
+        $p=0.87$), the focal ends below where it started
+        ($79.0\%\to77.3\%$) where self-sampling gains ($75.8\%\to78.7\%$), and
+        harmful revision rises from $3.3\%$ to $5.8\%$ ($n=638$, $p=0.02$).
+        Because both distinct peers are also $9$--$10$ points weaker than the
+        focal, diversity and peer strength are not separated and the control
+        does \emph{not} estimate the effect of diversity alone; the manuscript
+        says so explicitly and keeps the corresponding limitation.
+  \item \textbf{Mechanistic log-probability probe.} Limitations previously said
+        the study was ``behavioural, not mechanistic''. On an open-weight focal
+        model served locally (\textit{Llama-3.1-8B-Instruct}, $2{,}700$ trials)
+        we measure the probability mass that moves onto the peer-asserted wrong
+        answer between rounds. Homogeneous peers move the model \emph{away}
+        from that answer ($-0.018$); two confidently wrong peers move it
+        \emph{toward} it ($+0.064$). Paired by (question, replication) the
+        shift is $+0.082$ (95\% CI $[+0.067,+0.097]$, Wilcoxon
+        $p\approx10^{-42}$, $n=898$). The pull is therefore present and
+        measurable on trials where the stated answer never changes --- which
+        flip rates structurally cannot show.
+\end{itemize}
+
+\paragraph{One finding that cuts against our own design.}
+The honest-peer control turned out to do more than establish scope. Comparing
+trials where both weak peers were wrong, paired by question so difficulty is
+held fixed, peers that are wrong \emph{naturally} flip the focal model about
+twice as often as peers \emph{instructed} to be wrong ($29.7\%$ against
+$14.4\%$, $p<10^{-5}$). This survives stratifying on whether the two peers
+named the same wrong answer, so it is not an artefact of consensus strength.
+The wrong-answer personas argue in exaggerated faulty styles that are
+comparatively easy to discount. We now state plainly that our anchored
+conditions are \emph{conservative} as a probe of corruption risk, and that a
+real mixed-ability ensemble is likely to be more dangerous than the adversarial
+one we built --- the opposite of the usual concern about adversarial framing,
+and a direct answer to Tf6M~W2 and sTG4~W1.
+
+\section*{Reviewer and meta-reviewer preference}
+
+We request \textbf{the same reviewers and the same Area Chair}. Every point
+raised is implemented in the manuscript rather than promised, on the identical
+pool, seed and protocol, and the returning reviewers are best placed to judge
+whether the prior weaknesses are resolved. The title is unchanged so the paper
+is recognisable.
+
+\end{document}
