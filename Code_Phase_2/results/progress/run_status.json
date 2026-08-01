@@ -1,7 +1,7 @@
 {
-  "generated_utc": "2026-08-01T07:57:59+00:00",
+  "generated_utc": "2026-08-01T08:12:43+00:00",
   "checkpoint_exists": true,
-  "total_completed_trials": 31270,
+  "total_completed_trials": 31520,
   "by_focal_and_condition": [
     {
       "focal_smart_agent_name": "deepseek_primary",
@@ -67,6 +67,11 @@
       "focal_smart_agent_name": "gpt4o_mini",
       "condition_identifier": "C4_one_smart_two_dumb",
       "trials": 1500
+    },
+    {
+      "focal_smart_agent_name": "het_deepseek",
+      "condition_identifier": "C2het_three_distinct_smart",
+      "trials": 250
     },
     {
       "focal_smart_agent_name": "sweep_gemma_3_27b",
@@ -161,25 +166,25 @@
   ],
   "gpu_probe_trials": 0,
   "recent_log_lines": [
-    "2026-08-01 07:57:56,678 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:57,082 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:57,626 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:57,783 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:57,889 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:58,101 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:58,429 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:58,582 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:58,697 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:58,828 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:59,608 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:57:59,624 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\""
+    "2026-08-01 08:12:37,571 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:38,037 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:38,424 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:38,608 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:38,941 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:39,040 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:40,550 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:41,592 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:42,129 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:42,518 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:43,147 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 08:12:43,199 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\""
   ],
   "recent_api_failures": [
-    "2026-08-01 07:57:31,672 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0011', 'round': 1}",
-    "2026-08-01 07:57:40,155 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0012', 'round': 1}",
-    "2026-08-01 07:57:41,344 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0011', 'round': 1}",
-    "2026-08-01 07:57:42,330 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0013', 'round': 0}",
-    "2026-08-01 07:57:43,347 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0013', 'round': 0}",
-    "2026-08-01 07:57:45,333 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0013', 'round': 0}"
+    "2026-08-01 08:05:58,934 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0050', 'round': 1}",
+    "2026-08-01 08:06:05,032 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 1/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0052', 'round': 0}",
+    "2026-08-01 08:06:07,457 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 2/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0050', 'round': 1}",
+    "2026-08-01 08:06:08,058 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 4/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0051', 'round': 0}",
+    "2026-08-01 08:06:12,945 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 2/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0052', 'round': 0}",
+    "2026-08-01 08:06:17,776 [WARNING] platos_ship.api_failures: openrouter malformed response (attempt 3/6): malformed response: empty choices (payload: {'message': 'model: qwen/qwen-2.5-72b-instruct does not support endpoint: completions', 'code': 400}), model=qwen/qwen-2.5-72b-instruct, meta={'question_id': 'mmlupro_0050', 'round': 1}"
   ]
 }
