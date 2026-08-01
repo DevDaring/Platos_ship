@@ -5,7 +5,50 @@ EACL 2027; the next cycle is 12 Oct 2026 → NAACL/COLING 2027).
 
 ---
 
-## 1. 🔴 BLOCKER — the anonymous mirror must be REBUILT, not just refreshed
+## 1. 🔴 BLOCKER — root cause found: the GitHub repo is PRIVATE
+
+**Checked 2026-08-01 07:35 UTC at `.../r/Platos_ship_published/`.**
+
+The second mirror is fresher (`lastUpdateDate: 2026-08-01T07:33`) and its
+README URL returns HTTP 200, but it is still not usable, and the reason is now
+clear:
+
+| Evidence | Meaning |
+|---|---|
+| Mirror serves a README of **20,866 bytes containing `github.com/DevDaring/...`** | It is an old cached copy |
+| `origin/main` README is **8,548 bytes and contains no such string** | GitHub itself is clean |
+| Every subdirectory (`results/`, `src/`, `Code_Phase_2/`, `scripts/`) returns `{"error":"not_connected"}` | The mirror cannot read the source repo |
+| GitHub API: **`private: true`** | Anonymous GitHub has no access |
+
+So Anonymous GitHub is serving a stale cache of a handful of top-level files
+and cannot fetch anything else. Rebuilding the mirror again will not help while
+the source repo stays private.
+
+### The fix: make the GitHub repo public, then refresh the mirror
+
+1. <https://github.com/DevDaring/Platos_ship/settings> → *Danger Zone* →
+   **Change visibility → Public**.
+2. Back on <https://anonymous.4open.science>, delete `Platos_ship_published`
+   and create it again from `DevDaring/Platos_ship`, branch `main`, expiry
+   **1 March 2027**.
+3. Send me the URL. I will (a) put it in the Reproducibility footnote,
+   (b) re-run my recursive leak scan across every file the mirror serves, and
+   (c) confirm subdirectories resolve, before you submit.
+
+**Is making it public allowed?** Yes. ARR removed the anonymity *period* in
+February 2024 — a public repository, and even a non-anonymous preprint, are
+explicitly permitted while under review. What must stay anonymous is the
+submitted PDF, and the PDF will cite only the `anonymous.4open.science` URL.
+The trade-off to be aware of: a reviewer who searches a distinctive phrase
+could find the public repo and thereby the authors. That is true of any public
+artefact and ARR accepts it; if you would rather avoid it, the alternative is
+to grant Anonymous GitHub access to the private repo through its GitHub
+authorisation, but its private-repo support is unreliable and this has already
+failed twice.
+
+---
+
+## 1b. (historical) the first mirror — same root cause
 
 **Checked 2026-08-01 07:30 UTC at `anonymous.4open.science/r/Platos_ship`.**
 The mirror now exists, but it fails on three counts and the third is a
