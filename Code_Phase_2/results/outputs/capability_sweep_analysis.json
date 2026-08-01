@@ -2,6 +2,7 @@
   "focal_models_analysed": [
     "deepseek_primary",
     "gpt4o_mini",
+    "het_deepseek",
     "sweep_gemma_3_27b",
     "sweep_gemma_3_4b_focal",
     "sweep_llama_3_1_70b",
