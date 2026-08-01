@@ -245,6 +245,26 @@ def run_logprob_probe(
 
     c2_peer_texts = stages.run("B_c2_peers", _b)
 
+    # ── Reference wrong answer, shared across conditions ───────────────────
+    # The headline metric is "how much mass moves toward the wrong answer the
+    # adversarial peers assert". Defining it only inside C4 leaves nothing to
+    # compare against, because C2's homogeneous peers assert no designated wrong
+    # answer. We therefore fix, per (question, replication), the wrong answer
+    # C4's personas argue for, and measure the shift toward THAT answer in every
+    # condition. C2 then answers the right question: does mass drift toward this
+    # answer anyway when peers are present but not adversarial?
+    ref_wrong: Dict[tuple, Optional[str]] = {}
+    for qid, rep in a2_keys:
+        q = next(x for x in questions if x["question_identifier"] == qid)
+        correct = str(q["correct_answer"]).strip().upper()
+        pick = None
+        for pt in persona_texts(qid, 2, rep):
+            pa = (extract_answer_regex(pt) or "").strip().upper()
+            if pa and pa != correct:
+                pick = pa
+                break
+        ref_wrong[(qid, rep)] = pick
+
     # ── Build the Round-1 prompts for every peer condition ─────────────────
     r1_keys: List[tuple] = []
     r1_prompts: List[tuple] = []
@@ -308,10 +328,11 @@ def run_logprob_probe(
             if cond in PEER_CONDITIONS and key in r1_dists:
                 dist_r1 = r1_dists[key]
                 r1_ans = (extract_answer_regex(r1_texts[key]) or "").strip().upper()
-                pw = peer_wrong_by_key.get(key)
             else:  # C1 solo: no Round 1
-                dist_r1, r1_ans, pw = dist_r0, r0_ans, None
+                dist_r1, r1_ans = dist_r0, r0_ans
 
+            # Same target answer in every condition, so the shift is comparable.
+            pw = ref_wrong.get((qid, rep))
             p_r0_wrong = dist_r0.get(pw) if pw else None
             p_r1_wrong = dist_r1.get(pw) if pw else None
             delta_wrong = (None if (p_r0_wrong is None or p_r1_wrong is None)
@@ -326,7 +347,9 @@ def run_logprob_probe(
                 "correct_answer": correct,
                 "round0_answer": r0_ans,
                 "round1_answer": r1_ans,
-                "peer_wrong_answer": pw,
+                # The wrong answer C4's personas assert for this (question, rep);
+                # used as the common target in every condition.
+                "reference_wrong_answer": pw,
                 "prob_mass_round0_on_peer_wrong": (None if p_r0_wrong is None else round(p_r0_wrong, 6)),
                 "prob_mass_round1_on_peer_wrong": (None if p_r1_wrong is None else round(p_r1_wrong, 6)),
                 "delta_prob_mass_toward_peer_wrong": delta_wrong,
@@ -361,7 +384,7 @@ def run_logprob_probe(
     )
     summary.to_parquet(str(out_dir / "logprob_probe_summary.parquet"), index=False)
 
-    logger.info("Probe complete. Mean R0->R1 mass shift toward the peer-wrong answer:")
+    logger.info("Probe complete. Mean R0->R1 mass shift toward the peer-asserted wrong answer:")
     for _, r in summary.iterrows():
         logger.info(
             f"  {r['condition_identifier']}: "
@@ -370,4 +393,36 @@ def run_logprob_probe(
             f"toward-correct {r['mean_delta_toward_correct']:+.4f}, "
             f"R0 acc {r['round0_accuracy']:.3f} -> R1 acc {r['round1_accuracy']:.3f}"
         )
+
+    # ── Paired contrast: is the pull specific to adversarial peers? ────────
+    # C2 and C4 differ only in what the peers say, so pairing on
+    # (question, replication) isolates the effect of the wrong-anchored content.
+    try:
+        from scipy import stats as _st
+
+        piv = (df[df["delta_prob_mass_toward_peer_wrong"].notna()]
+               .pivot_table(index=["question_identifier", "trial_replication_index"],
+                            columns="condition_identifier",
+                            values="delta_prob_mass_toward_peer_wrong"))
+        if {"C2_three_smart", "C4_one_smart_two_dumb"}.issubset(piv.columns):
+            paired = piv[["C2_three_smart", "C4_one_smart_two_dumb"]].dropna()
+            if len(paired) > 10:
+                t, p = _st.wilcoxon(paired["C4_one_smart_two_dumb"],
+                                    paired["C2_three_smart"])
+                diff = float((paired["C4_one_smart_two_dumb"] -
+                              paired["C2_three_smart"]).mean())
+                logger.info(
+                    f"C4 - C2 paired shift toward the wrong answer: {diff:+.4f} "
+                    f"(Wilcoxon W={t:.0f}, p={p:.2e}, n={len(paired)} pairs)"
+                )
+                pd.DataFrame([{
+                    "contrast": "C4_minus_C2_delta_toward_peer_wrong",
+                    "mean_difference": round(diff, 6),
+                    "wilcoxon_statistic": float(t),
+                    "p_value": float(p),
+                    "n_pairs": int(len(paired)),
+                }]).to_parquet(str(out_dir / "logprob_probe_contrast.parquet"), index=False)
+    except Exception as e:  # a failed contrast must not lose the trial data
+        logger.warning(f"paired contrast skipped: {e}")
+
     return df

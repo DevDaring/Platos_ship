@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-01T06:24:46+00:00",
+  "generated_utc": "2026-08-01T06:39:47+00:00",
   "checkpoint_exists": true,
   "total_completed_trials": 29770,
   "by_focal_and_condition": [
@@ -156,18 +156,18 @@
   ],
   "gpu_probe_trials": 0,
   "recent_log_lines": [
-    "2026-08-01 06:24:22,021 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:23,560 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:24,364 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:26,264 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:27,978 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:30,669 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:34,111 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:39,242 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:39,796 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:42,429 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:43,654 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 06:24:44,706 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\""
+    "2026-08-01 06:39:26,011 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:30,439 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:33,333 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:34,407 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:36,118 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:36,949 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:38,434 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:39,518 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:40,811 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:42,042 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:42,821 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 06:39:46,244 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\""
   ],
   "recent_api_failures": []
 }

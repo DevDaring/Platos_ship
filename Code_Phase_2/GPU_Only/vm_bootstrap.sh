@@ -27,7 +27,7 @@ log "python deps (vllm brings its own torch build)"
 pip install -q --upgrade pip
 # `openai` is needed because CPU_Only's judge_agent (whose regex extractor the
 # probe reuses) imports the OpenAI-compatible client at module load.
-pip install -q vllm pandas pyarrow python-dotenv pyyaml transformers openai
+pip install -q vllm pandas pyarrow python-dotenv pyyaml transformers openai scipy
 
 log "secrets (loaded before the clone — the repo is private)"
 if [ -f "$WORK/gpu.env" ]; then
