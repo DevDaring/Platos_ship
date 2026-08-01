@@ -18,8 +18,17 @@ cd "$REPO" || exit 1
 git config user.email "gpu-runner@localhost"
 git config user.name "platos-ship-gpu-runner"
 
-TOKEN=$(grep -m1 -E '^Github_Classic_Token=' "$REPO/Code_Phase_2/.env" 2>/dev/null | cut -d= -f2- | tr -d '"'"'"' \r')
-REMOTE="https://${TOKEN}@github.com/DevDaring/Platos_ship.git"
+# Credentials and repo location both come from the environment. This file ships
+# in the artefact released for double-blind review, so it must contain no
+# github.com/<user>/... string.
+ENVFILE="$REPO/Code_Phase_2/.env"
+TOKEN=$(grep -m1 -E '^Github_Classic_Token=' "$ENVFILE" 2>/dev/null | cut -d= -f2- | tr -d '"'"'"' \r')
+SLUG=$(grep -m1 -E '^GIT_REPO_SLUG=' "$ENVFILE" 2>/dev/null | cut -d= -f2- | tr -d '"'"'"' \r')
+if [ -z "${SLUG:-}" ]; then
+    echo "FATAL: set GIT_REPO_SLUG=owner/repo in $ENVFILE" >&2
+    exit 1
+fi
+REMOTE="https://${TOKEN}@github.com/${SLUG}.git"
 
 while true; do
     mkdir -p "$PUB"

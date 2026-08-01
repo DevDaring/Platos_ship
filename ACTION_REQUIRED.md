@@ -5,7 +5,61 @@ EACL 2027; the next cycle is 12 Oct 2026 → NAACL/COLING 2027).
 
 ---
 
-## 1. 🔴 BLOCKER — the anonymous repository link in the paper is dead
+## 1. 🔴 BLOCKER — the anonymous mirror must be REBUILT, not just refreshed
+
+**Checked 2026-08-01 07:30 UTC at `anonymous.4open.science/r/Platos_ship`.**
+The mirror now exists, but it fails on three counts and the third is a
+desk-rejection risk:
+
+**(a) It de-anonymises the paper.** The README that the mirror serves contains,
+twice:
+
+```
+git clone https://${GITHUB_TOKEN}@github.com/DevDaring/Platos_ship.git
+```
+
+Your real GitHub username is inside the artefact the paper tells reviewers to
+read. ARR is explicit that supplementary material and repository links must be
+anonymised or the submission is desk-rejected. This is the single most
+important thing to fix.
+
+**(b) The snapshot is three weeks stale.** The API reports
+`lastUpdateDate: 2026-07-12`. That predates the commit that anonymised the
+README (which is *why* (a) happens), and it predates everything from this
+session: the GPU mechanistic probe and its 2,700-trial log, the split-peer and
+heterogeneous-debate results, the analysis scripts that regenerate every number
+in the paper, the corrected calibration gate, and the `.gitignore` fix.
+
+**(c) The browsing page returns HTTP 401 `{"error":"not_connected"}`.** File
+contents are still served over the API, so the mirror is not empty — but a
+reviewer clicking the link in the PDF lands on an error. "not_connected" means
+Anonymous GitHub can no longer reach the source repository, which is expected
+if its access to the (private) repo lapsed.
+
+### What to do
+
+1. Go to <https://anonymous.4open.science>, sign in with GitHub, and **delete
+   the existing `Platos_ship` anonymised repo**. Refreshing it is not enough —
+   (a) and (c) both come from a broken/stale connection to the source.
+2. Create it again from **DevDaring/Platos_ship at current `main`**, granting
+   access to the private repository when prompted.
+3. Set the expiry to **after** the review period — 1 March 2027 is a safe pick.
+4. Send me the generated URL (it usually looks like
+   `.../r/Platos_ship-A1B2/`). I will put it in the Reproducibility footnote
+   and recompile.
+5. After it is live, I will re-scan the mirror for identity strings before you
+   submit, so (a) cannot recur silently.
+
+**Note:** the current repo is clean — I verified there are no `DevDaring`,
+author-name, or institution strings anywhere in tracked files. Two scripts I
+added this session (`Code_Phase_2/GPU_Only/vm_bootstrap.sh` and
+`vm_autopush.sh`) did hardcode the repo URL; they now read
+`GIT_REPO_SLUG=owner/repo` from `.env` instead, so nothing identifying remains
+in source. Add that variable to your `.env` if you re-run the GPU probe.
+
+---
+
+## 1b. (historical) the link was previously dead entirely
 
 `ACL_Paper.tex` line 798 claims all artefacts are released and points at:
 

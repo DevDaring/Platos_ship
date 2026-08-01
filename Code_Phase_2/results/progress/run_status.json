@@ -1,7 +1,7 @@
 {
-  "generated_utc": "2026-08-01T07:27:11+00:00",
+  "generated_utc": "2026-08-01T07:29:56+00:00",
   "checkpoint_exists": true,
-  "total_completed_trials": 30270,
+  "total_completed_trials": 30370,
   "by_focal_and_condition": [
     {
       "focal_smart_agent_name": "deepseek_primary",
@@ -31,7 +31,7 @@
     {
       "focal_smart_agent_name": "deepseek_primary",
       "condition_identifier": "C4split_one_wrong_one_correct",
-      "trials": 500
+      "trials": 600
     },
     {
       "focal_smart_agent_name": "deepseek_primary",
@@ -161,18 +161,18 @@
   ],
   "gpu_probe_trials": 0,
   "recent_log_lines": [
-    "2026-08-01 07:27:07,500 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:07,546 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:07,891 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:07,990 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:09,049 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:09,390 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:09,440 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:09,940 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:09,987 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:09,992 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:11,544 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
-    "2026-08-01 07:27:11,809 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\""
+    "2026-08-01 07:29:51,508 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:51,827 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:52,805 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:53,560 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:53,617 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:54,848 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:55,145 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:55,247 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:55,304 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:55,308 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:55,346 [INFO] httpx: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions \"HTTP/1.1 200 OK\"",
+    "2026-08-01 07:29:55,388 [INFO] httpx: HTTP Request: POST https://api.deepseek.com/v1/chat/completions \"HTTP/1.1 200 OK\""
   ],
   "recent_api_failures": [
     "2026-08-01 07:17:41,174 [WARNING] platos_ship.api_failures: openrouter error (attempt 1/3): status=429, RateLimitError: Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'google/gemma-3-4b-it is temporarily rate-limited upstream. Please retry shortly, or add your own ke, meta={'question_id': 'mmlupro_0052', 'round': 1}",

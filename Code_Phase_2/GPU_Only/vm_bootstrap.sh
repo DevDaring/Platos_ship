@@ -11,7 +11,10 @@
 # Nothing else from the local .env is ever copied to a rented machine.
 set -euo pipefail
 
-REPO_URL="https://github.com/DevDaring/Platos_ship.git"
+# Repo location comes from the environment, never hardcoded: this file is part
+# of the artefact released for double-blind review, and a hardcoded
+# github.com/<user>/... URL would de-anonymise it. Set GIT_REPO_SLUG in gpu.env
+# (e.g. "owner/repo"); the clone URL is assembled from it at runtime.
 WORK=/workspace
 REPO="$WORK/Platos_ship"
 GPU_DIR="$REPO/Code_Phase_2/GPU_Only"
@@ -39,8 +42,13 @@ else
 fi
 
 log "clone repo"
+if [ -z "${GIT_REPO_SLUG:-}" ]; then
+    echo "FATAL: set GIT_REPO_SLUG=owner/repo in gpu.env" >&2
+    exit 1
+fi
 mkdir -p "$WORK" && cd "$WORK"
-AUTH_URL="https://${Github_Classic_Token}@github.com/DevDaring/Platos_ship.git"
+REPO_URL="https://github.com/${GIT_REPO_SLUG}.git"
+AUTH_URL="https://${Github_Classic_Token}@github.com/${GIT_REPO_SLUG}.git"
 if [ ! -d "$REPO/.git" ]; then
     git clone --depth 1 "$AUTH_URL" "$REPO" 2>&1 | sed "s/${Github_Classic_Token}/***/g"
 fi
