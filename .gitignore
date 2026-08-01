@@ -52,3 +52,8 @@ Submission/.build/
 Submission/
 
 results/logs/
+
+# Operational notes for the author — never part of the anonymised artefact
+# (they name the real repository, balances, and submission strategy).
+ACTION_REQUIRED.md
+Recharge.md
