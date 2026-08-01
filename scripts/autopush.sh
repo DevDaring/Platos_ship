@@ -96,7 +96,7 @@ push_once() {
         Code_Phase_2/CPU_Only/src Code_Phase_2/CPU_Only/config \
         Code_Phase_2/CPU_Only/run_all.py Code_Phase_2/CPU_Only/README.md \
         Code_Phase_2/GPU_Only Code_Phase_2/README.md \
-        README.md CLAUDE.md Recharge.md requirements.txt \
+        README.md CLAUDE.md Recharge.md ACTION_REQUIRED.md requirements.txt \
         .gitattributes .gitignore 2>/dev/null
 
     if git diff --cached --quiet; then
