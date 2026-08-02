@@ -94,13 +94,8 @@ def table_conditions(rep) -> str:
     idx = index_conditions(rep)
     lines = [
         r"\begin{table}[t]", r"\centering", r"\small",
-        r"\caption{Per-condition results for the primary focal model",
-        r"(\textit{DeepSeek-chat}) on the full 300-question pool.",
-        r"$\Delta_{\mathrm{solo}}$ = Round-1 accuracy against solo (C1);",
-        r"C$\to$I = harmful flip rate; I$\to$C = correction rate, both",
-        r"conditional on the Round-0 answer. GPT-4o-mini and the six sweep",
-        r"models are in Appendix Table~\ref{stab:fullcounts}."
-        r"\label{tab:conditions}}",
+        r"\caption{Per-condition results for \textit{DeepSeek-chat} on the",
+        r"300-question pool. All values in \%.\label{tab:conditions}}",
         r"\begin{tabular}{@{}lrrrr@{}}", r"\toprule",
         r"Cond. & R1 & $\Delta_{\mathrm{solo}}$ & C$\to$I & I$\to$C \\", r"\midrule",
     ]
@@ -124,9 +119,8 @@ def table_conditions(rep) -> str:
     n_ds = idx.get((f, "C1_smart_solo"), {}).get("n", 0)
     lines += [
         r"\bottomrule", r"\end{tabular}", r"\par\smallskip",
-        r"{\footnotesize All values in \%. $N=" + f"{n_ds:,}".replace(",", "{,}") +
-        r"$ trials per main-condition cell; the C5 rows use a 100-question subset "
-        r"($N=300$), with $\Delta_{\mathrm{solo}}$ taken against C1 on that subset.}",
+        r"{\footnotesize $N=" + f"{n_ds:,}".replace(",", "{,}") +
+        r"$ trials per cell; C5 rows use a 100-question subset ($N=300$).}",
         r"\end{table}",
     ]
     return "\n".join(lines)
@@ -160,11 +154,8 @@ def table_stats(rep) -> str:
 
     lines = [
         r"\begin{table}[t]", r"\centering", r"\small",
-        r"\caption{Key contrasts (DeepSeek-chat, question-level paired McNemar).",
-        r"$\Delta$ = accuracy difference in percentage points; $p$ is the raw",
-        r"McNemar $p$-value and $p_{\mathrm{H}}$ its Holm-corrected value within",
-        r"this family of contrasts. $^{\ast}$ significant at $\alpha=0.05$ after",
-        r"correction.\label{tab:stats}}",
+        r"\caption{Key contrasts for \textit{DeepSeek-chat}. $^{\ast}$ survives",
+        r"Holm correction at $\alpha=0.05$.\label{tab:stats}}",
         r"\begin{adjustbox}{max width=\linewidth}",
         r"\begin{tabular}{@{}lrrl@{}}", r"\toprule",
         r"Contrast & $\Delta$ & $p$ & $p_{\mathrm{H}}$ \\", r"\midrule",
@@ -183,13 +174,8 @@ def table_sweep(rep) -> str:
     sw = sorted(sw, key=lambda r: -r["solo_accuracy_pct"])
     lines = [
         r"\begin{table}[t]", r"\centering", r"\small",
-        r"\caption{Capability sweep. Solo = C1 accuracy; C4 = accuracy under two",
-        r"confidently wrong peers; C$\to$I = harmful-flip rate, conditional",
-        r"on a correct round-0 answer, under homogeneous peers (C2) and under two",
-        r"wrong peers (C4). All eight $\Delta_{\mathrm{solo}}$ point estimates are",
-        r"non-negative. The C4 flip rate rises steeply as solo ability falls; the",
-        r"C2 column shows how much of that gradient is present without wrong",
-        r"peers.\label{tab:sweep}}",
+        r"\caption{Capability sweep across eight focal models. All values in",
+        r"\%.\label{tab:sweep}}",
         r"\begin{adjustbox}{max width=\linewidth}",
         r"\begin{tabular}{@{}lrrlrl@{}}", r"\toprule",
         r"Focal model & Solo & C4 & $\Delta_{\mathrm{solo}}$ [95\% CI] & "
@@ -212,18 +198,10 @@ def table_sweep(rep) -> str:
             f"{fmt(r.get('c2_flip_pct'))} & "
             f"{fmt(r['c4_flip_correct_to_incorrect_pct'])}{ci} " + r"\\"
         )
-    rho = rep.get("sweep_spearman_solo_vs_harmful_flip", {})
-    foot = (r"{\footnotesize All values in \%. Spearman $\rho$ between solo accuracy "
-            r"and the C$\to$I rate is $-" + f"{abs(rho.get('rho', float('nan'))):.2f}" +
-            r"$ (exact permutation $p=" + f"{rho.get('p_exact_permutation', float('nan')):.4f}" +
-            r"$, $n=" + str(rho.get("n", "")) + r"$); leave-one-model-out $\rho$ stays in "
-            r"$[-" + f"{abs(rho.get('leave_one_out_rho_min', float('nan'))):.2f}" +
-            r", -" + f"{abs(rho.get('leave_one_out_rho_max', float('nan'))):.2f}" +
-            r"]$, and excluding the two weakest models $\rho=-" +
-            f"{abs(rho.get('rho_excluding_two_weakest', float('nan'))):.2f}" +
-            r"$ ($p=" + f"{rho.get('p_excluding_two_weakest', float('nan')):.4f}" + r"$).}")
-    lines += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}",
-              r"\par\smallskip", foot, r"\end{table}"]
+    # No footnote: every statistic that used to sit under this table is stated
+    # in Section 4.3, and repeating it here duplicates numbers the reader has
+    # already been given.
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}", r"\end{table}"]
     return "\n".join(lines)
 
 
@@ -232,8 +210,7 @@ def table_fullcounts(rep) -> str:
     idx = index_conditions(rep)
     lines = [
         r"\begin{table}[h]", r"\centering", r"\footnotesize",
-        r"\caption{Full trial counts and per-round accuracy for every focal model",
-        r"and condition actually run. $N$ is the number of focal trials.",
+        r"\caption{Full trial counts and per-round accuracy, all focal models.",
         r"\label{stab:fullcounts}}",
         r"\begin{adjustbox}{max width=\linewidth}",
         r"\begin{tabular}{@{}llrrrr@{}}", r"\toprule",
@@ -267,14 +244,8 @@ def table_gate(rep):
         return None
     lines = [
         r"\begin{table}[t]", r"\centering", r"\small",
-        r"\caption{Retention gate for the confidence filter, recomputed from the",
-        r"pooled trial logs. $\Delta_{\mathrm{ret}} = P(\text{ret}\mid\text{corr.})",
-        r"- P(\text{ret}\mid\text{wrong})$ is positive when the filter keeps correct",
-        r"peers more often; AUROC uses \emph{correct} as the positive class.",
-        r"The last row scores an unparseable confidence as a drop, which is what",
-        r"the deployed rule does; it is the headline figure. Wrong-anchored peers",
-        r"are never correct, so no gap is defined for that substrate.",
-        r"All rows fail the $0.10$ threshold.\label{tab:gate}}",
+        r"\caption{Retention gate for the confidence filter. All rows fail the",
+        r"$0.10$ threshold.\label{tab:gate}}",
         r"\begin{adjustbox}{max width=\linewidth}",
         r"\begin{tabular}{@{}lrcccc@{}}", r"\toprule",
         r"Substrate & $n$ & $P(\text{ret}\!\mid\!\text{corr.})$ & "

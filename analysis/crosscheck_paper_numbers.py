@@ -105,7 +105,7 @@ def build_registry(rep):
     if nat:
         add("natural flip rate", r"persona-anchored ones \(\$([0-9.]+)\\%\$ against",
             nat["honest_unanimous_wrong_flip_pct"], 0.05)
-        add("instructed flip rate", r"against \$([0-9.]+)\\%\$\s*\n?over the \$111\$",
+        add("instructed flip rate", r"against \$([0-9.]+)\\%\$, paired over \$111\$",
             nat["anchored_wrong_flip_pct"], 0.05)
 
     # --- split peer: the prose deliberately no longer repeats the number, so
@@ -132,8 +132,8 @@ def build_registry(rep):
     if ex:
         add("rho vs C2 baseline", r"homogeneous-peer baseline \(C2\) is\s+\$\\rho = -([0-9.]+)\$",
             abs(ex["rho_c2_baseline"]), 0.005)
-        add("rho of the excess", r"weakly: \$\\rho = -([0-9.]+)\$", abs(ex["rho_excess"]), 0.005)
-        add("excess exact p", r"weakly: \$\\rho = -[0-9.]+\$ \(exact \$p = ([0-9.]+)\$\)",
+        add("rho of the excess", r"weakens it: \$\\rho = -([0-9.]+)\$", abs(ex["rho_excess"]), 0.005)
+        add("excess exact p", r"weakens it: \$\\rho = -[0-9.]+\$ \(exact \$p = ([0-9.]+)\$\)",
             ex["p_exact_excess"], 0.001)
 
     # --- the deployed filter gap (reported value must be the deployed one)
@@ -152,7 +152,7 @@ def build_registry(rep):
 
     # --- counts
     add("total API focal trials", r"\$39\{,\}(470)\$ API focal trials", 470, 0)
-    add("main pool trials", r"\(\$37\{,\}(500)\$ on the main", 500, 0)
+    add("main pool trials", r"\$37\{,\}(500)\$ are on the main", 500, 0)
     add("probe trials", r"plus \$2\{,\}(700)\$\s*\n?trials of the locally served", 700, 0)
     return R
 
