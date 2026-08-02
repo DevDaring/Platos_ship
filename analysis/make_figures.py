@@ -8,7 +8,8 @@ hardcoded to a Windows checkout. Everything is resolved relative to the repo.
     python3 Submission/Analyse/make_figures.py
 
 Figures written to Submission/images/:
-  figure1_capability_corruption.png   solo accuracy vs harmful-flip rate (8 focals)
+  figure_sweep.png                    two-panel sweep: gain vs ability (flat),
+                                      C2->C4 flip-rate dumbbells (steep)
   figure2_asch_conformity.png         C->I flip rate by condition, both focals
   figure4_mechanism.png               probability mass toward the peer-asserted
                                       wrong answer (GPU probe; skipped if absent)
@@ -61,50 +62,84 @@ COND_SHORT = {
 }
 
 
-def figure1(rep):
+def figure_sweep(rep):
+    """Two-panel main-text figure: the benefit does not track ability (top);
+    the cost does (bottom).
+
+    The bottom panel is a dumbbell from each model's C2 baseline flip rate to
+    its C4 rate, so the visible length of each connector IS the
+    wrong-peer-specific excess -- the quantity the C2-baseline analysis in
+    Section 4.3 is about. A plain scatter of the C4 rate alone overstates the
+    gradient by including baseline churn.
+    """
     sw = pd.DataFrame(rep["capability_sweep"])
     if sw.empty:
         return
-    x = sw["solo_accuracy_pct"].to_numpy()
-    y = sw["c4_flip_correct_to_incorrect_pct"].to_numpy()
+    sw = sw.sort_values("solo_accuracy_pct_raw").reset_index(drop=True)
+    x = sw["solo_accuracy_pct_raw"].to_numpy()
 
-    fig, ax = plt.subplots(figsize=(3.4, 2.7))
-    ax.scatter(x, y, s=38, color="#B3272D", zorder=3, edgecolor="white", linewidth=0.7)
-    if len(x) > 2:  # trend line, purely descriptive
-        b, a = np.polyfit(x, y, 1)
-        xs = np.linspace(x.min() - 2, x.max() + 2, 50)
-        ax.plot(xs, a + b * xs, color="#888", lw=1, ls="--", zorder=2)
+    fig, (ax1, ax2) = plt.subplots(
+        2, 1, figsize=(3.4, 4.6), sharex=True,
+        gridspec_kw={"height_ratios": [1, 1.35], "hspace": 0.13},
+    )
 
-    # Four mid-range models sit almost on top of each other (65-67% solo,
-    # ~12.3% flips), so labels are staggered and leadered instead of pinned to
-    # the marker, which would render them unreadable.
-    sw = sw.sort_values("solo_accuracy_pct").reset_index(drop=True)
-    span = max(y.max() - y.min(), 1e-6)
-    placed = []  # (x, y) of labels already positioned, in data coords
-    for _, r in sw.iterrows():
-        px, py = r["solo_accuracy_pct"], r["c4_flip_correct_to_incorrect_pct"]
-        ty = py + 0.045 * span
-        # push the label up until it clears every label already placed nearby
-        while any(abs(px - qx) < 0.10 * (x.max() - x.min()) and abs(ty - qy) < 0.075 * span
-                  for qx, qy in placed):
-            ty += 0.075 * span
-        placed.append((px, ty))
-        ax.annotate(
-            SHORT.get(r["focal"], r["focal"]), xy=(px, py), xytext=(px, ty),
-            fontsize=6.5, color="#333", ha="center", va="bottom",
-            arrowprops=dict(arrowstyle="-", color="#BBB", lw=0.5,
-                            shrinkA=0, shrinkB=2),
-        )
+    # ── top: accuracy gain vs solo, with the paired bootstrap CIs ──────────
+    g = sw["c4_delta_pp_raw"].to_numpy()
+    lo = sw["c4_delta_ci_low"].to_numpy(dtype=float)
+    hi = sw["c4_delta_ci_high"].to_numpy(dtype=float)
+    ax1.axhline(0, color="#999", lw=0.8, ls=":", zorder=1)
+    ax1.errorbar(x, g, yerr=[g - lo, hi - g], fmt="o", ms=5, color="#1F4E79",
+                 ecolor="#9DB8D2", elinewidth=1.1, capsize=2, zorder=3)
+    ax1.set_ylabel("Accuracy gain under two\nwrong peers (pp)")
+    ax1.set_title("Benefit does not track ability", fontsize=8.5, pad=4,
+                  color="#1F4E79")
 
-    rho = rep.get("sweep_spearman_solo_vs_harmful_flip", {})
-    ax.set_xlabel("Solo accuracy (%)")
-    ax.set_ylabel("Harmful flip rate under\ntwo wrong peers (%)")
-    if rho:
-        ax.set_title(rf"Spearman $\rho$ = {rho['rho']:.2f} ($p$ = {rho['p_exact_permutation']:.4f})",
-                     fontsize=8, pad=6)
-    fig.savefig(OUT / "figure1_capability_corruption.png")
+    # ── bottom: dumbbell C2 baseline -> C4 flip rate ───────────────────────
+    c2 = sw["c2_flip_pct_raw"].to_numpy(dtype=float)
+    c4 = sw["c4_flip_pct_raw"].to_numpy(dtype=float)
+    flo = sw["c4_flip_ci_low"].to_numpy(dtype=float)
+    fhi = sw["c4_flip_ci_high"].to_numpy(dtype=float)
+    for xi, a, b in zip(x, c2, c4):
+        ax2.annotate("", xy=(xi, b), xytext=(xi, a),
+                     arrowprops=dict(arrowstyle="-|>", color="#C99",
+                                     lw=1.1, shrinkA=1, shrinkB=2))
+    ax2.errorbar(x, c4, yerr=[c4 - flo, fhi - c4], fmt="o", ms=5,
+                 color="#B3272D", ecolor="#DFA9AB", elinewidth=1.1, capsize=2,
+                 zorder=4, label="two wrong peers (C4)")
+    ax2.scatter(x, c2, s=26, facecolor="white", edgecolor="#666", zorder=3,
+                linewidth=1.0, label="homogeneous baseline (C2)")
+
+    # Model names, hand-placed: four mid-range models sit within 2.5pp of one
+    # another, so automatic stacking collides with itself and the legend.
+    # Labels fan out into the empty regions left and right of the cluster.
+    LABEL_AT = {
+        "sweep_gemma_3_4b_focal": (44.9, 27.6, "center"),
+        "sweep_llama_3_1_8b_focal": (50.2, 30.6, "center"),
+        "gpt4o_mini": (60.0, 17.6, "center"),
+        "sweep_gemma_3_27b": (61.3, 21.2, "center"),
+        "sweep_mistral_small": (62.5, 24.8, "center"),
+        "sweep_llama_3_1_70b": (70.6, 17.6, "center"),
+        "sweep_qwen_2_5_72b": (72.2, 20.8, "center"),
+        "deepseek_primary": (76.2, 9.8, "center"),
+    }
+    for xi, b, name in zip(x, c4, sw["focal"]):
+        tx, ty, ha = LABEL_AT.get(name, (xi, b + 1.5, "center"))
+        ax2.annotate(SHORT.get(name, name), xy=(xi, b), xytext=(tx, ty),
+                     fontsize=6.2, color="#333", ha=ha, va="bottom",
+                     arrowprops=dict(arrowstyle="-", color="#CCC", lw=0.5,
+                                     shrinkA=0, shrinkB=2))
+
+    ax2.set_xlabel("Solo accuracy (%)")
+    ax2.set_ylabel("C$\\rightarrow$I flip rate (%)")
+    ax2.set_title("Cost rises as ability falls", fontsize=8.5, pad=4,
+                  color="#B3272D")
+    ax2.legend(frameon=False, fontsize=6.5, loc="lower center",
+               handletextpad=0.4, borderaxespad=0.4)
+    ax2.set_ylim(0, 33)
+
+    fig.savefig(OUT / "figure_sweep.png")
     plt.close(fig)
-    print("wrote figure1_capability_corruption.png")
+    print("wrote figure_sweep.png")
 
 
 def figure2(rep):
@@ -174,7 +209,7 @@ def figure4():
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     rep = json.loads(NUMBERS.read_text())
-    figure1(rep)
+    figure_sweep(rep)
     figure2(rep)
     figure4()
 
