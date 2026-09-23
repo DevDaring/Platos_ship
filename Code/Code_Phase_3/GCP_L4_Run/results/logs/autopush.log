@@ -1,3 +1,2 @@
-[14:08:44] Cloning main (shallow)
-[14:08:50] Branch main does not exist yet — creating it from the default branch
-fatal: destination path '/home/Debz/platos_push' already exists and is not an empty directory.
+[14:24:10] Pushing every 30 minutes to main. Ctrl-C to stop.
+cannot delete non-empty directory: logs
