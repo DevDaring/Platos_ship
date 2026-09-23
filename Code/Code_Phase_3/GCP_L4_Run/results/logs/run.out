@@ -16,3 +16,6 @@ Both are running detached; the SSH session can be closed.
 When it finishes: one final push, then DELETE the VM.
   GITHUB_TOKEN=... bash autopush.sh --once
   gcloud compute instances delete <name> --zone <zone> --quiet
+
+[1m==> Probe finished — pushing the final results[0m
+cannot delete non-empty directory: logs

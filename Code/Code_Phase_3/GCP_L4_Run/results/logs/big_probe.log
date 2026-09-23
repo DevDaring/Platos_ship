@@ -21,3 +21,8 @@
 2026-09-23 14:25:43,777 [INFO] platos_ship3.big_probe: Stage B: condition E
 2026-09-23 14:44:56,751 [INFO] platos_ship3.big_probe:   E written (1800 rows total).
 2026-09-23 14:44:56,796 [INFO] platos_ship3.big_probe: Stage B: condition WR
+2026-09-23 15:03:40,845 [INFO] platos_ship3.big_probe:   WR written (2700 rows total).
+2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: WR-minus-E [gsm8k]: 0.018823 (95% CI [0.009858, 0.029791], n=300)
+2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: WR-minus-E [mmlu_pro]: 0.062510 (95% CI [0.049719, 0.076641], n=600)
+2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: WR-minus-E [POOLED]: 0.047948 (95% CI [0.038711, 0.058067], n=900)   (pooled - do not report)
+2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results — pull them, then DESTROY the instance.
