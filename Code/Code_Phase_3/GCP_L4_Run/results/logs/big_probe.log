@@ -1,28 +1,76 @@
-2026-09-23 14:04:56,491 [INFO] platos_ship3.big_probe: Restricted to 200 multiple-choice items (from 300).
-2026-09-23 14:04:56,522 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
-2026-09-23 14:05:13,636 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
-2026-09-23 14:07:12,091 [INFO] platos_ship3.big_probe: Model ready in 2.0 min.
-2026-09-23 14:07:12,094 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
-2026-09-23 14:07:19,591 [INFO] platos_ship3.big_probe: Stage B: condition R
-2026-09-23 14:07:34,978 [INFO] platos_ship3.big_probe:   R written (2 rows total).
-2026-09-23 14:07:34,979 [INFO] platos_ship3.big_probe: Stage B: condition E
-2026-09-23 14:07:41,220 [INFO] platos_ship3.big_probe:   E written (4 rows total).
-2026-09-23 14:07:41,221 [INFO] platos_ship3.big_probe: Stage B: condition WR
-2026-09-23 14:07:54,548 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
-2026-09-23 14:07:54,668 [INFO] platos_ship3.big_probe: WR-minus-E [mmlu_pro]: 0.017992 (95% CI [0.000118, 0.035866], n=2)
-2026-09-23 14:07:54,669 [INFO] platos_ship3.big_probe: WR-minus-E [POOLED]: 0.017992 (95% CI [0.000118, 0.035866], n=2)   (pooled - do not report)
-2026-09-23 14:07:54,669 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_smoke — pull them, then DESTROY the instance.
-2026-09-23 14:08:51,069 [INFO] platos_ship3.big_probe: 300 questions x 3 replicates; 900 fixed targets.
-2026-09-23 14:09:08,159 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
-2026-09-23 14:10:28,530 [INFO] platos_ship3.big_probe: Model ready in 1.3 min.
-2026-09-23 14:10:28,532 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
-2026-09-23 14:14:49,476 [INFO] platos_ship3.big_probe: Stage B: condition R
-2026-09-23 14:25:43,776 [INFO] platos_ship3.big_probe:   R written (900 rows total).
-2026-09-23 14:25:43,777 [INFO] platos_ship3.big_probe: Stage B: condition E
-2026-09-23 14:44:56,751 [INFO] platos_ship3.big_probe:   E written (1800 rows total).
-2026-09-23 14:44:56,796 [INFO] platos_ship3.big_probe: Stage B: condition WR
-2026-09-23 15:03:40,845 [INFO] platos_ship3.big_probe:   WR written (2700 rows total).
-2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: WR-minus-E [gsm8k]: 0.018823 (95% CI [0.009858, 0.029791], n=300)
-2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: WR-minus-E [mmlu_pro]: 0.062510 (95% CI [0.049719, 0.076641], n=600)
-2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: WR-minus-E [POOLED]: 0.047948 (95% CI [0.038711, 0.058067], n=900)   (pooled - do not report)
-2026-09-23 15:03:41,661 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results — pull them, then DESTROY the instance.
+2026-09-23 09:13:15,487 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
+2026-09-23 09:13:28,079 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
+2026-09-23 09:15:50,672 [INFO] platos_ship3.big_probe: Model ready in 2.4 min.
+2026-09-23 09:15:50,674 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
+2026-09-23 09:15:56,470 [INFO] platos_ship3.big_probe: Stage B: condition R
+2026-09-23 09:16:04,820 [INFO] platos_ship3.big_probe:   R written (2 rows total).
+2026-09-23 09:16:04,820 [INFO] platos_ship3.big_probe: Stage B: condition E
+2026-09-23 09:16:16,934 [INFO] platos_ship3.big_probe:   E written (4 rows total).
+2026-09-23 09:16:16,934 [INFO] platos_ship3.big_probe: Stage B: condition WR
+2026-09-23 09:16:30,209 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
+2026-09-23 09:16:30,326 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.0224 (95% CI [0.0001, 0.0448], n=2)
+2026-09-23 09:16:30,326 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_smoke — pull them, then DESTROY the instance.
+2026-09-23 09:18:41,494 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
+2026-09-23 09:18:52,878 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
+2026-09-23 09:21:13,548 [INFO] platos_ship3.big_probe: Model ready in 2.3 min.
+2026-09-23 09:21:13,550 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
+2026-09-23 09:21:26,525 [INFO] platos_ship3.big_probe: Stage B: condition R
+2026-09-23 09:21:43,589 [INFO] platos_ship3.big_probe:   R written (2 rows total).
+2026-09-23 09:21:43,590 [INFO] platos_ship3.big_probe: Stage B: condition E
+2026-09-23 09:21:58,101 [INFO] platos_ship3.big_probe:   E written (4 rows total).
+2026-09-23 09:21:58,101 [INFO] platos_ship3.big_probe: Stage B: condition WR
+2026-09-23 09:22:17,518 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
+2026-09-23 09:22:17,635 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.0127 (95% CI [0.0012, 0.0243], n=2)
+2026-09-23 09:22:17,635 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_gsm — pull them, then DESTROY the instance.
+2026-09-23 09:24:34,627 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
+2026-09-23 09:24:47,111 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
+2026-09-23 09:27:07,868 [INFO] platos_ship3.big_probe: Model ready in 2.3 min.
+2026-09-23 09:27:07,869 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
+2026-09-23 09:27:20,606 [INFO] platos_ship3.big_probe: Stage B: condition R
+2026-09-23 09:27:37,662 [INFO] platos_ship3.big_probe:   R written (2 rows total).
+2026-09-23 09:27:37,662 [INFO] platos_ship3.big_probe: Stage B: condition E
+2026-09-23 09:27:52,162 [INFO] platos_ship3.big_probe:   E written (4 rows total).
+2026-09-23 09:27:52,162 [INFO] platos_ship3.big_probe: Stage B: condition WR
+2026-09-23 09:28:11,601 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
+2026-09-23 09:28:11,714 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.0127 (95% CI [0.0012, 0.0243], n=2)
+2026-09-23 09:28:11,714 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_gsm — pull them, then DESTROY the instance.
+2026-09-23 10:21:48,269 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
+2026-09-23 10:22:01,146 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
+2026-09-23 10:24:20,481 [INFO] platos_ship3.big_probe: Model ready in 2.3 min.
+2026-09-23 10:24:20,482 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
+2026-09-23 10:24:33,260 [INFO] platos_ship3.big_probe: Stage B: condition R
+2026-09-23 10:24:50,243 [INFO] platos_ship3.big_probe:   R written (2 rows total).
+2026-09-23 10:24:50,243 [INFO] platos_ship3.big_probe: Stage B: condition E
+2026-09-23 10:25:04,724 [INFO] platos_ship3.big_probe:   E written (4 rows total).
+2026-09-23 10:25:04,725 [INFO] platos_ship3.big_probe: Stage B: condition WR
+2026-09-23 10:25:24,149 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
+2026-09-23 10:25:24,261 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.1741 (95% CI [0.0018, 0.3465], n=2)
+2026-09-23 10:25:24,261 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_gsm — pull them, then DESTROY the instance.
+2026-09-23 11:13:01,616 [INFO] platos_ship3.big_probe: 4 questions x 1 replicates; 4 fixed targets.
+2026-09-23 11:13:13,975 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
+2026-09-23 11:15:35,057 [INFO] platos_ship3.big_probe: Model ready in 2.4 min.
+2026-09-23 11:15:35,058 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
+2026-09-23 11:15:43,167 [INFO] platos_ship3.big_probe: Stage B: condition R
+2026-09-23 11:15:55,719 [INFO] platos_ship3.big_probe:   R written (4 rows total).
+2026-09-23 11:15:55,719 [INFO] platos_ship3.big_probe: Stage B: condition E
+2026-09-23 11:16:10,834 [INFO] platos_ship3.big_probe:   E written (8 rows total).
+2026-09-23 11:16:10,834 [INFO] platos_ship3.big_probe: Stage B: condition WR
+2026-09-23 11:16:30,815 [INFO] platos_ship3.big_probe:   WR written (12 rows total).
+2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: WR-minus-E [gsm8k]: 0.091275 (95% CI [0.002056, 0.180494], n=2)
+2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: WR-minus-E [mmlu_pro]: 0.022932 (95% CI [0.000254, 0.045610], n=2)
+2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: WR-minus-E [POOLED]: 0.057103 (95% CI [0.001155, 0.135884], n=4)   (pooled - do not report)
+2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_mixed — pull them, then DESTROY the instance.
+2026-09-23 11:51:55,230 [INFO] platos_ship3.big_probe: 300 questions x 3 replicates; 900 fixed targets.
+2026-09-23 11:52:07,818 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
+2026-09-23 11:54:29,392 [INFO] platos_ship3.big_probe: Model ready in 2.4 min.
+2026-09-23 11:54:29,393 [INFO] platos_ship3.big_probe: Stage A: Round-0 cache
+2026-09-23 11:58:59,266 [INFO] platos_ship3.big_probe: Stage B: condition R
+2026-09-23 12:10:14,823 [INFO] platos_ship3.big_probe:   R written (900 rows total).
+2026-09-23 12:10:14,823 [INFO] platos_ship3.big_probe: Stage B: condition E
+2026-09-23 12:29:37,109 [INFO] platos_ship3.big_probe:   E written (1800 rows total).
+2026-09-23 12:29:37,110 [INFO] platos_ship3.big_probe: Stage B: condition WR
+2026-09-23 12:48:17,785 [INFO] platos_ship3.big_probe:   WR written (2700 rows total).
+2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: WR-minus-E [gsm8k]: 0.018871 (95% CI [0.010939, 0.028688], n=300)
+2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: WR-minus-E [mmlu_pro]: 0.060349 (95% CI [0.047586, 0.074238], n=600)
+2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: WR-minus-E [POOLED]: 0.046523 (95% CI [0.037490, 0.056171], n=900)   (pooled - do not report)
+2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results — pull them, then DESTROY the instance.

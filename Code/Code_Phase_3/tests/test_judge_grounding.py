@@ -44,7 +44,9 @@ from src.agent_wrappers.judge_agent import JudgeCascade  # noqa: E402
     # an option letter must be its own token, not a letter inside a word
     ("B", "Mercury is nearest. I'll go with B.", True),
     ("B", "Also, about that, nothing here", False),
-    ("A", "A) Venus is hot", True),
+    # Echoing an option line is NOT choosing it. "A)" here is the model
+    # restating the choices, so it must not ground option A.
+    ("A", "A) Venus is hot", False),
     # numeric normalisation
     ("3", "The result is 3.0 exactly", True),
     ("1000", "I get 1,000 in total", True),
@@ -164,3 +166,62 @@ def test_all_tiers_failing_returns_parse_failure():
     answer, method = _cascade(first, second).extract_answer("q", "o", "t")
     assert answer == "UNPARSEABLE"
     assert method == "parse_failure"
+
+@pytest.mark.parametrize("reply", ["UNPARSEABLE", "UNPARSE", "unparseable",
+                                   "  UNPARSEABLE  ", "**UNPARSEABLE**"])
+def test_any_spelling_of_the_abstention_token_is_an_abstention(reply):
+    """
+    A tier replied "UNPARSE". Strict equality missed it, so the answer fell
+    through to the grounding guard and was logged as a fabrication rather
+    than as the abstention it plainly was.
+    """
+    first = _Tier("primary", reply)
+    second = _Tier("secondary", "56")
+    answer, method = _cascade(first, second).extract_answer(
+        "What is 8 * 7?", "a number", "I need to think about this more")
+    assert answer == "UNPARSEABLE"
+    assert method == "abstain_primary"
+    assert second.calls == 0
+
+# -- option-letter grounding --------------------------------------------
+# Letter-only matching was wrong in both directions. Case-insensitive
+# matching meant "a" and "I" grounded options A and I on almost any text,
+# so those two letters were never really checked. And a response that named
+# the option without writing its letter was rejected although the judge had
+# read it correctly. These are the rows whose "Final answer:" line the regex
+# could not find, so naming without lettering is exactly the common case.
+_OPTIONS = ("A) bonobos; B) orangutans; C) gibbons; D) chimpanzees; "
+            "I) lemurs  -- answer with the single capital letter")
+
+
+@pytest.mark.parametrize("letter,text,expected,why", [
+    ("A", "closely related to bonobos, so that one", True,
+     "the option body appears, so the judge read rather than solved"),
+    ("A", "Final answer: A Confidence: 90", True, "stated as a choice"),
+    ("A", "a quick note about nothing", False, "lowercase article"),
+    ("A", "A careful reading shows the result", False, "sentence-initial"),
+    ("I", "I think we should wait", False, "pronoun, not an option"),
+    ("I", "I will go with I here", True, "stated as a choice"),
+    ("I", "the lemurs are the answer", True, "option body appears"),
+    ("D", "I pick D here", True, "unambiguous letter as a token"),
+    ("J", "no letter here", False, "absent"),
+    ("C", "nothing relevant", False, "neither letter nor body"),
+])
+def test_letter_grounding(letter, text, expected, why):
+    assert JudgeCascade._is_grounded(letter, text, _OPTIONS) is expected, why
+
+
+def test_last_option_body_excludes_the_trailing_instruction():
+    """
+    The listing ends with an instruction. Without treating "--" as a
+    terminator the final option absorbed it, so its body matched nothing
+    and that option could never be grounded by its text.
+    """
+    assert JudgeCascade._option_text_for_letter("I", _OPTIONS) == "lemurs"
+    assert JudgeCascade._option_text_for_letter("A", _OPTIONS) == "bonobos"
+
+
+def test_letter_grounding_without_an_options_listing():
+    """With no listing, fall back to letter matching alone."""
+    assert JudgeCascade._is_grounded("D", "I pick D", "") is True
+    assert JudgeCascade._is_grounded("D", "nothing", "") is False

@@ -1,0 +1,204 @@
+{
+  "n_trials": 2700,
+  "nonparse_balance": [
+    {
+      "source_dataset": "gsm8k",
+      "condition": "E",
+      "unparsed": 81,
+      "trials": 300,
+      "rate": 0.27
+    },
+    {
+      "source_dataset": "gsm8k",
+      "condition": "R",
+      "unparsed": 82,
+      "trials": 300,
+      "rate": 0.2733333333333333
+    },
+    {
+      "source_dataset": "gsm8k",
+      "condition": "WR",
+      "unparsed": 81,
+      "trials": 300,
+      "rate": 0.27
+    },
+    {
+      "source_dataset": "mmlu_pro",
+      "condition": "E",
+      "unparsed": 71,
+      "trials": 600,
+      "rate": 0.11833333333333333
+    },
+    {
+      "source_dataset": "mmlu_pro",
+      "condition": "R",
+      "unparsed": 93,
+      "trials": 600,
+      "rate": 0.155
+    },
+    {
+      "source_dataset": "mmlu_pro",
+      "condition": "WR",
+      "unparsed": 88,
+      "trials": 600,
+      "rate": 0.14666666666666667
+    }
+  ],
+  "reproducibility": {
+    "n_matched": 2700,
+    "prob_mass_round1_on_target": {
+      "n": 2700,
+      "max_abs_difference": 0.9971805722098683,
+      "mean_abs_difference": 0.03053285309280808,
+      "fraction_within_1e_6": 0.24444444444444444
+    },
+    "delta_prob_mass_toward_target": {
+      "n": 2700,
+      "max_abs_difference": 0.997182295533637,
+      "mean_abs_difference": 0.031816836270835584,
+      "fraction_within_1e_6": 0.09851851851851852
+    },
+    "round1_answer_agreement": 0.6685185185185185,
+    "fixed_target_agreement": 1.0
+  },
+  "bounds_regex_only": [
+    {
+      "source_dataset": "gsm8k",
+      "contrast": "WR_minus_E",
+      "n_pairs_total": 300,
+      "n_pairs_out": 44,
+      "n_known_in": 158,
+      "n_ambiguous": 98,
+      "estimate_complete_case": 0.008972716180719056,
+      "bound_low": 0.005290257888726328,
+      "bound_high": 0.01595325757817933,
+      "bound_width": 0.010662999689453001,
+      "n_absorbed_at_low": 81,
+      "n_absorbed_at_high": 10,
+      "estimate_all_ambiguous_held": 0.010117320205701157,
+      "ci_low_of_identified_set": 0.0013018139992212801,
+      "ci_high_of_identified_set": 0.027032053014866282,
+      "sign_robust_to_nonparse": true,
+      "sign_robust_with_uncertainty": true
+    },
+    {
+      "source_dataset": "mmlu_pro",
+      "contrast": "WR_minus_E",
+      "n_pairs_total": 600,
+      "n_pairs_out": 255,
+      "n_known_in": 251,
+      "n_ambiguous": 94,
+      "estimate_complete_case": 0.020011691738418772,
+      "bound_low": 0.015566907710986856,
+      "bound_high": 0.07067477554411067,
+      "bound_width": 0.05510786783312381,
+      "n_absorbed_at_low": 55,
+      "n_absorbed_at_high": 28,
+      "estimate_all_ambiguous_held": 0.05763137215360536,
+      "ci_low_of_identified_set": 0.008969646048675969,
+      "ci_high_of_identified_set": 0.0966915126861087,
+      "sign_robust_to_nonparse": true,
+      "sign_robust_with_uncertainty": true
+    }
+  ],
+  "bounds_after_recovery": [
+    {
+      "source_dataset": "gsm8k",
+      "contrast": "WR_minus_E",
+      "n_pairs_total": 300,
+      "n_pairs_out": 91,
+      "n_known_in": 195,
+      "n_ambiguous": 14,
+      "estimate_complete_case": 0.007832480981168807,
+      "bound_low": 0.006503468633357854,
+      "bound_high": 0.008007629481419636,
+      "bound_width": 0.0015041608480617814,
+      "n_absorbed_at_low": 11,
+      "n_absorbed_at_high": 3,
+      "estimate_all_ambiguous_held": 0.0066884755237554445,
+      "ci_low_of_identified_set": 0.001819590005749777,
+      "ci_high_of_identified_set": 0.013683576222769934,
+      "sign_robust_to_nonparse": true,
+      "sign_robust_with_uncertainty": true
+    },
+    {
+      "source_dataset": "mmlu_pro",
+      "contrast": "WR_minus_E",
+      "n_pairs_total": 600,
+      "n_pairs_out": 264,
+      "n_known_in": 264,
+      "n_ambiguous": 72,
+      "estimate_complete_case": 0.019172402671493692,
+      "bound_low": 0.01596933110113699,
+      "bound_high": 0.06409047572029405,
+      "bound_width": 0.048121144619157064,
+      "n_absorbed_at_low": 37,
+      "n_absorbed_at_high": 27,
+      "estimate_all_ambiguous_held": 0.055672535265089064,
+      "ci_low_of_identified_set": 0.009235049084108693,
+      "ci_high_of_identified_set": 0.08970750008404624,
+      "sign_robust_to_nonparse": true,
+      "sign_robust_with_uncertainty": true
+    }
+  ],
+  "contrasts": [
+    {
+      "source_dataset": "gsm8k",
+      "complete_case": {
+        "estimate": 0.008972716180719056,
+        "ci_low": 0.003971332450655402,
+        "ci_high": 0.015513446776962926,
+        "p_value": 9.999000099990002e-05,
+        "n_pairs": 158,
+        "n_ambiguous": 98,
+        "n_out": 44
+      },
+      "judge_recovered": {
+        "estimate": 0.007832480981168807,
+        "ci_low": 0.003905871303237141,
+        "ci_high": 0.012939475402220795,
+        "p_value": 9.999000099990002e-05,
+        "n_pairs": 195,
+        "n_ambiguous": 14,
+        "n_out": 91
+      }
+    },
+    {
+      "source_dataset": "mmlu_pro",
+      "complete_case": {
+        "estimate": 0.020011691738418772,
+        "ci_low": 0.013046361530082942,
+        "ci_high": 0.02801777975433787,
+        "p_value": 9.999000099990002e-05,
+        "n_pairs": 251,
+        "n_ambiguous": 94,
+        "n_out": 255
+      },
+      "judge_recovered": {
+        "estimate": 0.019172402671493692,
+        "ci_low": 0.012751047292151133,
+        "ci_high": 0.026525338462472046,
+        "p_value": 9.999000099990002e-05,
+        "n_pairs": 264,
+        "n_ambiguous": 72,
+        "n_out": 264
+      }
+    }
+  ],
+  "consistency_checks": [
+    {
+      "source_dataset": "gsm8k",
+      "recovered_estimate": 0.007832480981168807,
+      "bound_low": 0.005290257888726328,
+      "bound_high": 0.01595325757817933,
+      "inside_pre_recovery_bounds": true
+    },
+    {
+      "source_dataset": "mmlu_pro",
+      "recovered_estimate": 0.019172402671493692,
+      "bound_low": 0.015566907710986856,
+      "bound_high": 0.07067477554411067,
+      "inside_pre_recovery_bounds": true
+    }
+  ]
+}

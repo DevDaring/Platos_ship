@@ -35,11 +35,15 @@ mkdir -p logs results
 
 say "Starting the 30-minute autopush"
 pkill -f "autopush.sh" 2>/dev/null || true
+# The one-shot runs FIRST and completes the clone. Starting the loop first
+# and firing a --once three seconds later put two processes into the same
+# empty working directory: both began cloning, the second died on
+# "destination path already exists", and the loop went down with it, which
+# left the run with no way to get results off the box.
+GITHUB_TOKEN="$GITHUB_TOKEN" bash autopush.sh --once || true
 nohup env GITHUB_TOKEN="$GITHUB_TOKEN" bash autopush.sh \
   > logs/autopush.log 2>&1 &
 echo "    autopush pid $!"
-sleep 3
-GITHUB_TOKEN="$GITHUB_TOKEN" bash autopush.sh --once || true
 
 say "Starting the probe: $QUESTIONS questions x $REPLICATES replicates, seed $SEED, numeric=$INCLUDE_NUMERIC"
 nohup python3 run_probe.py \

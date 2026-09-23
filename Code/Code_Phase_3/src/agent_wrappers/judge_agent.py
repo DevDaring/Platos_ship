@@ -126,7 +126,26 @@ class JudgeCascade:
     )
 
     @staticmethod
-    def _is_grounded(answer: str, raw_text: str) -> bool:
+    def _option_text_for_letter(letter: str, options_text: str) -> str:
+        """
+        The option body a letter labels, from an "A) foo; B) bar" listing.
+
+        Returns "" when the listing is not in that form, which makes the
+        caller fall back to letter matching alone.
+        """
+        if not letter or not options_text:
+            return ""
+        # The listing ends with a trailing instruction ("-- answer with the
+        # single capital letter"). Without "--" as a terminator the LAST
+        # option absorbed it, so its body never matched anything in a
+        # response and that option could not be grounded by its text.
+        pattern = (r"(?:^|[;\n])\s*" + re.escape(letter.upper())
+                   + r"\)\s*(.+?)(?=\s*(?:;|\n|--|$))")
+        found = re.search(pattern, options_text, re.DOTALL)
+        return found.group(1).strip() if found else ""
+
+    @staticmethod
+    def _is_grounded(answer: str, raw_text: str, options_text: str = "") -> bool:
         """
         The judge's answer must occur in the text it was asked to read.
 
@@ -147,11 +166,41 @@ class JudgeCascade:
         if not candidate:
             return False
 
-        # A bare option letter must appear as its own token, so the "A" in
-        # "Also" does not count as the model having chosen A.
+        # An option letter is grounded EITHER by the letter appearing as its
+        # own token OR by the option's text appearing in the response.
+        #
+        # Letter-only matching was wrong in both directions. Matching case
+        # insensitively made "A" and "I" almost always match, because "a"
+        # and "I" are ordinary English words, so those two letters were
+        # never really checked. Meanwhile a response that said "the answer
+        # is bonobos" without ever writing "A" was rejected, although the
+        # judge had read it correctly rather than solved it. Comparing
+        # against the option body covers that case, which is common here
+        # precisely because these are the rows whose "Final answer:" line
+        # the regex could not find.
         if len(candidate) == 1 and candidate.isalpha():
-            pattern = r"(?<![A-Za-z])" + re.escape(candidate) + r"(?![A-Za-z])"
-            return re.search(pattern, text, re.IGNORECASE) is not None
+            letter = re.escape(candidate.upper())
+            body = JudgeCascade._option_text_for_letter(candidate, options_text)
+            if body:
+                trimmed = re.sub(r"\s+", " ", body).strip().lower()
+                haystack = re.sub(r"\s+", " ", text).lower()
+                if len(trimmed) >= 2 and trimmed in haystack:
+                    return True
+            # "A" and "I" are English words in their own right, so a bare
+            # capital token proves nothing for those two: "I think" would
+            # ground option I on any response at all. They need the letter
+            # to appear where a CHOICE is being stated.
+            if candidate.upper() in ("A", "I"):
+                contexts = [
+                    r"(?:answer|option|choice|select|pick|chose|choose|go(?:ing)? with)"
+                    r"[^A-Za-z0-9]{0,15}" + letter + r"(?![A-Za-z])",
+                    r"\(\s*" + letter + r"\s*\)",
+                    r"\*\*\s*" + letter + r"\s*\*\*",
+                    r"(?m)^\s*" + letter + r"[.):]?\s*$",
+                ]
+                return any(re.search(p, text, re.IGNORECASE) for p in contexts)
+            return re.search(
+                r"(?<![A-Za-z])" + letter + r"(?![A-Za-z])", text) is not None
 
         def _normalise(number: str) -> str:
             number = number.replace(",", "").replace(" ", "")
@@ -289,10 +338,15 @@ class JudgeCascade:
                 text = (resp.raw_text_output or "").strip()
                 if not text:
                     continue
-                if text == "UNPARSEABLE":
+                # Accept any spelling of the abstention token. Tiers have
+                # been observed replying "UNPARSE", and with a strict
+                # equality test that fell through to the grounding guard
+                # and was recorded as a fabrication rather than as the
+                # abstention it plainly is.
+                if re.match(r"^[^A-Za-z0-9]*UNPARS", text, re.IGNORECASE):
                     self._tier_usage[tier["name"]] += 1
                     return "UNPARSEABLE", f"abstain_{tier['name']}"
-                if not self._is_grounded(text, raw_text):
+                if not self._is_grounded(text, raw_text, answer_options):
                     # The tier answered with something the response never
                     # said, i.e. it solved the problem instead of reading
                     # it. That is a fabricated observation, so it is

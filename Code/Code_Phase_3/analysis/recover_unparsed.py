@@ -92,24 +92,61 @@ def effective_column(round_name: str) -> str:
     return f"{round_name}_answer_effective"
 
 
-def _assert_blind(prompt: str, row: Dict[str, Any]) -> None:
-    """
-    Fail loudly rather than silently contaminate the extraction.
+_SENTINELS = ("\x00QUESTION\x00", "\x00OPTIONS\x00", "\x00RESPONSE\x00")
 
-    Checked per call, not once at start-up: the prompt builder lives in the
-    judge wrapper and could acquire a new field at any time.
+
+def _assert_blind(cascade: Any, prompt: str, row: Dict[str, Any],
+                  question: str = "", options: str = "",
+                  raw_text: str = "") -> None:
     """
-    lowered = prompt.lower()
+    The prompt must be the builder's template filled with the three blind
+    inputs, and nothing else.
+
+    THREE EARLIER VERSIONS OF THIS CHECK WERE WRONG, each aborting a run on
+    a false positive:
+
+      1. It scanned the focal model's own response, so a response that
+         answered correctly was flagged for containing correct_answer.
+      2. It scanned for the word "condition", which is ordinary English
+         and appears in real exam questions.
+      3. It tried to recover the template by subtracting the three inputs
+         from the prompt in sequence. When the response quoted the
+         question, removing the question first altered the response, so the
+         response no longer matched itself and was never removed. The
+         model's words stayed in what the check believed was the template,
+         and "the other agent" tripped it.
+
+    Subtraction cannot work, because the inputs can contain one another.
+    The template is therefore obtained from the BUILDER, by calling it with
+    sentinels no natural text contains. That gives the template exactly,
+    with no content in it at all, and proves the prompt is that template
+    filled with these inputs and nothing more.
+    """
+    skeleton = cascade._build_user_prompt(*_SENTINELS)
+    expected = skeleton
+    for sentinel, value in zip(_SENTINELS, (question, options, raw_text)):
+        expected = expected.replace(sentinel, str(value or ""))
+    if prompt != expected:
+        raise AssertionError(
+            "judge prompt is not the question/options/response template; "
+            "something else was interpolated into it")
+
+    template = skeleton
+    for sentinel in _SENTINELS:
+        template = template.replace(sentinel, " ")
+    lowered = template.lower()
+
     for marker in _LEAKY:
         if marker.lower() in lowered:
             raise AssertionError(
-                f"judge prompt leaks '{marker}'; the extraction would no "
-                "longer be blind to the experimental arm"
+                f"judge prompt template leaks '{marker}'; the extraction "
+                "would no longer be blind to the experimental arm"
             )
     for field in ("condition", "fixed_target", "correct_answer"):
         value = str(row.get(field) or "").strip()
         if value and len(value) > 2 and value.lower() in lowered:
-            raise AssertionError(f"judge prompt leaks the value of {field}")
+            raise AssertionError(
+                f"judge prompt template leaks the value of {field}")
 
 
 def _needs_recovery(frame: pd.DataFrame, round_name: str) -> pd.Series:
@@ -120,14 +157,47 @@ def _needs_recovery(frame: pd.DataFrame, round_name: str) -> pd.Series:
 
 
 def _options_for(row: Dict[str, Any]) -> str:
+    """
+    Multiple-choice options, LABELLED WITH THE LETTERS THE MODEL USED.
+
+    Passing the bare option texts cost 33 points of judge/regex agreement.
+    The focal model answers "Final answer: G", but the judge was shown only
+    ["42", "0", "15", ...] with no letters, so "G" matched nothing it had
+    been told was valid. It then either abstained on a perfectly clear
+    answer or returned the option TEXT ("-42") where the regex returned the
+    letter ("G") -- right about the content, unable to say it in the same
+    alphabet.
+
+    Option order is the letter order: index 0 is A, as the probe's own
+    extractor assumes.
+    """
     options = row.get("answer_options")
     if options is None or (isinstance(options, float) and pd.isna(options)):
         return "a number"
-    if isinstance(options, (list, tuple)) or hasattr(options, "tolist"):
+    listed: Optional[List[Any]] = None
+    if isinstance(options, (list, tuple)):
+        listed = list(options)
+    elif hasattr(options, "tolist"):
         try:
-            return ", ".join(str(o) for o in list(options))
-        except TypeError:
-            pass
+            listed = list(options.tolist())
+        except Exception:
+            listed = None
+    elif isinstance(options, str):
+        # The pool stores the options as a JSON string, not a list. Missing
+        # this is what made the labelling fix a no-op the first time: the
+        # function fell through and handed the judge the raw JSON.
+        text = options.strip()
+        if text.startswith("[") and text.endswith("]"):
+            try:
+                parsed = json.loads(text)
+                if isinstance(parsed, list):
+                    listed = parsed
+            except (ValueError, TypeError):
+                listed = None
+    if listed:
+        letters = [f"{chr(ord('A') + i)}) {o}" for i, o in enumerate(listed)]
+        return ("; ".join(str(x) for x in letters)
+                + "  -- answer with the single capital letter")
     return str(options)
 
 
@@ -182,7 +252,8 @@ def recover(
         options = _options_for({**row, **meta})
         raw = str(row[text_column(round_name)])
 
-        _assert_blind(cascade._build_user_prompt(question, options, raw), row)
+        _assert_blind(cascade, cascade._build_user_prompt(question, options, raw),
+                      row, question, options, raw)
         try:
             answer, method = cascade.extract_answer(question, options, raw)
         except Exception as exc:                      # keep the run alive
@@ -302,7 +373,24 @@ def main() -> int:
     parser.add_argument("--calibrate", type=int, default=150,
                         help="rows the regex already read, re-judged to "
                              "measure agreement; 0 disables")
+    parser.add_argument("--env", type=Path,
+                        default=_ROOT.parent / ".env",
+                        help="dotenv file holding the provider keys")
     args = parser.parse_args()
+
+    # Keys live in Code/.env, which is gitignored. Loaded here rather than
+    # required in the shell so the command is the same on every machine.
+    if args.env.exists():
+        import os
+        for raw in args.env.read_text(encoding="utf-8",
+                                      errors="ignore").splitlines():
+            raw = raw.strip()
+            if not raw or raw.startswith("#") or "=" not in raw:
+                continue
+            key, value = raw.split("=", 1)
+            os.environ.setdefault(key.strip(),
+                                  value.strip().strip('"').strip("'"))
+        logger.info("loaded provider keys from %s", args.env)
 
     import yaml
     from src.agent_wrappers.judge_agent import JudgeCascade

@@ -24,8 +24,8 @@ from analysis.nonparse_bounds import (  # noqa: E402
     _prefix_extreme, bounded_unchanged_subset, classify_pairs, sharp_bounds,
 )
 from analysis.recover_unparsed import (  # noqa: E402
-    _assert_blind, _needs_recovery, add_effective_answers, calibrate,
-    recover, recovery_summary,
+    _assert_blind, _needs_recovery, _options_for, add_effective_answers,
+    calibrate, recover, recovery_summary,
 )
 
 
@@ -211,20 +211,112 @@ def test_recovery_refuses_a_parquet_without_raw_text():
         recover(frame, _StubCascade())
 
 
-def test_blindness_guard_rejects_a_leaking_prompt():
-    for leak in ("the condition was WR",
-                 "the other agent said D",
-                 "correct_answer: A"):
-        with pytest.raises(AssertionError):
-            _assert_blind(leak, {"condition": "WR", "correct_answer": "A",
-                                 "fixed_target": "D"})
+# -- option labelling ----------------------------------------------------
+# The focal model answers "Final answer: G". Handing the judge the bare
+# option texts gave it no letters to answer in, so it abstained on clear
+# answers or replied with the option text. Agreement with the regex on rows
+# the regex had already read was 29/40; with letters it is 39/40.
+def test_options_are_labelled_with_letters():
+    import json
+    rendered = _options_for({"answer_options": json.dumps(["42", "0", "15"])})
+    assert rendered.startswith("A) 42; B) 0; C) 15")
+    assert "single capital letter" in rendered
+
+
+def test_options_parse_a_json_string_not_just_a_list():
+    """
+    The pool stores the options as a JSON STRING.
+
+    Labelling only the list case was a silent no-op: the function fell
+    through and handed the judge raw JSON, which is what the first
+    calibration run actually measured.
+    """
+    import json
+    as_string = _options_for({"answer_options": json.dumps(["x", "y"])})
+    as_list = _options_for({"answer_options": ["x", "y"]})
+    assert as_string == as_list
+    assert as_string.startswith("A) x; B) y")
+
+
+def test_letter_order_matches_the_extractor():
+    """Index 0 is A, which is the mapping the probe's own regex assumes."""
+    import json
+    rendered = _options_for({
+        "answer_options": json.dumps([str(i) for i in range(10)])})
+    assert "G) 6" in rendered          # 7th option is G
+    assert "J) 9" in rendered
+
+
+def test_numeric_questions_get_no_letters():
+    assert _options_for({"answer_options": None}) == "a number"
+    assert _options_for({"answer_options": float("nan")}) == "a number"
+
+
+def test_malformed_option_json_does_not_crash():
+    out = _options_for({"answer_options": "[not valid json"})
+    assert isinstance(out, str) and out
+
+
+class _LeakyCascade(_StubCascade):
+    """A builder that puts experimental metadata into the template."""
+
+    def __init__(self, leak):
+        super().__init__()
+        self.leak = leak
+
+    def _build_user_prompt(self, question_text, answer_options, raw_text):
+        return (f"{self.leak}\n"
+                + super()._build_user_prompt(question_text, answer_options,
+                                             raw_text))
+
+
+_ROW = {"condition": "WR", "correct_answer": "banana", "fixed_target": "cherry"}
+
+
+@pytest.mark.parametrize("leak", [
+    "this trial came from condition WR",
+    "the other agent said cherry",
+    "correct_answer for reference: banana",
+])
+def test_blindness_guard_rejects_a_leaking_template(leak):
+    cascade = _LeakyCascade(leak)
+    prompt = cascade._build_user_prompt("What is 2+2?", "a number", "four.")
+    with pytest.raises(AssertionError):
+        _assert_blind(cascade, prompt, _ROW, "What is 2+2?", "a number",
+                      "four.")
 
 
 def test_blindness_guard_accepts_a_clean_prompt():
-    prompt = _StubCascade()._build_user_prompt(
-        "What is 2+2?", "a number", "I think it is four.")
-    _assert_blind(prompt, {"condition": "WR", "correct_answer": "4",
-                           "fixed_target": "7"})
+    cascade = _StubCascade()
+    question, options, raw = "What is 2+2?", "a number", "I think it is four."
+    prompt = cascade._build_user_prompt(question, options, raw)
+    _assert_blind(cascade, prompt, _ROW, question, options, raw)
+
+
+def test_blindness_guard_tolerates_content_that_looks_like_a_leak():
+    """
+    The content is arbitrary natural language and is NOT searched.
+
+    Three earlier versions of this guard aborted real runs here: on a
+    response containing the correct answer, on the ordinary word
+    "condition" inside an exam question, and on a response that quoted the
+    question back.
+    """
+    cascade = _StubCascade()
+    question = "Which condition causes this, given the other agent's report?"
+    options = "A) banana; B) cherry"
+    raw = ("Restating: Which condition causes this, given the other agent's "
+           "report? I say banana.")
+    prompt = cascade._build_user_prompt(question, options, raw)
+    _assert_blind(cascade, prompt, _ROW, question, options, raw)
+
+
+def test_blindness_guard_rejects_an_unexpected_interpolation():
+    """If the prompt is not the template filled with these inputs, stop."""
+    cascade = _StubCascade()
+    prompt = cascade._build_user_prompt("q", "o", "r") + "\nextra smuggled text"
+    with pytest.raises(AssertionError, match="not the question/options"):
+        _assert_blind(cascade, prompt, _ROW, "q", "o", "r")
 
 
 def test_calibration_scores_judge_against_regex():
