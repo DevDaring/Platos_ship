@@ -19,3 +19,7 @@ When it finishes: one final push, then DELETE the VM.
 
 [1m==> Probe finished — pushing the final results[0m
 cannot delete non-empty directory: logs
+[15:03:52] pushed to main
+
+[1m==> Done. DELETE THE VM: a stopped instance still bills for its disk.[0m
+run_full.sh: line 74: DELETE: command not found
