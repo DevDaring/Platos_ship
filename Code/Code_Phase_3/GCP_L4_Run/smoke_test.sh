@@ -78,6 +78,18 @@ elif pd.to_numeric(trials["mass_outside_candidates_round1"],
 if trials["round1_answer"].isna().all() or (trials["round1_answer"] == "").all():
     problems.append("no Round-1 answer parsed — check the chat template")
 
+# 5b. RAW GENERATIONS MUST BE PERSISTED. The first L4 run extracted an answer
+#     from each generation and threw the text away, which made 501 unparsed
+#     answers permanently unrecoverable without renting the GPU again. The
+#     whole point of this run is that the text survives, so a run that does
+#     not carry it must fail here rather than 56 minutes later.
+for text_column in ("round0_text", "round1_text"):
+    if text_column not in trials.columns:
+        problems.append(f"{text_column} missing — raw generations are being "
+                        "discarded; the judge cascade would have nothing to read")
+    elif trials[text_column].astype(str).str.strip().eq("").all():
+        problems.append(f"{text_column} present but empty on every row")
+
 # 6. The baseline R must not have seen peers: its Round-0 and Round-1 mass on
 #    the target should be identical for the same trial only when the answer did
 #    not move. Just check the column exists and is finite.

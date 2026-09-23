@@ -65,7 +65,7 @@ say "Staging the upload"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 
-mkdir -p "$STAGE/GPU_Only/src" "$STAGE/src/agent_wrappers" "$STAGE/inputs"
+mkdir -p "$STAGE/GPU_Only/src" "$STAGE/src/agent_wrappers" "$STAGE/inputs" "$STAGE/analysis"
 
 # The probe itself, renamed to a neutral entry point. It already accepts
 # --model and --tensor-parallel-size, so one L4 is just tp=1 with the 8B.
@@ -76,6 +76,11 @@ cp "$PHASE3/GPU_Only/vram_planner.py"          "$STAGE/GPU_Only/"
 # The handful of Phase-3 modules the probe imports.
 cp "$PHASE3/src/contexts.py" "$PHASE3/src/extraction.py" \
    "$PHASE3/src/seeding.py"  "$PHASE3/src/__init__.py" "$STAGE/src/"
+# corrected_probe.py does `from analysis.stats import ...` at call time,
+# so the module must be on the box or the contrast stage dies AFTER the
+# GPU work is already paid for.
+cp "$PHASE3/analysis/stats.py" "$STAGE/analysis/"
+: > "$STAGE/analysis/__init__.py"
 cp "$PHASE3/src/agent_wrappers/judge_agent.py" \
    "$PHASE3/src/agent_wrappers/base_agent.py" \
    "$PHASE3/src/agent_wrappers/openai_compatible_agent.py" \
@@ -98,8 +103,14 @@ find "$STAGE" -type f | sed "s|$STAGE|  .|" | sort
 
 # ── upload ────────────────────────────────────────────────────────────────
 say "Uploading to $NAME:~/$REMOTE"
-remote_exec "rm -rf ~/$REMOTE && mkdir -p ~/$REMOTE"
-remote_copy "$STAGE" "~/$REMOTE/"
+# pscp on Windows passes the remote filespec through literally, so a '~'
+# arrives unexpanded and scp reports 'not a directory'. Resolve HOME on
+# the box and use an absolute path.
+REMOTE_HOME="$(remote_exec 'printf %s "$HOME"' | tr -d '\r\n')"
+[ -n "$REMOTE_HOME" ] || fail "could not resolve the remote HOME"
+say "Remote home: $REMOTE_HOME"
+remote_exec "rm -rf $REMOTE_HOME/$REMOTE && mkdir -p $REMOTE_HOME/$REMOTE"
+remote_copy "$STAGE" "$REMOTE_HOME/$REMOTE/"
 
 # ── bootstrap ─────────────────────────────────────────────────────────────
 say "Bootstrapping (installs vLLM + FlashAttention, downloads the checkpoint)"

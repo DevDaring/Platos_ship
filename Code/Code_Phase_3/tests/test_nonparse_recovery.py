@@ -24,7 +24,8 @@ from analysis.nonparse_bounds import (  # noqa: E402
     _prefix_extreme, bounded_unchanged_subset, classify_pairs, sharp_bounds,
 )
 from analysis.recover_unparsed import (  # noqa: E402
-    _assert_blind, _needs_recovery, calibrate, recover,
+    _assert_blind, _needs_recovery, add_effective_answers, calibrate,
+    recover, recovery_summary,
 )
 
 
@@ -134,11 +135,14 @@ class _StubCascade:
 
 
 def _trials_with_text():
+    """Row 0 parsed, row 1 unreadable but has text, row 2 has no text at all."""
     return pd.DataFrame({
         "question_identifier": ["q0", "q1", "q2"],
         "condition": ["WR", "E", "WR"],
         "correct_answer": ["A", "B", "C"],
         "fixed_target": ["D", "D", "D"],
+        "round0_answer": ["A", "B", "C"],
+        "round0_text": ["I say A", "I say B", "I say C"],
         "round1_answer": ["A", "", ""],
         "round1_text": ["The answer is A", "a long ramble", ""],
     })
@@ -146,7 +150,9 @@ def _trials_with_text():
 
 def test_recovery_targets_only_blank_rows_that_have_text():
     frame = _trials_with_text()
-    assert list(_needs_recovery(frame)) == [False, True, False]
+    assert list(_needs_recovery(frame, "round1")) == [False, True, False]
+    # Round 0 parsed everywhere, so nothing there needs a judge.
+    assert list(_needs_recovery(frame, "round0")) == [False, False, False]
 
 
 def test_recovery_fills_only_the_targeted_row():
@@ -165,10 +171,41 @@ def test_recovery_preserves_the_original_regex_column():
 def test_abstention_leaves_the_row_unrecovered():
     out = recover(_trials_with_text(), _StubCascade("UNPARSEABLE"))
     assert list(out["round1_answer_judged"]) == ["", "", ""]
+    # and the effective answer stays blank, so the pair remains ambiguous
+    assert list(out["round1_answer_effective"]) == ["A", "", ""]
+
+
+def test_effective_answer_prefers_regex_and_falls_back_to_judge():
+    out = recover(_trials_with_text(), _StubCascade("C"))
+    assert list(out["round1_answer_effective"]) == ["A", "C", ""]
+    # the regex column is never overwritten, so provenance stays auditable
+    assert list(out["round1_answer"]) == ["A", "", ""]
+
+
+def test_round_zero_is_recovered_too():
+    """
+    A Round-0 failure removes a trial from the subset just as a Round-1
+    failure does, so both rounds must be judged.
+    """
+    frame = _trials_with_text()
+    frame.loc[0, "round0_answer"] = ""
+    cascade = _StubCascade("Q")
+    out = recover(frame, cascade)
+    assert out.loc[0, "round0_answer_judged"] == "Q"
+    assert out.loc[0, "round0_answer_effective"] == "Q"
+    assert "I say A" in cascade.seen
+
+
+def test_recovery_summary_counts_what_was_resolved():
+    out = recover(_trials_with_text(), _StubCascade("C"))
+    summary = recovery_summary(out)
+    assert summary["round1"]["unparsed_by_regex"] == 2
+    assert summary["round1"]["recovered"] == 1
+    assert summary["round1"]["still_unresolved"] == 1
 
 
 def test_recovery_refuses_a_parquet_without_raw_text():
-    """The exact situation of the completed L4 run: nothing to judge."""
+    """The exact situation of the first L4 run: nothing to judge."""
     frame = _trials_with_text().drop(columns=["round1_text"])
     with pytest.raises(ValueError, match="round1_text"):
         recover(frame, _StubCascade())

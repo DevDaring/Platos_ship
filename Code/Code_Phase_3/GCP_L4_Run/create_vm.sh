@@ -53,7 +53,7 @@ gcloud compute instances create "$NAME" \
   --machine-type="$MACHINE" \
   --accelerator="type=nvidia-l4,count=1" \
   --maintenance-policy=TERMINATE \
-  --image-family=common-cu124-ubuntu-2204-py310 \
+  --image-family=common-cu129-ubuntu-2204-nvidia-580 \
   --image-project=deeplearning-platform-release \
   --boot-disk-size="${DISK_GB}GB" \
   --boot-disk-type=pd-balanced \

@@ -13,6 +13,16 @@ MODEL="${MODEL:-meta-llama/Llama-3.1-8B-Instruct}"
 QUESTIONS="${QUESTIONS:-300}"
 REPLICATES="${REPLICATES:-3}"
 HOME_DIR="${HOME_DIR:-$HOME/platos}"
+SEED="${SEED:-20260502}"
+# --include-numeric is a store_true flag that defaults to OFF, so leaving
+# it out silently drops GSM8K and yields a multiple-choice-only run. The
+# first run was launched by hand with the flag and the script was never
+# updated, so re-running this file would NOT have reproduced it.
+INCLUDE_NUMERIC="${INCLUDE_NUMERIC:-1}"
+NUMERIC_ARGS=()
+# An `&&` here would return non-zero when numeric is off, and `set -e`
+# would abort the whole run on it.
+if [ "$INCLUDE_NUMERIC" = "1" ]; then NUMERIC_ARGS+=(--include-numeric); fi
 
 say() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 
@@ -31,12 +41,14 @@ echo "    autopush pid $!"
 sleep 3
 GITHUB_TOKEN="$GITHUB_TOKEN" bash autopush.sh --once || true
 
-say "Starting the probe: $QUESTIONS questions x $REPLICATES replicates"
+say "Starting the probe: $QUESTIONS questions x $REPLICATES replicates, seed $SEED, numeric=$INCLUDE_NUMERIC"
 nohup python3 run_probe.py \
   --model "$MODEL" \
   --tensor-parallel-size 1 \
   --questions "$QUESTIONS" \
   --replicates "$REPLICATES" \
+  --seed "$SEED" \
+  "${NUMERIC_ARGS[@]}" \
   --out "$HOME_DIR/results" \
   > logs/probe.log 2>&1 &
 PROBE_PID=$!

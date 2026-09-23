@@ -109,9 +109,65 @@ class JudgeCascade:
     """
 
     JUDGE_SYSTEM_PROMPT = (
-        "You extract a single final answer from a model's response. "
-        "Output only the answer, nothing else."
+        "You are an EXTRACTOR, not a solver. You are shown a question and a "
+        "model's response. Your only job is to report the final answer THAT "
+        "RESPONSE STATED.\n"
+        "Rules:\n"
+        "1. Never compute, derive, verify or correct anything. You are not "
+        "being asked what the right answer is.\n"
+        "2. The answer you output must appear in the response text. If you "
+        "cannot point to it there, you do not have one.\n"
+        "3. If the response reasons without committing, trails off, is cut "
+        "off mid-sentence, or states no final answer, output exactly "
+        "UNPARSEABLE.\n"
+        "4. A response being wrong is not a reason to output UNPARSEABLE. "
+        "Report the wrong answer it committed to.\n"
+        "Output only the answer or UNPARSEABLE, nothing else."
     )
+
+    @staticmethod
+    def _is_grounded(answer: str, raw_text: str) -> bool:
+        """
+        The judge's answer must occur in the text it was asked to read.
+
+        Prompt wording alone does not stop a competent model from solving:
+        shown "What is 8 * 7?" and a response that only says "I need to think
+        about this more carefully", tier 1 returned 56. Nothing in that
+        response says 56. This is the hard guard, because it does not depend
+        on the judge cooperating.
+
+        Deliberately conservative. A response that writes "forty-two" while
+        the judge reports "42" is treated as ungrounded and abstains. That
+        loses a recoverable row, which is the safe direction: an abstention
+        keeps the trial in the ambiguous set where the bounds already handle
+        it, whereas a fabricated answer enters the analysis as data.
+        """
+        candidate = (answer or "").strip()
+        text = raw_text or ""
+        if not candidate:
+            return False
+
+        # A bare option letter must appear as its own token, so the "A" in
+        # "Also" does not count as the model having chosen A.
+        if len(candidate) == 1 and candidate.isalpha():
+            pattern = r"(?<![A-Za-z])" + re.escape(candidate) + r"(?![A-Za-z])"
+            return re.search(pattern, text, re.IGNORECASE) is not None
+
+        def _normalise(number: str) -> str:
+            number = number.replace(",", "").replace(" ", "")
+            if "." in number:
+                number = number.rstrip("0").rstrip(".")
+            return number or "0"
+
+        stripped = candidate.replace(",", "").replace(" ", "")
+        if re.fullmatch(r"-?\d+(?:\.\d+)?", stripped):
+            target = _normalise(stripped)
+            for match in re.finditer(r"-?\d[\d,]*(?:\.\d+)?", text):
+                if _normalise(match.group(0)) == target:
+                    return True
+            return False
+
+        return candidate.lower() in text.lower()
 
     def __init__(self, models_config: Dict[str, Any]):
         providers = models_config["providers"]
@@ -212,10 +268,44 @@ class JudgeCascade:
                     temperature=0.0,
                     maximum_output_tokens=tier["max_tokens"],
                 )
+                # AN ABSTENTION IS A VERDICT, NOT A TIER FAILURE.
+                #
+                # This loop previously escalated on UNPARSEABLE exactly as it
+                # escalated on a 500, so a response that never stated an
+                # answer was handed to the next tier, and that tier -- being
+                # a competent model shown a question and some text -- SOLVED
+                # it. Observed directly: for "I need to think about this more
+                # carefully before committing to anything..." on "What is
+                # 8 * 7?", tier 1 correctly abstained and tier 2 returned 56.
+                # That converts a missing observation into a fabricated one,
+                # and it biases towards the judge's own competence rather
+                # than the focal model's behaviour.
+                #
+                # Escalate only when the PROVIDER failed. When a tier answers
+                # and its answer is "no answer was stated", that is the
+                # result.
+                if resp.error_status == "failure":
+                    continue
                 text = (resp.raw_text_output or "").strip()
-                if text and text != "UNPARSEABLE" and resp.error_status != "failure":
+                if not text:
+                    continue
+                if text == "UNPARSEABLE":
                     self._tier_usage[tier["name"]] += 1
-                    return text, f"judge_{tier['name']}"
+                    return "UNPARSEABLE", f"abstain_{tier['name']}"
+                if not self._is_grounded(text, raw_text):
+                    # The tier answered with something the response never
+                    # said, i.e. it solved the problem instead of reading
+                    # it. That is a fabricated observation, so it is
+                    # refused here rather than escalated: the next tier
+                    # would be just as able to solve it.
+                    api_failure_logger.warning(
+                        "Judge tier %s returned %r, which does not occur in "
+                        "the response; treating as abstention",
+                        tier["name"], text[:40])
+                    self._tier_usage[tier["name"]] += 1
+                    return "UNPARSEABLE", f"ungrounded_{tier['name']}"
+                self._tier_usage[tier["name"]] += 1
+                return text, f"judge_{tier['name']}"
             except Exception as e:
                 api_failure_logger.warning(
                     f"Judge tier {tier['name']} ({tier['label']}) failed: "
