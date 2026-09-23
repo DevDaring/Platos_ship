@@ -1,0 +1,216 @@
+{
+  "exclusions": {
+    "rows_before_exclusions": 30335,
+    "dropped_perturbed_quarantined": 485,
+    "dropped_perturbed_reason": "gold labels invalid: every integer was scaled by 4, including percentages and fractions; see tools/quarantine_perturbed.py",
+    "dropped_superseded_crossval50": 750,
+    "dropped_snapshot_mismatch": 67,
+    "snapshot_mismatch_detail": "gpt4o_mini rows served by gpt-4.1-mini via the LinkAPI fallback chain",
+    "rows_after_exclusions": 29033,
+    "protocols": {
+      "A": 29033
+    },
+    "dataset_scopes": {
+      "main300": 29033
+    },
+    "focal_models": [
+      "deepseek_primary",
+      "gpt4o_mini",
+      "het_deepseek",
+      "sweep_gemma_3_27b",
+      "sweep_gemma_3_4b_focal",
+      "sweep_llama_3_1_70b",
+      "sweep_llama_3_1_8b_focal",
+      "sweep_mistral_small",
+      "sweep_qwen_2_5_72b"
+    ]
+  },
+  "solo_accuracy_by_focal": {
+    "deepseek_primary": 0.7630701754385965,
+    "gpt4o_mini": 0.6386313837856059,
+    "het_deepseek": 0.79,
+    "sweep_gemma_3_27b": 0.6527777777777778,
+    "sweep_gemma_3_4b_focal": 0.44722222222222224,
+    "sweep_llama_3_1_70b": 0.675,
+    "sweep_llama_3_1_8b_focal": 0.5205555555555555,
+    "sweep_mistral_small": 0.65,
+    "sweep_qwen_2_5_72b": 0.6644444444444444
+  },
+  "contrasts": [
+    {
+      "name": "WR_minus_R_accuracy",
+      "statistic": "accuracy_delta",
+      "estimate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "n_pairs": 0,
+      "p_value": NaN,
+      "p_value_method": "no_data",
+      "family": "X1_primary",
+      "p_holm": NaN,
+      "significant_after_holm": false,
+      "condition_a": "WR",
+      "condition_b": "R",
+      "protocol": "B",
+      "dataset_scope": "main300",
+      "focal_key": "ALL"
+    },
+    {
+      "name": "H_minus_R_accuracy",
+      "statistic": "accuracy_delta",
+      "estimate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "n_pairs": 0,
+      "p_value": NaN,
+      "p_value_method": "no_data",
+      "family": "X1_primary",
+      "p_holm": NaN,
+      "significant_after_holm": false,
+      "condition_a": "H",
+      "condition_b": "R",
+      "protocol": "B",
+      "dataset_scope": "main300",
+      "focal_key": "ALL"
+    },
+    {
+      "name": "E_minus_R_accuracy",
+      "statistic": "accuracy_delta",
+      "estimate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "n_pairs": 0,
+      "p_value": NaN,
+      "p_value_method": "no_data",
+      "family": "X1_primary",
+      "p_holm": NaN,
+      "significant_after_holm": false,
+      "condition_a": "E",
+      "condition_b": "R",
+      "protocol": "B",
+      "dataset_scope": "main300",
+      "focal_key": "ALL"
+    },
+    {
+      "name": "WR_minus_R_harmful",
+      "statistic": "harmful_delta",
+      "estimate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "n_pairs": 0,
+      "p_value": NaN,
+      "p_value_method": "no_data",
+      "family": "X1_primary",
+      "p_holm": NaN,
+      "significant_after_holm": false,
+      "condition_a": "WR",
+      "condition_b": "R",
+      "protocol": "B",
+      "dataset_scope": "main300",
+      "focal_key": "ALL"
+    },
+    {
+      "name": "WR_minus_G_accuracy",
+      "statistic": "accuracy_delta",
+      "estimate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "n_pairs": 0,
+      "p_value": NaN,
+      "p_value_method": "no_data",
+      "family": "X2_primary",
+      "p_holm": NaN,
+      "significant_after_holm": false,
+      "condition_a": "WR",
+      "condition_b": "G",
+      "protocol": "B",
+      "dataset_scope": "main300",
+      "focal_key": "ALL"
+    },
+    {
+      "name": "WR_minus_W_accuracy",
+      "statistic": "accuracy_delta",
+      "estimate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "n_pairs": 0,
+      "p_value": NaN,
+      "p_value_method": "no_data",
+      "family": "X2_primary",
+      "p_holm": NaN,
+      "significant_after_holm": false,
+      "condition_a": "WR",
+      "condition_b": "W",
+      "protocol": "B",
+      "dataset_scope": "main300",
+      "focal_key": "ALL"
+    },
+    {
+      "name": "WR_minus_WRh_harmful",
+      "statistic": "harmful_delta",
+      "estimate": NaN,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "n_pairs": 0,
+      "p_value": NaN,
+      "p_value_method": "no_data",
+      "family": "X2_primary",
+      "p_holm": NaN,
+      "significant_after_holm": false,
+      "condition_a": "WR",
+      "condition_b": "WRh",
+      "protocol": "B",
+      "dataset_scope": "main300",
+      "focal_key": "ALL"
+    }
+  ],
+  "capability_gradients": {
+    "capability_gradient_B": {
+      "rho": NaN,
+      "n": 0,
+      "p_value_method": "no_data"
+    },
+    "capability_gradient_B_raw": {
+      "rho": NaN,
+      "n": 0,
+      "p_value_method": "no_data"
+    },
+    "capability_gradient_A": {
+      "rho": NaN,
+      "p_value": NaN,
+      "n": 2,
+      "p_value_method": "insufficient_n",
+      "protocol": "A",
+      "dataset_scope": "main300",
+      "treatment": "WR",
+      "baseline": "R",
+      "statistic_column": "harmful_excess"
+    },
+    "capability_gradient_A_raw": {
+      "rho": -0.9523809523809524,
+      "p_value": 0.001140873015873016,
+      "p_value_method": "exact_permutation_40320",
+      "n": 8,
+      "leave_one_out_min": -0.9642857142857145,
+      "leave_one_out_max": -0.9285714285714288,
+      "protocol": "A",
+      "dataset_scope": "main300",
+      "treatment": "WR",
+      "baseline": null,
+      "statistic_column": "harmful_treatment"
+    }
+  },
+  "voting_baseline": [],
+  "retention_gap": [],
+  "legacy_loudness_gate": {},
+  "safeguard_policies": [],
+  "verifier_cost": {},
+  "accounting_identity_max_deviation": 6.245004513516506e-17,
+  "coverage_is_balanced": {
+    "checked": false
+  },
+  "design_check": {
+    "passed": true,
+    "findings": []
+  }
+}

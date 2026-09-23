@@ -1,0 +1,261 @@
+# ============================================================================
+# Phase 3 models.yaml — pinned snapshots, route-only fallbacks
+# ============================================================================
+# Differences from Phase 2 (next_plan.md §2.6):
+#   * every focal model declares `expected_served_prefix`. Focal and verifier
+#     agents are built with PinnedFallbackAgent, which checks each link's
+#     served model against that prefix and SKIPS a link answering with
+#     anything else. A chain can change the route; it cannot change the model.
+#     Phase 2 had no such check and served 75 "gpt-4o-mini" trials from
+#     gpt-4.1-mini.
+#   * `deepseek-chat` alias retired 2026-07-24 -> pinned to deepseek-v4-flash.
+#   * `max_retries: 0` on a fallback means a single attempt before moving on.
+#
+# Provider choice rule: a cheaper provider is used only when it serves the
+# SAME model under the same identifier. Three models stay on OpenRouter for
+# that reason, each noted inline — nano-gpt has only a fine-tune
+# (hermes-3-llama-3.1-70b) or a third-party re-upload (unsloth/gemma-3-*).
+# ============================================================================
+
+providers:
+  openrouter:
+    base_url_env: OPENROUTER_API_BASE_URL
+    base_url_default: https://openrouter.ai/api/v1
+    api_key_envs: [OPENROUTER_API_KEY_1, OPENROUTER_API_KEY_2]
+    default_headers: openrouter
+  deepseek:
+    base_url_env: DEEPSEEK_API_BASE_URL
+    base_url_default: https://api.deepseek.com/v1
+    api_key_envs: [DEEPSEEK_API_KEY_1, DEEPSEEK_API_KEY_2]
+  mistral:
+    base_url_env: MISTRAL_API_BASE_URL
+    base_url_default: https://api.mistral.ai/v1
+    api_key_envs: [MISTRAL_API_KEY_1, MISTRAL_API_KEY, Mistral_API_Key_2, Mistral_API_Key2]
+  linkapi:
+    base_url_env: LINKAPI_API_BASE_URL
+    base_url_default: https://api.linkapi.ai/v1
+    # Both spellings are accepted: Phase 2's .env used AZUREOPENAI_LINKAPI_KEY,
+    # the current .env uses LINKAPI_AZUREOPENAI_KEY. Whichever is present wins;
+    # if both are, they are rotated round-robin like any other key pair.
+    api_key_envs: [LINKAPI_AZUREOPENAI_KEY, AZUREOPENAI_LINKAPI_KEY]
+  openai_direct:
+    # OpenAI platform, used as the first fallback for gpt-4o-mini.
+    # Open_AI_2009_Key is an `sk-proj-…` platform key: it authenticates against
+    # api.openai.com and is REJECTED (401) by OpenRouter, so it belongs here
+    # and not in the openrouter block.
+    base_url_env: OPENAI_API_BASE_URL
+    base_url_default: https://api.openai.com/v1
+    api_key_envs: [Open_AI_2009_Key]
+  linkapi_gemini:
+    # LinkAPI's cheap Gemini group — a separate key from the azureopenai group.
+    # NOTE: this group carries `gemini-2.5-flash` but NOT `gemini-2.5-flash-lite`
+    # (503 model_not_found), which is why the judge's tier 1 is now `flash`.
+    base_url_env: LINKAPI_API_BASE_URL
+    base_url_default: https://api.linkapi.ai/v1
+    api_key_envs: [LINKAPI_GEMINICHEAP_KEY]
+  gemini_direct:
+    # Google AI Studio's OpenAI-compatible endpoint. Four keys rotate
+    # round-robin. Verified 2026-09-23: keys 1 and 3 authenticate; key 2
+    # returns 403 (permission denied) and key 4 returns 400 (invalid). Dead
+    # keys cost one wasted request per rotation, so replace or remove them —
+    # `tools/routing_report.py --probe` re-checks.
+    base_url_env: GEMINI_OPENAI_BASE_URL
+    base_url_default: https://generativelanguage.googleapis.com/v1beta/openai/
+    api_key_envs: [GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3, GEMINI_API_KEY_4]
+  nanogpt:
+    # Used ONLY for open-weight models that were otherwise called via
+    # OpenRouter, and only when nano-gpt serves the SAME model under the same
+    # identifier. Proprietary models (Gemini, GPT-4o-mini) are not routed here.
+    base_url_env: Nano_GPT_Base_URL
+    base_url_default: https://nano-gpt.com/api/v1
+    api_key_envs: [NanoGPT_88_API_Key, Nano_GPT_API_KEY]
+
+request_defaults:
+  focal_temperature: 0.7
+  weak_temperature: 0.9
+  focal_max_output_tokens: 600     # identical in EVERY revision condition
+  weak_max_output_tokens: 350
+  request_timeout_seconds: 120
+  maximum_retry_attempts: 5
+  retry_backoff_seconds: [2, 4, 8, 16, 32]
+
+# ── Focal models (X1 runs ALL EIGHT under the identical matrix) ────────────
+# capability_tier is used to pick the 3 X2 models and the 2 X3 models.
+focal_agents:
+  deepseek_primary:
+    provider: deepseek
+    model_slug: deepseek-v4-flash        # was `deepseek-chat`; alias retired 2026-07-24
+    expected_served_prefix: deepseek
+    capability_tier: strong
+    paper_name: DeepSeek-v4-flash
+    in_x2: true
+    in_x3: true
+  gpt4o_mini:
+    # LinkAPI's azureopenai group is roughly 10x cheaper than OpenRouter for
+    # this model (~$0.011/$0.042 per 1M vs $0.15/$0.60), but it is a single
+    # account and rate-limits under sustained load, so it needs a fallback.
+    #
+    # What corrupted Phase 2 was not the cheap primary — it was a fallback
+    # allowed to serve a DIFFERENT model. When LinkAPI rate-limited, the chain
+    # failed over and 75 focal responses came back from gpt-4.1-mini while
+    # still being logged as GPT-4o-mini.
+    #
+    # Phase 3 keeps the chain but builds it with PinnedFallbackAgent: every
+    # link's served model is checked against `expected_served_prefix`, and a
+    # link that answers with anything else is rejected and skipped. The chain
+    # can change the route; it can never change the model.
+    provider: linkapi
+    model_slug: gpt-4o-mini
+    expected_served_prefix: gpt-4o-mini
+    capability_tier: mid
+    paper_name: GPT-4o-mini
+    fallbacks:
+      # First fallback: OpenAI direct on its own dedicated key, single attempt.
+      # `max_retries: 0` means one try and move on — if OpenAI is slow we would
+      # rather reach OpenRouter than sit in a backoff loop.
+      - provider: openai_direct
+        model_slug: gpt-4o-mini
+        max_retries: 0
+      # Last resort: OpenRouter, which has two round-robin accounts.
+      - provider: openrouter
+        model_slug: openai/gpt-4o-mini
+  sweep_llama_3_1_70b:
+    # STAYS ON OPENROUTER. nano-gpt's only 70B Llama-3.1 is
+    # `nousresearch/hermes-3-llama-3.1-70b`, which is a Hermes-3 fine-tune and
+    # therefore a different model from Meta's Instruct release. Routing here
+    # would silently change which model the paper reports on.
+    provider: openrouter
+    model_slug: meta-llama/llama-3.1-70b-instruct
+    expected_served_prefix: meta-llama/llama-3.1-70b
+    capability_tier: strong
+    paper_name: Llama-3.1-70B
+  sweep_qwen_2_5_72b:
+    provider: nanogpt
+    model_slug: qwen/qwen-2.5-72b-instruct
+    expected_served_prefix: qwen/qwen-2.5-72b
+    capability_tier: strong
+    paper_name: Qwen2.5-72B
+    fallbacks:
+      - provider: openrouter
+        model_slug: qwen/qwen-2.5-72b-instruct
+        max_retries: 0
+  sweep_gemma_3_27b:
+    # STAYS ON OPENROUTER. nano-gpt carries only `unsloth/gemma-3-27b-it`, a
+    # third-party re-upload. The weights are probably identical, but the paper
+    # pins `google/gemma-3-27b-it` and an unverified mirror is not the same
+    # provenance claim.
+    provider: openrouter
+    model_slug: google/gemma-3-27b-it
+    expected_served_prefix: google/gemma-3-27b
+    capability_tier: mid
+    paper_name: Gemma-3-27B
+    in_x2: true
+    in_x3: true
+  sweep_mistral_small:
+    provider: nanogpt
+    model_slug: mistralai/mistral-small-3.2-24b-instruct
+    expected_served_prefix: mistralai/mistral-small-3.2-24b
+    capability_tier: mid
+    paper_name: Mistral-Small-24B
+    fallbacks:
+      - provider: openrouter
+        model_slug: mistralai/mistral-small-3.2-24b-instruct
+        max_retries: 0
+  sweep_llama_3_1_8b_focal:
+    provider: nanogpt
+    model_slug: meta-llama/llama-3.1-8b-instruct
+    expected_served_prefix: meta-llama/llama-3.1-8b
+    capability_tier: weak
+    paper_name: Llama-3.1-8B
+    fallbacks:
+      - provider: openrouter
+        model_slug: meta-llama/llama-3.1-8b-instruct
+        max_retries: 0
+    in_x2: true
+  sweep_gemma_3_4b_focal:
+    # STAYS ON OPENROUTER — nano-gpt has only `unsloth/gemma-3-4b-it`.
+    provider: openrouter
+    model_slug: google/gemma-3-4b-it
+    expected_served_prefix: google/gemma-3-4b
+    capability_tier: weak
+    paper_name: Gemma-3-4B
+
+# ── Weak peers — generate the honest bank and the persona pools ───────────
+# Peer calls MAY fall back (a peer message is an input, not a measured unit),
+# but the served model is recorded per message in `message_generator_model`.
+weak_agents:
+  llama_3_1_8b_instruct:
+    provider: nanogpt
+    model_slug: meta-llama/llama-3.1-8b-instruct
+    paper_name: Llama-3.1-8B
+    fallbacks:
+      - provider: openrouter
+        model_slug: meta-llama/llama-3.1-8b-instruct
+        max_retries: 0
+  gemma_3_4b_instruct:
+    # STAYS ON OPENROUTER — nano-gpt has only the unsloth re-upload.
+    provider: openrouter
+    model_slug: google/gemma-3-4b-it
+    paper_name: Gemma-3-4B
+
+# Persona rewriting (hedged pool, X2) uses the SAME model that generated the
+# original anchored pool, so wording is the only thing that changes.
+persona_rewrite_agent: llama_3_1_8b_instruct
+
+# ── Judge cascade (answer extraction only; fires when regex fails) ────────
+judge_cascade:
+  primary:
+    # Gemini is proprietary, so it is NOT routed via nano-gpt.
+    # Chain: LinkAPI's cheap Gemini group -> Google direct (4 keys, round-robin)
+    # -> OpenRouter. One model across the whole chain.
+    #
+    # Model change from Phase 1/2: `gemini-2.5-flash-lite` -> `gemini-2.5-flash`.
+    # LinkAPI's cheap group does not carry flash-lite. The judge only fires when
+    # regex extraction fails (~10% of responses) and only extracts an answer
+    # from text, so a stronger extractor is not a confound — but it is a change
+    # from the released setup and belongs in Appendix S12.
+    provider: linkapi_gemini
+    model_slug: gemini-2.5-flash
+    fallbacks:
+      - provider: gemini_direct
+        model_slug: gemini-2.5-flash
+      - provider: openrouter
+        model_slug: google/gemini-2.5-flash
+        max_retries: 0
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+  secondary:
+    provider: mistral
+    model_slug: mistral-small-latest
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+  tertiary:
+    provider: deepseek
+    model_slug: deepseek-v4-flash
+    temperature: 0.0
+    max_output_tokens: 50
+    request_timeout_seconds: 60
+
+# ── X6 verifier (independent solve used by the safeguard) ─────────────────
+# Deliberately a DIFFERENT model from every focal, so the safeguard is not the
+# focal model grading itself.
+verifier_agent:
+  provider: nanogpt
+  model_slug: qwen/qwen-2.5-72b-instruct
+  expected_served_prefix: qwen/qwen-2.5-72b
+  fallbacks:
+    - provider: openrouter
+      model_slug: qwen/qwen-2.5-72b-instruct
+      max_retries: 0
+  temperature: 0.0
+  max_output_tokens: 400
+
+bit_precision_policy:
+  policy_description: >
+    All CPU-side models are remote OpenAI-compatible APIs; precision is
+    server-side. GPU_Only/ loads one open 8B model locally in bf16 via vLLM
+    for the corrected output-distribution probe (X8).
+  local_model_torch_dtype: bfloat16
+  local_model_quantization: none

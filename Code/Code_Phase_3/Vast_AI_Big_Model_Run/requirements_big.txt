@@ -1,0 +1,15 @@
+# Vast.ai 70B probe. Install on the rented instance only.
+# The CPU pipeline (X1-X7) does NOT need any of this.
+
+vllm>=0.6.0               # multi-GPU tensor parallelism + first-position logprobs
+torch>=2.4.0
+transformers>=4.44.0      # tokenizer, for exact candidate tokenisation
+accelerate>=0.33.0
+huggingface_hub>=0.24.0   # gated-repo access + resumable snapshot download
+
+pandas>=2.0.0
+pyarrow>=14.0.0
+numpy>=1.24.0
+scipy>=1.11.0             # the released probe ran without scipy and had to skip
+                          # its own paired contrast; do not repeat that
+PyYAML>=6.0

@@ -1,0 +1,39 @@
+\begin{table}[t]
+\centering
+\caption{Protocol~A outcomes. H is $P(\text{final wrong}\mid\text{initial correct})$ and B is $P(\text{final correct}\mid\text{initial wrong})$; each denominator is given in brackets. Adopt is the rate of revising to the peer-asserted answer among initially correct units.\label{tab:main}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Focal model & Condition & Acc. & H (C$\to$I) & B (I$\to$C) & Adopt & $n$ units \\
+\midrule
+deepseek\_primary & One wrong, one correct & 86.3 & 5.3 (1175) & 56.0 (325) & -- & 1500 \\
+deepseek\_primary & Two self-samples & 78.7 & 5.0 (1137) & 27.5 (363) & -- & 1500 \\
+deepseek\_primary & Two honest weak peers & 75.8 & 10.3 (1149) & 30.2 (351) & -- & 1500 \\
+deepseek\_primary & H1 & 77.3 & 5.7 (1133) & 24.8 (367) & -- & 1500 \\
+deepseek\_primary & Two honest, confidence-filtered & 76.3 & 10.3 (232) & 30.9 (68) & -- & 300 \\
+deepseek\_primary & Re-answer (no peers) & 77.2 & 3.3 (1147) & 13.9 (353) & -- & 1500 \\
+deepseek\_primary & Two wrong rationales & 84.1 & 6.5 (1127) & 55.8 (373) & -- & 1500 \\
+deepseek\_primary & One wrong rationale & 78.3 & 6.0 (1142) & 28.5 (358) & -- & 1500 \\
+deepseek\_primary & Two wrong, confidence-filtered & 82.7 & 7.9 (229) & 52.1 (71) & -- & 300 \\
+deepseek\_primary & WRfilt\_legacy\_broken & 78.0 & 10.1 (228) & 40.3 (72) & -- & 300 \\
+gpt4o\_mini & Two self-samples & 66.2 & 7.5 (953) & 19.2 (536) & -- & 1489 \\
+gpt4o\_mini & Re-answer (no peers) & 67.0 & 4.4 (931) & 18.1 (546) & -- & 1477 \\
+gpt4o\_mini & Two wrong rationales & 67.0 & 13.0 (951) & 31.0 (529) & -- & 1480 \\
+gpt4o\_mini & One wrong rationale & 66.8 & 8.9 (954) & 23.3 (533) & -- & 1487 \\
+het\_deepseek & Ehet & 77.3 & 8.0 (711) & 22.2 (189) & -- & 900 \\
+sweep\_gemma\_3\_27b & Two self-samples & 67.8 & 7.2 (583) & 21.8 (317) & -- & 900 \\
+sweep\_gemma\_3\_27b & Two wrong rationales & 72.4 & 12.5 (592) & 43.5 (308) & -- & 900 \\
+sweep\_gemma\_3\_4b\_focal & Two self-samples & 46.0 & 9.1 (406) & 9.1 (494) & -- & 900 \\
+sweep\_gemma\_3\_4b\_focal & Two wrong rationales & 48.9 & 21.6 (399) & 25.3 (501) & -- & 900 \\
+sweep\_llama\_3\_1\_70b & Two self-samples & 70.6 & 7.9 (606) & 26.2 (294) & -- & 900 \\
+sweep\_llama\_3\_1\_70b & Two wrong rationales & 73.0 & 12.2 (609) & 41.9 (291) & -- & 900 \\
+sweep\_llama\_3\_1\_8b\_focal & Two self-samples & 51.3 & 20.5 (463) & 21.5 (437) & -- & 900 \\
+sweep\_llama\_3\_1\_8b\_focal & Two wrong rationales & 54.7 & 24.9 (474) & 31.9 (426) & -- & 900 \\
+sweep\_mistral\_small & Two self-samples & 70.0 & 7.0 (589) & 26.4 (311) & -- & 900 \\
+sweep\_mistral\_small & Two wrong rationales & 70.0 & 12.4 (581) & 37.9 (319) & -- & 900 \\
+sweep\_qwen\_2\_5\_72b & Two self-samples & 67.3 & 9.2 (597) & 21.1 (303) & -- & 900 \\
+sweep\_qwen\_2\_5\_72b & Two wrong rationales & 71.2 & 12.2 (599) & 38.2 (301) & -- & 900 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

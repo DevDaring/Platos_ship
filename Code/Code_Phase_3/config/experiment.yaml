@@ -1,0 +1,294 @@
+# ============================================================================
+# Phase 3 experiment.yaml — Protocol B (stateful, matched revision)
+# ============================================================================
+# Implements next_plan.md §3-§4. The ONE thing that varies between revision
+# conditions is CONTEXT_BLOCK. Everything else — question, cached Round-0
+# answer, own-answer context, revision instruction, output cap, temperature —
+# is held identical. This is the repair for the Phase-1/2 confound in which
+# the focal Round-1 call was stateless (own answer excluded) while the C1R
+# re-answer control showed the own answer.
+# ============================================================================
+
+random_seed: 20260502
+protocol_label: B_stateful
+
+# ── Question pools ─────────────────────────────────────────────────────────
+pools:
+  main300:
+    source: phase2_question_pool          # the reviewed 300-question pool
+    n_questions: 300
+  mitigation100:
+    source: phase2_question_pool
+    filter: included_in_mitigation_subset # the stratified 100-question subset
+    n_questions: 100
+    # These 100 questions are a subset of main300, so the `R` baseline run
+    # there covers them: the baseline units are literally the same
+    # (focal, question, replicate) records. Declaring the containment lets the
+    # design check see that without scheduling duplicate calls.
+    subset_of: main300
+  gsm_symbolic100:
+    source: gsm_symbolic                  # X4; built by src/gsm_symbolic.py
+    n_questions: 100
+    hf_dataset: apple/GSM-Symbolic
+    hf_config: main
+    instance_index: 0                     # one instance per template
+    pair_with_originals: true             # original_id -> GSM8K test item
+
+# ── Replication ────────────────────────────────────────────────────────────
+# 3 replicates for EVERY focal model in EVERY condition. Phase 2 used 5 for two
+# models and 3 for six, which is Reviewer YVDD's W1. Never mix again.
+replicates_per_question: 3
+
+# ── Stage 0: the cached initial answer ─────────────────────────────────────
+# One Round-0 call per (focal, question, replicate). EVERY revision condition
+# clones this exact record, so treatment contrasts share an initial state.
+r0_cache:
+  temperature: 0.7
+  max_output_tokens: 600
+  prompt: round0_standard
+
+# ── Revision conditions (CONTEXT_BLOCK is the only difference) ─────────────
+# peer_source:
+#   none            - no peer block
+#   generic         - content-free challenge sentence
+#   bare_answer     - "Final answer: X" lines only, no rationale
+#   anchored_wrong  - wrong-anchored persona messages (dumb_personas pool)
+#   anchored_hedged - the SAME messages rewritten tentatively (hedged pool)
+#   anchored_split  - one wrong-anchored + one correct-anchored message
+#   honest          - natural weak-peer messages from the honest bank
+#   self_samples    - extra Round-0 samples of the focal model itself
+conditions:
+  R:
+    peer_source: none
+    n_peers: 0
+    description: Matched re-answer baseline (own answer shown, no peers)
+    legacy_analogue: C1R
+  G:
+    peer_source: generic
+    n_peers: 0
+    description: Content-free challenge; isolates "being challenged" from content
+    legacy_analogue: null
+  W:
+    peer_source: bare_answer
+    n_peers: 2
+    description: Bare wrong alternative answers, no rationale
+    legacy_analogue: null
+  WR:
+    peer_source: anchored_wrong
+    n_peers: 2
+    description: Two confidently wrong rationales (main treatment)
+    legacy_analogue: C4
+  WRh:
+    peer_source: anchored_hedged
+    n_peers: 2
+    description: Same wrong content, hedged wording; isolates expressed confidence
+    legacy_analogue: null
+  H:
+    peer_source: honest
+    n_peers: 2
+    description: Two natural weak-peer messages (honest bank)
+    legacy_analogue: C4H
+  E:
+    peer_source: self_samples
+    n_peers: 2
+    description: Two further samples of the focal model (homogeneous control)
+    legacy_analogue: C2
+  CR:
+    peer_source: anchored_split
+    n_peers: 2
+    description: One wrong-anchored, one correct-anchored message
+    legacy_analogue: C4split
+  SF:
+    peer_source: anchored_wrong
+    n_peers: 2
+    source_framing: anonymous_candidate    # same text, no "Agent said" attribution
+    description: Source-framing control; identical content, no peer attribution
+    legacy_analogue: null
+  WR1:
+    peer_source: anchored_wrong
+    n_peers: 1
+    description: One wrong rationale (dose level 1; used by X3)
+    legacy_analogue: C3
+  WR4:
+    peer_source: anchored_wrong
+    n_peers: 4
+    description: Four wrong rationales (dose level 4; used by X3)
+    legacy_analogue: null
+  WRagree:
+    peer_source: anchored_wrong
+    n_peers: 2
+    force_same_target: true
+    description: Two wrong peers naming the SAME wrong answer (agreement contrast)
+    legacy_analogue: null
+  WRdiff:
+    peer_source: anchored_wrong
+    n_peers: 2
+    force_distinct_targets: true
+    description: Two wrong peers naming DIFFERENT wrong answers
+    legacy_analogue: null
+  WRfilt:
+    peer_source: anchored_wrong
+    n_peers: 2
+    confidence_filter:
+      enabled: true
+      threshold: 60
+      unparseable_counts_as: dropped
+    description: Confidence-weighted peer filter under Protocol B
+    legacy_analogue: C5R
+  Hfilt:
+    peer_source: honest
+    n_peers: 2
+    confidence_filter:
+      enabled: true
+      threshold: 60
+      unparseable_counts_as: dropped
+    description: Confidence filter on honest peers
+    legacy_analogue: C5H
+
+# ── Multi-round settings (X3 only) ────────────────────────────────────────
+rounds:
+  default: 1
+  anchored_peers_reassert: true   # an adversary stays committed across rounds
+  honest_peers_revise: true       # honest/self peers make a stateful revision call
+
+# ── Hedged persona pool (X2) ──────────────────────────────────────────────
+hedged_pool:
+  rewrite_temperature: 0.7
+  max_output_tokens: 400
+  max_regeneration_attempts: 3
+  validation:
+    final_answer_must_match_source: true
+    minimum_hedge_markers: 2
+    hedge_markers: ["i think", "maybe", "not sure", "possibly", "might", "perhaps", "i believe", "could be"]
+    forbid_new_numbers: true
+    length_ratio_bounds: [0.6, 1.4]
+  hand_audit_sample_size: 50
+
+# ── Experiment plan (run_all.py iterates this) ────────────────────────────
+# priority: P0 = required for the claim set; P1 = strengthens; P2 = optional.
+experiments:
+  X1_common_matrix:
+    priority: P0
+    enabled: true
+    description: >
+      One common condition matrix across ALL eight focal models. Answers
+      YVDD W1 (unequal coverage) and oEjr W2 (robustness of the headline).
+    focal: ALL
+    conditions: [R, E, WR, H, CR]
+    pool: main300
+    addresses: [YVDD-W1, oEjr-W2, oEjr-W1]
+
+  X2_message_decomposition:
+    priority: P0
+    enabled: true
+    description: >
+      What in the peer message moves the focal model? Generic challenge vs
+      bare wrong answer vs wrong rationale vs hedged wrong rationale vs
+      identical content without peer attribution. Answers oEjr W4.
+    focal: TIER_X2                       # one strong, one mid, one weak
+    conditions: [G, W, WRh, SF]
+    pool: main300
+    addresses: [oEjr-W4]
+
+  X3_scaling:
+    priority: P1
+    enabled: true
+    description: >
+      Peer count, agreement among wrong peers, and debate rounds. Answers
+      oEjr's "systematic scaling study" request.
+    focal: TIER_X3                       # one strong, one mid
+    conditions: [WR1, WR4, WRagree, WRdiff]
+    pool: mitigation100
+    round_sweep:
+      condition: WR
+      rounds: [2, 3]
+    addresses: [oEjr-scaling]
+
+  X4_gsm_symbolic:
+    priority: P1
+    enabled: true
+    description: >
+      Valid contamination probe on GSM-Symbolic templates, replacing the
+      quarantined Phase-2 perturbation whose gold labels were invalid.
+    focal: TIER_X2
+    conditions: [R, WR]
+    pool: gsm_symbolic100
+    also_run_paired_originals: true
+    addresses: [oEjr-W2, self-correction]
+
+  X5_voting_baseline:
+    priority: P0
+    enabled: true
+    description: >
+      Offline: majority vote over the cached R0 replicates vs single R0 vs E
+      vs WR, per model and per task. Answers Choi et al. (NeurIPS 2025) and
+      Zhang et al. (2025). Costs nothing - reads the R0 cache.
+    focal: ALL
+    conditions: []
+    pool: main300
+    offline: true
+    addresses: [related-work-baselines]
+
+  X6_verification_safeguard:
+    priority: P2
+    enabled: true
+    description: >
+      Optional practical intervention: keep the initial answer unless an
+      INDEPENDENT verifier (a different model, blind to which answer is the
+      focal's) supports the proposed change. Compared against always-keep,
+      always-revise, random retention at matched coverage, and confidence
+      retention. Gold answers never reach the decision rule.
+    focal: TIER_X2
+    conditions: [WR, H]                  # safeguard applied on top of these
+    pool: mitigation100
+    blind_candidate_order: true
+    addresses: [oEjr-W3, practical-contribution]
+
+  X7_confidence_filter:
+    priority: P1
+    enabled: true
+    description: >
+      The confidence filter re-run under Protocol B with the corrected
+      retention-gap definition. Reported as a negative result, not a
+      mitigation contribution. Answers oEjr W3.
+    focal: TIER_X2
+    conditions: [WRfilt, Hfilt]
+    pool: mitigation100
+    addresses: [oEjr-W3]
+
+  X8_logprob_probe:
+    priority: P2
+    enabled: false                       # GPU_Only/run_all.py, not the CPU runner
+    description: >
+      Corrected output-distribution probe: tokenizer-validated full-candidate
+      scoring, a target fixed per (question, replicate) across ALL conditions,
+      logged decoding seeds, and mass outside the candidate set reported.
+    focal: [gpu_local_llama_3_1_8b]
+    conditions: [R, E, WR]
+    pool: main300
+    addresses: [mechanism-evidence]
+
+# ── Frozen analysis plan (see ANALYSIS_PLAN.md) ───────────────────────────
+analysis:
+  inference_unit: question
+  bootstrap_resamples: 5000
+  permutation_exact_max_n: 10
+  contrast_families:
+    X1_primary:
+      - {name: WR_minus_R_accuracy,     stat: accuracy_delta, a: WR, b: R}
+      - {name: H_minus_R_accuracy,      stat: accuracy_delta, a: H,  b: R}
+      - {name: E_minus_R_accuracy,      stat: accuracy_delta, a: E,  b: R}
+      - {name: WR_minus_R_harmful,      stat: harmful_delta,  a: WR, b: R}
+      - {name: capability_gradient_B,   stat: spearman_solo_vs_harmful_excess, protocol: B}
+      - {name: capability_gradient_A,   stat: spearman_solo_vs_harmful_excess, protocol: A}
+    X2_primary:
+      - {name: WR_minus_G_accuracy,     stat: accuracy_delta, a: WR,  b: G}
+      - {name: WR_minus_W_accuracy,     stat: accuracy_delta, a: WR,  b: W}
+      - {name: WR_minus_WRh_harmful,    stat: harmful_delta,  a: WR,  b: WRh}
+  multiplicity: holm
+  alpha: 0.05
+  # Everything not listed above is exploratory and must be labelled as such.
+  forbidden_claims:
+    - non_inferiority_without_prespecified_margin
+    - safety_from_absence_of_significance
+    - non_negative_point_estimates_as_headline

@@ -1,0 +1,26 @@
+# Phase 3 — CPU pipeline and offline analysis.
+# GPU_Only/ has its own requirements (vLLM + torch); install those separately
+# and only if you re-run X8.
+
+# ── API access ────────────────────────────────────────────────────────────
+openai>=1.40.0            # OpenAI-compatible client for every provider
+python-dotenv>=1.0.0
+
+# ── data ──────────────────────────────────────────────────────────────────
+pandas>=2.0.0
+pyarrow>=14.0.0           # parquet
+numpy>=1.24.0
+PyYAML>=6.0
+
+# ── statistics ────────────────────────────────────────────────────────────
+scipy>=1.11.0             # Spearman, chi-square, rank utilities
+statsmodels>=0.14.0       # GEE (secondary analysis; pipeline degrades without it)
+
+# ── figures ───────────────────────────────────────────────────────────────
+matplotlib>=3.7.0
+
+# ── X4 only (GSM-Symbolic) ────────────────────────────────────────────────
+datasets>=2.16.0
+
+# ── tests ─────────────────────────────────────────────────────────────────
+pytest>=7.4.0

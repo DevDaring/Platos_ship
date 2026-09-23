@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Condition matrix in the previously reported design (Protocol~A). Coverage is unequal: the re-answer control exists for two focal models, the honest-peer and split-peer controls for one, and the remaining models are run on a reduced protocol at a lower replication count.\label{tab:coverage_legacy}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{@{}lrrrrrrrrrrrr@{}}
+\toprule
+Focal model & CR & E & Ehet & H & H1 & Hfilt & R & WR & WR1 & WRfilt & WRfilt\_legacy\_broken & Reps \\
+\midrule
+deepseek\_primary & 1500 & 1500 & 0 & 1500 & 1500 & 300 & 1500 & 1500 & 1500 & 300 & 300 & 5 \\
+gpt4o\_mini & 0 & 1489 & 0 & 0 & 0 & 0 & 1477 & 1480 & 1487 & 0 & 0 & 5 \\
+het\_deepseek & 0 & 0 & 900 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 3 \\
+sweep\_gemma\_3\_27b & 0 & 900 & 0 & 0 & 0 & 0 & 0 & 900 & 0 & 0 & 0 & 3 \\
+sweep\_gemma\_3\_4b\_focal & 0 & 900 & 0 & 0 & 0 & 0 & 0 & 900 & 0 & 0 & 0 & 3 \\
+sweep\_llama\_3\_1\_70b & 0 & 900 & 0 & 0 & 0 & 0 & 0 & 900 & 0 & 0 & 0 & 3 \\
+sweep\_llama\_3\_1\_8b\_focal & 0 & 900 & 0 & 0 & 0 & 0 & 0 & 900 & 0 & 0 & 0 & 3 \\
+sweep\_mistral\_small & 0 & 900 & 0 & 0 & 0 & 0 & 0 & 900 & 0 & 0 & 0 & 3 \\
+sweep\_qwen\_2\_5\_72b & 0 & 900 & 0 & 0 & 0 & 0 & 0 & 900 & 0 & 0 & 0 & 3 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

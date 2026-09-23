@@ -1,0 +1,21 @@
+# L4 probe (Llama-3.1-8B, bf16, single GPU). Install on the VM only.
+# The Deep Learning VM image already provides torch + CUDA; vLLM pins a
+# compatible torch itself, so torch is not listed here to avoid fighting it.
+
+vllm>=0.6.0               # bundles FlashAttention kernels (vllm-flash-attn);
+                          # VLLM_ATTENTION_BACKEND=FLASH_ATTN forces them
+transformers>=4.44.0      # tokenizer, for exact candidate tokenisation
+accelerate>=0.33.0
+huggingface_hub>=0.24.0   # gated-repo access + resumable snapshot download
+
+pandas>=2.0.0
+pyarrow>=14.0.0
+numpy>=1.24.0
+scipy>=1.11.0             # the released probe ran without scipy and had to skip
+                          # its own paired contrast; do not repeat that
+PyYAML>=6.0
+
+# flash-attn is installed separately by vm_bootstrap.sh, and only if a
+# PREBUILT wheel matches this torch/CUDA pair. It is deliberately not pinned
+# here: a source build takes ~30 minutes on a billing GPU, and vLLM's bundled
+# kernels already cover the probe's attention path.

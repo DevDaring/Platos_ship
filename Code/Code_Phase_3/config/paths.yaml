@@ -1,0 +1,53 @@
+# Phase 3 paths. All relative to Code_Phase_3/ unless absolute.
+# `results/` is the release directory: everything the paper cites regenerates
+# from the files below with no API access.
+
+data_root: ./results
+processed_data_directory: ./results/processed
+output_directory: ./results/outputs
+tables_directory: ./results/tables
+figures_directory: ./results/figures
+logs_directory: ./logs
+
+# ── Inputs recovered from the released Phase-1/2 artefacts ───────────────
+# tools/fetch_artefacts.py populates these from the GitHub release or a local
+# Phase-2 checkout, and records a SHA-256 for each in inputs_manifest.json.
+question_pool_file: ./results/processed/question_pool.parquet
+anchored_personas_file: ./results/processed/dumb_personas.parquet
+correct_anchored_personas_file: ./results/processed/correct_anchored_personas.parquet
+confidence_personas_file: ./results/processed/confidence_personas.parquet
+inputs_manifest_file: ./results/processed/inputs_manifest.json
+
+# ── Phase 3 generated inputs ─────────────────────────────────────────────
+hedged_personas_file: ./results/processed/hedged_personas.parquet
+honest_bank_file: ./results/processed/honest_peer_bank.parquet
+gsm_symbolic_pool_file: ./results/processed/gsm_symbolic_pool.parquet
+gsm_symbolic_personas_file: ./results/processed/gsm_symbolic_personas.parquet
+
+# ── Phase 3 run outputs ──────────────────────────────────────────────────
+r0_cache_file: ./results/outputs/r0_cache.parquet
+revision_log_file: ./results/outputs/revision_log.parquet
+peer_message_log_file: ./results/outputs/peer_message_log.parquet
+completed_units_checkpoint_file: ./results/outputs/completed_units.parquet
+experiment_metadata_file: ./results/outputs/experiment_metadata.json
+snapshot_audit_file: ./results/outputs/snapshot_audit.parquet
+
+# ── Analysis outputs ─────────────────────────────────────────────────────
+registry_file: ./results/outputs/registry.parquet
+metrics_file: ./results/outputs/metrics.parquet
+contrasts_file: ./results/outputs/contrasts.parquet
+voting_file: ./results/outputs/voting_baseline.parquet
+gate_report_file: ./results/outputs/retention_gap_report.parquet
+safeguard_file: ./results/outputs/safeguard_results.parquet
+paper_numbers_file: ./results/outputs/paper_numbers.json
+
+# ── Legacy Protocol-A logs (read-only; used for the A-vs-B replication) ──
+# Fetched into Phase 3 by tools/fetch_artefacts.py rather than read in place,
+# so the analysis has a hashed, non-stale copy and nothing outside
+# Code_Phase_3/ is modified. A working copy can lag the release: one was
+# missing the C4split and C2het trials the release contains.
+legacy_phase1_trial_log: ./results/legacy/phase1_trial_log.parquet
+legacy_phase2_trial_log: ./results/legacy/phase2_trial_log.parquet
+legacy_gpu_probe_trials: ./results/legacy/logprob_probe_trials.parquet
+
+huggingface_cache_directory: ~/.cache/huggingface
