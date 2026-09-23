@@ -1,0 +1,73 @@
+{
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "dtype": "bfloat16",
+  "tensor_parallel_size": 1,
+  "max_model_len": 4096,
+  "gpu": "NVIDIA L4",
+  "n_gpus": 1,
+  "seed": 20260502,
+  "questions": 300,
+  "replicates": 3,
+  "mcq_only": false,
+  "wall_clock_minutes": 56.2,
+  "contrasts_by_task": [
+    {
+      "contrast": "WR_minus_E",
+      "estimate": 0.018870641143503352,
+      "ci_low": 0.010938545053373655,
+      "ci_high": 0.028687617826030548,
+      "p_value": 9.999000099990002e-05,
+      "p_value_method": "sign_flip_permutation",
+      "n_pairs": 300,
+      "median": 0.00047525417789483313,
+      "estimate_stated_answer_unchanged": 0.008459756117538512,
+      "ci_stated_answer_unchanged": [
+        0.0038987091167399283,
+        0.01388508963172667
+      ],
+      "n_pairs_stated_answer_unchanged": 195,
+      "note": "Paired by (question, replicate); the target is fixed per pair and identical across conditions. The 'unchanged' row restricts to trials whose stated answer is the same in both rounds, so the movement is not an arithmetic consequence of a flip.",
+      "source_dataset": "gsm8k",
+      "report": true
+    },
+    {
+      "contrast": "WR_minus_E",
+      "estimate": 0.060349302513410426,
+      "ci_low": 0.0475861334023832,
+      "ci_high": 0.07423757646641051,
+      "p_value": 9.999000099990002e-05,
+      "p_value_method": "sign_flip_permutation",
+      "n_pairs": 600,
+      "median": 0.004377973775583675,
+      "estimate_stated_answer_unchanged": 0.04735908312697653,
+      "ci_stated_answer_unchanged": [
+        0.030739136037794906,
+        0.06602527866301386
+      ],
+      "n_pairs_stated_answer_unchanged": 280,
+      "note": "Paired by (question, replicate); the target is fixed per pair and identical across conditions. The 'unchanged' row restricts to trials whose stated answer is the same in both rounds, so the movement is not an arithmetic consequence of a flip.",
+      "source_dataset": "mmlu_pro",
+      "report": true
+    },
+    {
+      "contrast": "WR_minus_E",
+      "estimate": 0.04652308205677474,
+      "ci_low": 0.037490284734416235,
+      "ci_high": 0.05617077077969145,
+      "p_value": 9.999000099990002e-05,
+      "p_value_method": "sign_flip_permutation",
+      "n_pairs": 900,
+      "median": 0.002074077587199977,
+      "estimate_stated_answer_unchanged": 0.03138988572310197,
+      "ci_stated_answer_unchanged": [
+        0.021266600080748,
+        0.04304014421929267
+      ],
+      "n_pairs_stated_answer_unchanged": 475,
+      "note": "Paired by (question, replicate); the target is fixed per pair and identical across conditions. The 'unchanged' row restricts to trials whose stated answer is the same in both rounds, so the movement is not an arithmetic consequence of a flip.",
+      "source_dataset": "POOLED",
+      "report": false,
+      "why_not": "task families differ in probability scale by ~2 orders of magnitude; the pooled mean is dominated by multiple choice. Report per family."
+    }
+  ]
+}
