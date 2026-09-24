@@ -34,8 +34,16 @@ _lock = threading.Lock()
 _failures: Dict[str, int] = {}
 
 
+# "snapshot_unavailable" is what a pinned chain returns when NO link served
+# the pinned model: every route failed, or answered with a different model.
+# It is a failed call exactly like "failure". Checking "failure" alone let a
+# total outage of any focal model WITH a fallback chain through as an empty
+# answer (found 24 Sept 2026, before the full run).
+FAILED_STATUSES = frozenset({"failure", "snapshot_unavailable"})
+
+
 def is_failed_call(response: Any) -> bool:
-    return str(getattr(response, "error_status", "") or "") == "failure"
+    return str(getattr(response, "error_status", "") or "") in FAILED_STATUSES
 
 
 def record_failure(stage: str, unit: str, response: Any) -> None:
@@ -64,7 +72,7 @@ def drop_failed_calls(frame, label: str):
     """
     if frame is None or frame.empty or "error_status" not in frame.columns:
         return frame
-    failed = frame["error_status"].astype(str).eq("failure")
+    failed = frame["error_status"].astype(str).isin(FAILED_STATUSES)
     if failed.any():
         logger.warning("%s: %d rows from FAILED calls excluded from analysis.",
                        label, int(failed.sum()))

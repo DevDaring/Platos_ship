@@ -25,14 +25,14 @@
 # nano-gpt took 8 concurrent calls without error, OpenRouter's upstream
 # returned 429s at 8 for Gemma-3-4B, so OpenRouter models get 4-6.
 #
-# Environment: PYTHON (default python3), MAX_ATTEMPTS (default 8),
+# Environment: PYTHON (default python3), MAX_ATTEMPTS (default 20),
 # RETRY_WAIT seconds between attempts (default 300), PREPARE_WORKERS (12).
 
 set -u
 cd "$(dirname "$0")/.."
 
 PY=${PYTHON:-python3}
-MAX_ATTEMPTS=${MAX_ATTEMPTS:-8}
+MAX_ATTEMPTS=${MAX_ATTEMPTS:-20}   # 20 x 5 min: rides out long 429 episodes
 RETRY_WAIT=${RETRY_WAIT:-300}
 EXTRA=("$@")
 FOCALS=(deepseek_primary gpt4o_mini sweep_llama_3_1_70b sweep_qwen_2_5_72b
@@ -100,4 +100,17 @@ echo "$(stamp) all ${#FOCALS[@]} shards complete; merging" | tee -a "$EXITS"
     echo "$(stamp) merge refused; see $LOGS/merge.log" | tee -a "$EXITS"; exit 1; }
 "$PY" run_all.py --analyse > "$LOGS/analyse.log" 2>&1 || {
     echo "$(stamp) analysis failed; see $LOGS/analyse.log" | tee -a "$EXITS"; exit 1; }
+
+# 5. Verify before calling the run done (tools/verify_run.py). A dry run has
+#    one unit per cell by design, so its coverage check does not apply.
+VERIFY_ARGS=()
+DRY=0
+for ((i = 0; i < ${#EXTRA[@]}; i++)); do
+    [ "${EXTRA[$i]}" = "--max-questions" ] && VERIFY_ARGS=(--max-questions "${EXTRA[$((i + 1))]}")
+    [ "${EXTRA[$i]}" = "--dry-run" ] && DRY=1
+done
+if [ "$DRY" = 0 ]; then
+    "$PY" tools/verify_run.py "${VERIFY_ARGS[@]}" > "$LOGS/verify.log" 2>&1 || {
+        echo "$(stamp) VERIFICATION FAILED; see $LOGS/verify.log" | tee -a "$EXITS"; exit 1; }
+fi
 echo "$(stamp) DONE" | tee -a "$EXITS"

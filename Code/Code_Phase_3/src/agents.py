@@ -52,7 +52,10 @@ def _build_one(
     change the route but never the model. Focal agents always use it; that is
     what makes a cheap-but-rate-limited primary safe to keep.
     """
-    backoff = defaults.get("retry_backoff_seconds", [2, 4, 8, 16, 32])
+    # A model may set its own retry policy: Gemma-3-4B has one upstream on
+    # OpenRouter, whose 429 episodes last minutes (VM smoke run, 24 Sept).
+    backoff = (spec.get("retry_backoff_seconds")
+               or defaults.get("retry_backoff_seconds", [2, 4, 8, 16, 32]))
     timeout = defaults.get("request_timeout_seconds", 120)
     fallbacks = (spec.get("fallbacks") or []) if allow_fallback else []
     primary_retries = (spec.get("max_retries")

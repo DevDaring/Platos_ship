@@ -40,6 +40,21 @@ bash GCP_API_Run/delete_vm.sh        # deletes the VM and lists what remains (al
    happen.
 4. `tools/merge_shards.py` refuses unless every check passes. Then
    `run_all.py --analyse` runs.
+5. `tools/verify_run.py` checks the merged outputs. The launcher writes `DONE`
+   only if it passes. It checks: no failed-call rows; every response from its
+   pinned model; every cell complete against the design; WR/W/SF/WRh showing
+   the same personas; nested doses; and X6 scope. It also prints truncation,
+   parse and serving-route tables for the write-up.
+
+## Gemma-3-4B route
+
+OpenRouter has a single upstream for Gemma-3-4B (DeepInfra), and it throttles
+in episodes: 15 of 353 calls succeeded in one 7-minute window on 24 Sept 2026.
+The chain is Hugging Face pinned to DeepInfra (one try; the free account's
+credit is small), then OpenRouter's DeepInfra with about 7 minutes of retries
+per call. The launcher re-runs whatever is still missing, up to 20 times,
+5 minutes apart. Both links serve the same weights from the same host.
+`served_route` in every row records which link answered.
 
 `GCP_API_Run/autopush.sh` pushes shard outputs and logs to `main` every
 30 minutes, and everything else once at the end. Watch

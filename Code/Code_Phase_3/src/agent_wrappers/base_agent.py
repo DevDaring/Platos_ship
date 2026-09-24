@@ -31,6 +31,10 @@ class AgentResponse:
     # "stop" or "length" (truncated at the token cap). Recorded so truncation
     # is measured and reported, never hidden inside "unparsed".
     finish_reason: Optional[str] = None
+    # Provider that produced this response (the link of a fallback chain that
+    # answered). A chain may change the route, never the model; this records
+    # the route per call for the provenance appendix.
+    served_route: Optional[str] = None
 
 
 class RoundRobinKeyManager:

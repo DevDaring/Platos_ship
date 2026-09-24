@@ -133,6 +133,7 @@ def build_honest_bank(
                 "total_output_tokens": response.total_output_tokens,
                 "error_status": response.error_status,
                 "finish_reason": response.finish_reason,
+                "served_route": response.served_route,
                 "timestamp_utc": pd.Timestamp.now("UTC").isoformat(),
                 "elapsed_seconds": round(time.time() - started, 3),
             },

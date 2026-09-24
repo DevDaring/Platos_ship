@@ -78,6 +78,14 @@ providers:
     base_url_env: Nano_GPT_Base_URL
     base_url_default: https://nano-gpt.com/api/v1
     api_key_envs: [NanoGPT_88_API_Key, Nano_GPT_API_KEY]
+  hf_router:
+    # Hugging Face Inference Providers. Used ONLY for Gemma-3-4B, pinned to the
+    # DeepInfra provider (":deepinfra"), which is the one upstream OpenRouter
+    # uses for this model: the same bf16 weights from the same host, through a
+    # separate rate pool. Returns "google/gemma-3-4b-it" as the served model.
+    base_url_env: HF_ROUTER_BASE_URL
+    base_url_default: https://router.huggingface.co/v1
+    api_key_envs: [HUGGINGFACE_TOKEN]
 
 request_defaults:
   focal_temperature: 0.7
@@ -188,9 +196,22 @@ focal_agents:
         max_retries: 0
     in_x2: true
   sweep_gemma_3_4b_focal:
-    # STAYS ON OPENROUTER — nano-gpt has only `unsloth/gemma-3-4b-it`.
-    provider: openrouter
-    model_slug: google/gemma-3-4b-it
+    # ROUTE. OpenRouter has ONE upstream for this model (DeepInfra), and on
+    # 24 Sept 2026 it answered 15 of 353 calls in 7 minutes (the rest 429).
+    # Google AI Studio no longer serves Gemma 3; nano-gpt has only the unsloth
+    # re-upload. So the chain is Hugging Face pinned to DeepInfra (one fast try;
+    # this account's free credit runs out, after which it fails at once), then
+    # OpenRouter's DeepInfra with patient retries (~7 min per call). Both links
+    # serve the same weights from the same host; the pin checks every answer
+    # and `served_route` records which link answered.
+    provider: hf_router
+    model_slug: google/gemma-3-4b-it:deepinfra
+    max_retries: 0
+    retry_backoff_seconds: [5, 10, 20, 40, 60, 60, 60, 60, 60, 60]
+    fallbacks:
+      - provider: openrouter
+        model_slug: google/gemma-3-4b-it
+        max_retries: 10
     expected_served_prefix: google/gemma-3-4b
     capability_tier: weak
     paper_name: Gemma-3-4B
@@ -208,9 +229,22 @@ weak_agents:
         model_slug: meta-llama/llama-3.1-8b-instruct
         max_retries: 0
   gemma_3_4b_instruct:
-    # STAYS ON OPENROUTER — nano-gpt has only the unsloth re-upload.
-    provider: openrouter
-    model_slug: google/gemma-3-4b-it
+    # ROUTE. OpenRouter has ONE upstream for this model (DeepInfra), and on
+    # 24 Sept 2026 it answered 15 of 353 calls in 7 minutes (the rest 429).
+    # Google AI Studio no longer serves Gemma 3; nano-gpt has only the unsloth
+    # re-upload. So the chain is Hugging Face pinned to DeepInfra (one fast try;
+    # this account's free credit runs out, after which it fails at once), then
+    # OpenRouter's DeepInfra with patient retries (~7 min per call). Both links
+    # serve the same weights from the same host; the pin checks every answer
+    # and `served_route` records which link answered.
+    provider: hf_router
+    model_slug: google/gemma-3-4b-it:deepinfra
+    max_retries: 0
+    retry_backoff_seconds: [5, 10, 20, 40, 60, 60, 60, 60, 60, 60]
+    fallbacks:
+      - provider: openrouter
+        model_slug: google/gemma-3-4b-it
+        max_retries: 10
     paper_name: Gemma-3-4B
 
 # Persona rewriting (hedged pool, X2) uses the SAME model that generated the

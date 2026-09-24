@@ -145,6 +145,7 @@ class OpenAICompatibleAgent(BaseAgent):
                     error_status="success" if attempt == 0 else "api_error_recovered",
                     retry_attempts_used=attempt,
                     finish_reason=getattr(choices[0], "finish_reason", None),
+                    served_route=self.provider,
                 )
                 self._track_usage(result)
                 return result

@@ -26,6 +26,7 @@ import pandas as pd
 
 from .contexts import PeerMessage
 from .extraction import extract_answer_regex, extract_confidence
+from .call_guard import FAILED_STATUSES
 from .seeding import derive_rng
 
 logger = logging.getLogger("platos_ship3.peer_pools")
@@ -110,7 +111,7 @@ def _index_honest(frame: Optional[pd.DataFrame]) -> Dict[tuple, List[Dict[str, A
     for row in frame.to_dict("records"):
         # A failed call or an empty message is not a peer message. Counting it
         # would let H run with a blank "peer", which is not the condition.
-        if (str(row.get("error_status") or "") == "failure"
+        if (str(row.get("error_status") or "") in FAILED_STATUSES
                 or not str(row.get("message_text") or "").strip()):
             dropped += 1
             continue

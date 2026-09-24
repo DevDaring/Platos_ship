@@ -466,3 +466,48 @@ class TestOptionValueAnswers:
         import numpy as np
         from src.extraction import options_to_string
         assert options_to_string(np.array(["x", "y"], dtype=object)) == "A. x\nB. y"
+
+
+def test_a_model_can_carry_its_own_retry_policy():
+    """Gemma-3-4B has one upstream on OpenRouter; its 429 episodes last minutes."""
+    from pathlib import Path
+    import yaml
+    from src.agents import _build_one
+    root = Path(__file__).resolve().parent.parent
+    models = yaml.safe_load((root / "config/models.yaml").read_text(encoding="utf-8"))
+    import os
+    os.environ.setdefault("OPENROUTER_API_KEY_1", "k")
+    os.environ.setdefault("HUGGINGFACE_TOKEN", "k")
+    spec = models["focal_agents"]["sweep_gemma_3_4b_focal"]
+    agent = _build_one("g", spec, models["providers"], models["request_defaults"],
+                       allow_fallback=True, pin_model=False)
+    hf, openrouter = agent._chain
+    # One fast try on Hugging Face, then patient retries on OpenRouter.
+    assert (hf.provider, hf.max_retries) == ("hf_router", 0)
+    assert hf.model_name == "google/gemma-3-4b-it:deepinfra"
+    assert (openrouter.provider, openrouter.max_retries) == ("openrouter", 10)
+    assert openrouter.retry_backoff[-1] == 60
+
+
+def test_a_pinned_chain_with_no_serving_link_counts_as_a_failed_call(tmp_path):
+    """PinnedFallbackAgent reports 'snapshot_unavailable'; it must not become data."""
+    class Unavailable(StubAgent):
+        def generate_response(self, *a, **k):
+            return AgentResponse(raw_text_output="", error_status="snapshot_unavailable",
+                                 model_name_returned_by_provider="stub-model")
+    checkpoint = Checkpoint(tmp_path / "ck.parquet")
+    rows = _run(tmp_path, Unavailable(), checkpoint)
+    assert rows.empty and call_guard.failure_counts() == {"revision": 1}
+    frame = pd.DataFrame({"error_status": ["success", "snapshot_unavailable", "failure"]})
+    assert len(call_guard.drop_failed_calls(frame, "t")) == 1
+
+
+def test_the_serving_route_is_recorded_per_row(tmp_path):
+    class Routed(StubAgent):
+        def generate_response(self, *a, **k):
+            return AgentResponse(raw_text_output="Final answer: 4", served_route="hf_router",
+                                 model_name_returned_by_provider="stub-model",
+                                 error_status="success", finish_reason="stop")
+    rows = _run(tmp_path, Routed(), Checkpoint(tmp_path / "ck.parquet"))
+    assert rows["served_route"].iloc[0] == "hf_router"
+    assert rows["finish_reason"].iloc[0] == "stop"

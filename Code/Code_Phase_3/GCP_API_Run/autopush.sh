@@ -6,6 +6,8 @@
 #   bash autopush.sh --final    # one push that also includes the merged
 #                               # outputs, analysis, figures, tables and the
 #                               # Phase 3 generated inputs (results/processed)
+#   bash autopush.sh --check    # prove the token can clone AND push;
+#                               # commits nothing, pushes nothing
 #
 # Nothing may live only on the VM's disk. Each shard writes immutable
 # part-files, so a push adds only new blobs and the repository does not grow
@@ -30,6 +32,10 @@ PHASE3="$HOME/platos/Code/Code_Phase_3"
 WORKDIR="$HOME/platos_push"
 REMOTE_PHASE3="Code/Code_Phase_3"
 LOCK="$HOME/.platos_autopush.lock"
+# GitHub rejects files over 100 MB, and one such file would fail every push.
+# Larger files are skipped and listed in STATUS.md; they are downloaded from
+# the VM directly before it is deleted.
+MAX_SIZE=95m
 
 say() { printf '[%s] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 
@@ -65,8 +71,8 @@ sync_tree() {
   fi
   if [ -d "$src" ]; then
     mkdir -p "$dst"
-    rsync -a --delete --include='*/' --include='*.parquet' --include='*.json' \
-      --include='*.csv' --exclude='*' "$src/" "$dst/"
+    rsync -a --delete --max-size="$MAX_SIZE" --include='*/' --include='*.parquet' \
+      --include='*.json' --include='*.csv' --exclude='*' "$src/" "$dst/"
   fi
   # 2. Logs, never deleted.
   mkdir -p "$WORKDIR/$REMOTE_PHASE3/logs/gcp_api_run"
@@ -77,7 +83,7 @@ sync_tree() {
     for sub in results/outputs results/processed results/figures results/tables; do
       [ -d "$PHASE3/$sub" ] || continue
       mkdir -p "$WORKDIR/$REMOTE_PHASE3/$sub"
-      rsync -a --exclude='shards/' --exclude='_shards/' --exclude='*.lock' \
+      rsync -a --max-size="$MAX_SIZE" --exclude='shards/' --exclude='_shards/' --exclude='*.lock' \
         --include='*/' --include='*.parquet' --include='*.json' --include='*.csv' \
         --include='*.png' --include='*.pdf' --include='*.tex' --include='*.md' \
         --exclude='*' "$PHASE3/$sub/" "$WORKDIR/$REMOTE_PHASE3/$sub/"
@@ -95,6 +101,10 @@ status_file() {
     echo '```'
     cat "$PHASE3/logs/launcher/exits.txt" 2>/dev/null || echo "launcher not started"
     echo '```'
+    echo
+    echo "Files over $MAX_SIZE not pushed (kept on the VM):"
+    echo
+    find "$PHASE3/results" -type f -size +95M -printf '- %P (%s bytes)\n' 2>/dev/null
     echo
     echo "Units written per shard (revision rows, part files):"
     echo
@@ -132,13 +142,29 @@ locked_push() {
   ) 9>"$LOCK"
 }
 
+check_access() {
+  setup_repo || { say "CHECK FAILED: could not clone $REPO with the token"; return 1; }
+  cd "$WORKDIR" || return 1
+  # A dry-run push performs the authenticated receive-pack handshake, so it
+  # fails on a read-only or expired token, but it writes nothing.
+  if git push --dry-run origin "HEAD:$BRANCH" >/dev/null 2>&1; then
+    say "CHECK OK: token can clone and push to $BRANCH ($(git rev-parse --short HEAD))"
+  else
+    say "CHECK FAILED: token cannot push to $BRANCH"; return 1
+  fi
+}
+
+# An unknown argument must never fall through to the push loop: that is how
+# a mistyped call published smoke-test outputs on 24 Sept 2026.
 case "${1:-}" in
+  --check) check_access ;;
   --once)  locked_push 0 || locked_push 0 ;;
   --final) locked_push 1 || locked_push 1 ;;
-  *)
+  ""|--loop)
     say "pushing every $((INTERVAL / 60)) minutes to $BRANCH"
     while true; do
       locked_push 0 || locked_push 0 || say "push cycle failed; next interval retries"
       sleep "$INTERVAL"
     done ;;
+  *) echo "unknown argument '$1' (use --check, --once, --final or none)" >&2; exit 2 ;;
 esac
