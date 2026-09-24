@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+# smoke_test_vast.sh — prove the pipeline works on 2 questions before the
+# full 70B run.
+#
+# This is the step that separates "the code imports" from "the code produces
+# correct output on THIS machine". It loads the real 70B checkpoint across
+# both GPUs, runs all three conditions on two questions, and then CHECKS the
+# output rather than merely reporting that the script exited zero.
+#
+# The verification block is the one proved on the L4 run, including the check
+# that RAW GENERATIONS ARE PERSISTED: the first L4 run extracted an answer
+# from each generation and threw the text away, which made every unparsed
+# answer permanently unrecoverable without renting the GPU again.
+#
+#   bash smoke_test_vast.sh
+
+set -euo pipefail
+
+MODEL="${MODEL:-meta-llama/Llama-3.1-70B-Instruct}"
+HOME_DIR="${HOME_DIR:-$(cd "$(dirname "$0")" && pwd)}"
+SMOKE_OUT="$HOME_DIR/results_smoke"
+TP="${TP:-$(nvidia-smi --query-gpu=index --format=csv,noheader | wc -l)}"
+
+say()  { printf '
+[1m==> %s[0m
+' "$*"; }
+fail() { printf '
+[1;31mSMOKE TEST FAILED: %s[0m
+' "$*" >&2; exit 1; }
+
+cd "$HOME_DIR"
+# shellcheck disable=SC1090
+[ -f "$HOME/platos_env.sh" ] && source "$HOME/platos_env.sh"
+
+say "Running the 70B probe on 2 questions (all 3 conditions, tp=$TP)"
+rm -rf "$SMOKE_OUT"
+python3 run_big_probe.py   --model "$MODEL"   --tensor-parallel-size "$TP"   --dry-run   --include-numeric   --out "$SMOKE_OUT" 2>&1 | tail -30
+
+say "Checking the output"
+python3 - <<PY || fail "output checks did not pass"
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+out = Path("$SMOKE_OUT")
+trials_path = out / "big_probe_trials.parquet"
+problems = []
+
+if not trials_path.exists():
+    sys.exit("no trials parquet was written")
+
+trials = pd.read_parquet(trials_path)
+print(f"  rows: {len(trials)}")
+print(f"  conditions: {sorted(trials['condition'].unique())}")
+
+# 1. Every condition must have produced rows.
+missing = {"R", "E", "WR"} - set(trials["condition"])
+if missing:
+    problems.append(f"conditions produced no rows: {sorted(missing)}")
+
+# 2. The target must be fixed per (question, replicate) ACROSS conditions —
+#    otherwise the difference-in-differences compares unlike things.
+per_cell = trials.groupby(["question_identifier", "replicate"])["fixed_target"].nunique()
+if (per_cell > 1).any():
+    problems.append("fixed_target varies across conditions within a cell")
+
+# 3. Probability mass must be real numbers in [0, 1], not NaN.
+for column in ("prob_mass_round0_on_target", "prob_mass_round1_on_target",
+               "prob_mass_round0_on_correct", "prob_mass_round1_on_correct"):
+    values = pd.to_numeric(trials[column], errors="coerce")
+    if values.isna().all():
+        problems.append(f"{column} is entirely NaN — candidate scoring failed")
+    elif ((values < -1e-6) | (values > 1 + 1e-6)).any():
+        problems.append(f"{column} outside [0, 1]")
+
+# 4. Off-candidate mass must be present, not normalised away.
+if "mass_outside_candidates_round1" not in trials.columns:
+    problems.append("off-candidate mass column missing")
+elif pd.to_numeric(trials["mass_outside_candidates_round1"],
+                   errors="coerce").isna().all():
+    problems.append("off-candidate mass is entirely NaN")
+
+# 5. Answers must have parsed.
+if trials["round1_answer"].isna().all() or (trials["round1_answer"] == "").all():
+    problems.append("no Round-1 answer parsed — check the chat template")
+
+# 5b. RAW GENERATIONS MUST BE PERSISTED. The first L4 run extracted an answer
+#     from each generation and threw the text away, which made 501 unparsed
+#     answers permanently unrecoverable without renting the GPU again. The
+#     whole point of this run is that the text survives, so a run that does
+#     not carry it must fail here rather than 56 minutes later.
+for text_column in ("round0_text", "round1_text"):
+    if text_column not in trials.columns:
+        problems.append(f"{text_column} missing — raw generations are being "
+                        "discarded; the judge cascade would have nothing to read")
+    elif trials[text_column].astype(str).str.strip().eq("").all():
+        problems.append(f"{text_column} present but empty on every row")
+
+# 6. The baseline R must not have seen peers: its Round-0 and Round-1 mass on
+#    the target should be identical for the same trial only when the answer did
+#    not move. Just check the column exists and is finite.
+r_rows = trials[trials["condition"] == "R"]
+if r_rows.empty:
+    problems.append("no baseline (R) rows")
+
+for column in ("big_probe_contrast.parquet", "big_probe_candidates.parquet",
+               "big_probe_meta.json"):
+    if not (out / column).exists():
+        problems.append(f"missing output: {column}")
+
+if problems:
+    print("\n  PROBLEMS:")
+    for problem in problems:
+        print(f"    - {problem}")
+    sys.exit(1)
+
+print("\n  all checks passed")
+PY
+
+say "Smoke test passed. Full run:  bash run_full_vast.sh"

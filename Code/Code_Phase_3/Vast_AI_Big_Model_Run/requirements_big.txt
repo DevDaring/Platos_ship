@@ -13,3 +13,9 @@ numpy>=1.24.0
 scipy>=1.11.0             # the released probe ran without scipy and had to skip
                           # its own paired contrast; do not repeat that
 PyYAML>=6.0
+
+# src/extraction.py imports the judge cascade, which imports
+# openai_compatible_agent, which does `from openai import OpenAI` at module
+# level. Without this the probe fails on IMPORT, before a single token is
+# generated, on a box that is already billing.
+openai>=1.40.0
