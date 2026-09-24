@@ -511,3 +511,12 @@ def test_the_serving_route_is_recorded_per_row(tmp_path):
     rows = _run(tmp_path, Routed(), Checkpoint(tmp_path / "ck.parquet"))
     assert rows["served_route"].iloc[0] == "hf_router"
     assert rows["finish_reason"].iloc[0] == "stop"
+
+
+def test_gate_excludes_messages_of_unknown_correctness():
+    """The full run crashed here: an NA correctness broke the AUROC."""
+    from analysis.gate import retention_gap
+    m = pd.DataFrame({"peer_confidence": [90, 30, 80, None, 70],
+                      "peer_is_correct": pd.array([True, False, pd.NA, False, True], dtype="boolean")})
+    result = retention_gap(m, "honest")
+    assert result.n_messages == 4 and result.n_correct == 2 and result.n_wrong == 2

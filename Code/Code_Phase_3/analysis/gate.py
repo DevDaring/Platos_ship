@@ -110,6 +110,16 @@ def retention_gap(
     tuned to exploit it. Both accountings are reported.
     """
     frame = messages.copy()
+    # A message whose correctness is unknown (a self-sample, the 'all peers
+    # filtered' notice, an unmatched text) is neither correct nor wrong, so it
+    # cannot enter P(retained | correct) or P(retained | wrong). It is excluded
+    # and counted. Left in, its NA broke the AUROC on the full run (25 Sept).
+    known = frame[correct_column].astype("boolean").notna()
+    n_unknown = int((~known).sum())
+    frame = frame[known]
+    if n_unknown:
+        logger.info("Gate %s: %d messages of unknown correctness excluded.",
+                    substrate, n_unknown)
     if frame.empty:
         return GateResult(
             substrate=substrate, n_messages=0, n_correct=0, n_wrong=0,
