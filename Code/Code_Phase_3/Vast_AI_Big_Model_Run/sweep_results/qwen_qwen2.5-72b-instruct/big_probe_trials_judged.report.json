@@ -1,0 +1,99 @@
+{
+  "calibration": {
+    "n": 200,
+    "n_agree": 185,
+    "agreement": 0.925,
+    "example_disagreements": [
+      {
+        "regex": "14000",
+        "judge": "14,000"
+      },
+      {
+        "regex": "C",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "10",
+        "judge": "1"
+      },
+      {
+        "regex": "A",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "120",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "14000",
+        "judge": "14,000"
+      },
+      {
+        "regex": "B",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "12",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "4.67",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "2",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "C",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "B",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "C",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "B",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "D",
+        "judge": "UNPARSEABLE"
+      }
+    ]
+  },
+  "recovery": {
+    "round0": {
+      "unparsed_by_regex": 195,
+      "still_unresolved": 1,
+      "recovered": 194,
+      "methods": {
+        "judge_primary": 194,
+        "ungrounded_primary": 1
+      }
+    },
+    "round1": {
+      "unparsed_by_regex": 394,
+      "still_unresolved": 182,
+      "recovered": 212,
+      "methods": {
+        "judge_primary": 212,
+        "abstain_primary": 173,
+        "ungrounded_primary": 9
+      }
+    }
+  },
+  "judge_usage": {
+    "total_judge_calls": 789,
+    "tier_usage": {
+      "primary": 789,
+      "secondary": 0,
+      "tertiary": 0,
+      "all_failed": 0
+    }
+  }
+}

@@ -318,10 +318,30 @@ def calibrate(
                for r in questions.to_dict("records")}
               if questions is not None else {})
 
-    agree = 0
+    # Strict string equality understated the judge three ways, all observed:
+    #   formatting    "14000" vs "14,000" is the same answer
+    #   value/letter  regex "-42" vs judge "G" where -42 IS option G -- here
+    #                 the JUDGE is right and the regex is wrong
+    #   abstention    UNPARSEABLE leaves a row unresolved; it cannot put a
+    #                 wrong answer into the data, so it is not an error
+    # Both sides are normalised the same way before comparing, abstentions
+    # are counted separately, and the figure that licenses recovered answers
+    # is PRECISION: how often the judge is right when it commits.
+    from analysis.answer_normalise import parse_options, to_letter
+
+    def _canon(value: Any, options: Optional[List[str]]) -> str:
+        letter, _ = to_letter(value, options)
+        text = str(letter).strip().replace(",", "")
+        try:
+            return f"{float(text):g}"
+        except ValueError:
+            return text.upper()
+
+    agree = strict_agree = abstained = 0
     disagreements: List[Dict[str, str]] = []
     for row in sample.to_dict("records"):
-        meta = lookup.get(str(row.get("question_identifier")), {})
+        qid = str(row.get("question_identifier"))
+        meta = lookup.get(qid, {})
         try:
             answer, _ = cascade.extract_answer(
                 str(meta.get("question_text", "")),
@@ -329,15 +349,27 @@ def calibrate(
                 str(row[text_column(round_name)]))
         except Exception:
             continue
-        expected = str(row[answer_column(round_name)]).strip().upper()
-        if str(answer).strip().upper() == expected:
+        expected = str(row[answer_column(round_name)]).strip()
+        if str(answer).strip().upper() == expected.upper():
+            strict_agree += 1
+        if str(answer).strip().upper().startswith("UNPARS"):
+            abstained += 1
+            continue
+        opts = parse_options({**row, **meta}.get("answer_options"))
+        if _canon(answer, opts) == _canon(expected, opts):
             agree += 1
-        elif len(disagreements) < 20:
-            disagreements.append({"regex": expected, "judge": str(answer)})
+        elif len(disagreements) < 50:
+            disagreements.append({"question_identifier": qid,
+                                  "regex": expected, "judge": str(answer)})
+    committed = len(sample) - abstained
     return {
         "n": int(len(sample)),
-        "n_agree": agree,
-        "agreement": agree / len(sample),
+        "n_agree": strict_agree,
+        "agreement": strict_agree / len(sample),
+        "n_abstained": abstained,
+        "n_committed": committed,
+        "n_agree_normalised": agree,
+        "precision_when_committed": (agree / committed) if committed else float("nan"),
         "example_disagreements": disagreements,
     }
 

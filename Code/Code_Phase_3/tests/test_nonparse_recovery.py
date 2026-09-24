@@ -329,3 +329,43 @@ def test_calibration_scores_judge_against_regex():
     assert report["n"] == 2
     assert report["n_agree"] == 1
     assert report["agreement"] == pytest.approx(0.5)
+
+
+# -- calibration must not penalise a correct judge ----------------------
+class _ScriptedCascade(_StubCascade):
+    """Replies with a scripted answer per response text."""
+
+    def __init__(self, replies):
+        super().__init__()
+        self.replies = replies
+
+    def extract_answer(self, question_text, answer_options, raw_text):
+        return self.replies[raw_text], "judge_tier1"
+
+
+def test_calibration_separates_formatting_letters_and_abstentions():
+    """
+    Strict equality counted three non-errors as errors. Formatting (14000 vs
+    14,000), the judge giving the LETTER where the regex kept the option
+    VALUE (-42 is option G), and an abstention. None is a wrong answer.
+    """
+    frame = pd.DataFrame({
+        "question_identifier": ["q1", "q2", "q3", "q4"],
+        "round1_answer": ["14000", "-42", "B", "C"],
+        "round1_text": ["t1", "t2", "t3", "t4"],
+        "answer_options": [None,
+                           '["42","0","15","30","60","-20","-42"]',
+                           '["x","y","z"]', '["x","y","z"]'],
+    })
+    cascade = _ScriptedCascade({"t1": "14,000", "t2": "G",
+                                "t3": "UNPARSEABLE", "t4": "A"})
+    r = calibrate(frame, cascade, sample_size=4)
+    assert r["n_abstained"] == 1
+    assert r["n_committed"] == 3
+    # 14,000 == 14000 and G == -42 agree; C vs A is the one real error
+    assert r["n_agree_normalised"] == 2
+    assert r["precision_when_committed"] == pytest.approx(2 / 3)
+    real = [d for d in r["example_disagreements"]]
+    assert len(real) == 1 and real[0]["judge"] == "A"
+    # strict agreement is kept for comparison with earlier runs
+    assert r["n_agree"] == 0

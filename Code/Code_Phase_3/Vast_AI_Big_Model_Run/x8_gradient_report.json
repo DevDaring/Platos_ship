@@ -1,0 +1,575 @@
+{
+  "models": [
+    {
+      "name": "Gemma-3-4B",
+      "family": "gemma",
+      "judged": true,
+      "rows": 2700,
+      "values_mapped_to_letters": {
+        "round0_answer": 63,
+        "round1_answer": 52,
+        "round0_answer_effective": 63,
+        "round1_answer_effective": 52
+      },
+      "mmlu_pro": {
+        "solo_accuracy": 0.3784722222222222,
+        "raw": {
+          "estimate": 0.03589097950134674,
+          "ci_low": 0.020174245146004095,
+          "ci_high": 0.054495091968864144,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "logodds": {
+          "estimate": 1.1492899587098115,
+          "ci_low": 0.7524105328459106,
+          "ci_high": 1.6305273890086704,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "adoption_pp": 12.197283053730027,
+        "adoption_wr": {
+          "estimate": 0.14052953156822812,
+          "ci_low": 0.1079414946210207,
+          "ci_high": 0.175156400873086,
+          "n_pairs": 491,
+          "n_questions": 191
+        },
+        "adoption_e": {
+          "estimate": 0.018556701030927835,
+          "ci_low": 0.00625,
+          "ci_high": 0.03333333333333333,
+          "n_pairs": 485,
+          "n_questions": 189
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.9999924898711537,
+          "separation": 0.683497344362141,
+          "off_candidate_round0": 0.04631783615644798
+        }
+      },
+      "gsm8k": {
+        "solo_accuracy": 0.7133333333333334,
+        "raw": {
+          "estimate": 0.02775818259406328,
+          "ci_low": 0.01035226924980968,
+          "ci_high": 0.04846961261221167,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "logodds": {
+          "estimate": 3.5609044180089637,
+          "ci_low": 3.038461234731754,
+          "ci_high": 4.078493019856773,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "adoption_pp": 0.3436108058078325,
+        "adoption_wr": {
+          "estimate": 0.006825938566552901,
+          "ci_low": 0.0,
+          "ci_high": 0.017123287671232876,
+          "n_pairs": 293,
+          "n_questions": 100
+        },
+        "adoption_e": {
+          "estimate": 0.003389830508474576,
+          "ci_low": 0.0,
+          "ci_high": 0.010238907849829351,
+          "n_pairs": 295,
+          "n_questions": 100
+        },
+        "coherence": {
+          "median_p_when_said_correct": 4.2684494180153585e-07,
+          "separation": 0.016673820777856396,
+          "off_candidate_round0": 0.805521379001731
+        }
+      }
+    },
+    {
+      "name": "Llama-3.1-8B",
+      "family": "llama",
+      "judged": true,
+      "rows": 2700,
+      "values_mapped_to_letters": {
+        "round0_answer": 6,
+        "round1_answer": 1,
+        "round0_answer_effective": 6,
+        "round1_answer_effective": 1
+      },
+      "mmlu_pro": {
+        "solo_accuracy": 0.5104895104895105,
+        "raw": {
+          "estimate": 0.06250991083686455,
+          "ci_low": 0.04783521401156696,
+          "ci_high": 0.07818711203733003,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "logodds": {
+          "estimate": 3.02910721997924,
+          "ci_low": 2.7491301996222504,
+          "ci_high": 3.302508938236689,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "adoption_pp": 11.120053655264922,
+        "adoption_wr": {
+          "estimate": 0.13333333333333333,
+          "ci_low": 0.10408163265306122,
+          "ci_high": 0.16393442622950818,
+          "n_pairs": 495,
+          "n_questions": 191
+        },
+        "adoption_e": {
+          "estimate": 0.022132796780684104,
+          "ci_low": 0.009900990099009901,
+          "ci_high": 0.036734693877551024,
+          "n_pairs": 497,
+          "n_questions": 193
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.9043185698176994,
+          "separation": 0.48924066555417334,
+          "off_candidate_round0": 0.01392417895980806
+        }
+      },
+      "gsm8k": {
+        "solo_accuracy": 0.74,
+        "raw": {
+          "estimate": 0.018823449054566278,
+          "ci_low": 0.008900756208796396,
+          "ci_high": 0.03137286931481417,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "logodds": {
+          "estimate": 4.549772317482627,
+          "ci_low": 4.141226238323136,
+          "ci_high": 4.945194283804673,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "adoption_pp": 2.8469750889679712,
+        "adoption_wr": {
+          "estimate": 0.028469750889679714,
+          "ci_low": 0.010675210115847657,
+          "ci_high": 0.04693140794223827,
+          "n_pairs": 281,
+          "n_questions": 99
+        },
+        "adoption_e": {
+          "estimate": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "n_pairs": 292,
+          "n_questions": 100
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.01255414209608371,
+          "separation": 0.09688621315396956,
+          "off_candidate_round0": 0.8349557093492853
+        }
+      }
+    },
+    {
+      "name": "Mistral-Small-24B",
+      "family": "mistral",
+      "judged": true,
+      "rows": 2700,
+      "values_mapped_to_letters": {
+        "round0_answer": 33,
+        "round1_answer": 15,
+        "round0_answer_effective": 33,
+        "round1_answer_effective": 15
+      },
+      "mmlu_pro": {
+        "solo_accuracy": 0.6065857885615251,
+        "raw": {
+          "estimate": 0.17061774373261693,
+          "ci_low": 0.1486666930889033,
+          "ci_high": 0.19314507394093514,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "logodds": {
+          "estimate": 4.558783524784003,
+          "ci_low": 4.22603194169969,
+          "ci_high": 4.907624763907345,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "adoption_pp": 12.904228855721394,
+        "adoption_wr": {
+          "estimate": 0.14583333333333334,
+          "ci_low": 0.10835987835585602,
+          "ci_high": 0.18596155355181115,
+          "n_pairs": 528,
+          "n_questions": 193
+        },
+        "adoption_e": {
+          "estimate": 0.016791044776119403,
+          "ci_low": 0.005628517823639775,
+          "ci_high": 0.030245746691871456,
+          "n_pairs": 536,
+          "n_questions": 194
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.6001135552114738,
+          "separation": 0.36850792845070385,
+          "off_candidate_round0": 0.25816573589949426
+        }
+      },
+      "gsm8k": {
+        "solo_accuracy": 0.8181818181818182,
+        "raw": {
+          "estimate": 0.1347341166699345,
+          "ci_low": 0.10589165243638386,
+          "ci_high": 0.16391067464231476,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "logodds": {
+          "estimate": 7.6538853076897935,
+          "ci_low": 7.270374305505068,
+          "ci_high": 8.030310900023512,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "adoption_pp": 3.7800687285223367,
+        "adoption_wr": {
+          "estimate": 0.037800687285223365,
+          "ci_low": 0.013651877133105802,
+          "ci_high": 0.06643356643356643,
+          "n_pairs": 291,
+          "n_questions": 100
+        },
+        "adoption_e": {
+          "estimate": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "n_pairs": 293,
+          "n_questions": 100
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.032798452150148975,
+          "separation": 0.09642041826175068,
+          "off_candidate_round0": 0.8085646482997934
+        }
+      }
+    },
+    {
+      "name": "Gemma-3-27B",
+      "family": "gemma",
+      "judged": true,
+      "rows": 2700,
+      "values_mapped_to_letters": {
+        "round0_answer": 75,
+        "round1_answer": 63,
+        "round0_answer_effective": 75,
+        "round1_answer_effective": 63
+      },
+      "mmlu_pro": {
+        "solo_accuracy": 0.6346801346801347,
+        "raw": {
+          "estimate": 0.03823792075613144,
+          "ci_low": 0.020680789005842824,
+          "ci_high": 0.05704375584271347,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "logodds": {
+          "estimate": 2.2104753805478223,
+          "ci_low": 1.7806176648936674,
+          "ci_high": 2.6611703883843294,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "adoption_pp": 13.348121261006924,
+        "adoption_wr": {
+          "estimate": 0.14074074074074075,
+          "ci_low": 0.10614244278083605,
+          "ci_high": 0.1779816513761468,
+          "n_pairs": 540,
+          "n_questions": 193
+        },
+        "adoption_e": {
+          "estimate": 0.007259528130671506,
+          "ci_low": 0.0017825311942959,
+          "ci_high": 0.014652014652014652,
+          "n_pairs": 551,
+          "n_questions": 197
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.9996286817855163,
+          "separation": 0.6171938951659494,
+          "off_candidate_round0": 0.10023592550037741
+        }
+      },
+      "gsm8k": {
+        "solo_accuracy": 0.8758389261744967,
+        "raw": {
+          "estimate": -0.0027063837405304114,
+          "ci_low": -0.01796772497260625,
+          "ci_high": 0.009824509568433377,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "logodds": {
+          "estimate": 0.7525144507933722,
+          "ci_low": 0.4642366077085336,
+          "ci_high": 1.0600401899621135,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "adoption_pp": 0.0,
+        "adoption_wr": {
+          "estimate": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "n_pairs": 294,
+          "n_questions": 100
+        },
+        "adoption_e": {
+          "estimate": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "n_pairs": 294,
+          "n_questions": 99
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.0003172606206700409,
+          "separation": 0.18118441031093707,
+          "off_candidate_round0": 0.6957662269671092
+        }
+      }
+    },
+    {
+      "name": "Llama-3.1-70B",
+      "family": "llama",
+      "judged": true,
+      "rows": 2700,
+      "values_mapped_to_letters": {
+        "round0_answer": 12,
+        "round1_answer": 5,
+        "round0_answer_effective": 12,
+        "round1_answer_effective": 5
+      },
+      "mmlu_pro": {
+        "solo_accuracy": 0.6599326599326599,
+        "raw": {
+          "estimate": 0.14276692324356413,
+          "ci_low": 0.11461540511782196,
+          "ci_high": 0.17076061769923065,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "logodds": {
+          "estimate": 4.171327028054984,
+          "ci_low": 3.9003328117974183,
+          "ci_high": 4.453777233777214,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "adoption_pp": 9.001831501831502,
+        "adoption_wr": {
+          "estimate": 0.10073260073260074,
+          "ci_low": 0.07219933002795999,
+          "ci_high": 0.13224834593572776,
+          "n_pairs": 546,
+          "n_questions": 197
+        },
+        "adoption_e": {
+          "estimate": 0.010714285714285714,
+          "ci_low": 0.003527336860670194,
+          "ci_high": 0.019784172661870502,
+          "n_pairs": 560,
+          "n_questions": 199
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.9665107779511372,
+          "separation": 0.5599328899666418,
+          "off_candidate_round0": 0.012928045786584155
+        }
+      },
+      "gsm8k": {
+        "solo_accuracy": 0.8733333333333333,
+        "raw": {
+          "estimate": 0.035556446220314376,
+          "ci_low": 0.018237165805534233,
+          "ci_high": 0.05413268567475687,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "logodds": {
+          "estimate": 4.552495638890847,
+          "ci_low": 4.094070752261814,
+          "ci_high": 5.012918789643979,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "adoption_pp": 0.6884142094265149,
+        "adoption_wr": {
+          "estimate": 0.010273972602739725,
+          "ci_low": 0.0,
+          "ci_high": 0.02422145328719723,
+          "n_pairs": 292,
+          "n_questions": 100
+        },
+        "adoption_e": {
+          "estimate": 0.003389830508474576,
+          "ci_low": 0.0,
+          "ci_high": 0.010273972602739725,
+          "n_pairs": 295,
+          "n_questions": 100
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.07124942170553594,
+          "separation": 0.2249783079322559,
+          "off_candidate_round0": 0.6704049811112538
+        }
+      }
+    },
+    {
+      "name": "Qwen2.5-72B",
+      "family": "qwen",
+      "judged": true,
+      "rows": 2700,
+      "values_mapped_to_letters": {
+        "round0_answer": 18,
+        "round1_answer": 2,
+        "round0_answer_effective": 18,
+        "round1_answer_effective": 2
+      },
+      "mmlu_pro": {
+        "solo_accuracy": 0.69,
+        "raw": {
+          "estimate": 0.02446958833115386,
+          "ci_low": 0.013694114568916825,
+          "ci_high": 0.03689792072577314,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "logodds": {
+          "estimate": 2.341327768042464,
+          "ci_low": 1.9694687326175302,
+          "ci_high": 2.7019515353503682,
+          "n_pairs": 600,
+          "n_questions": 200
+        },
+        "adoption_pp": 2.3535004479549486,
+        "adoption_wr": {
+          "estimate": 0.031067961165048542,
+          "ci_low": 0.017475728155339806,
+          "ci_high": 0.045909904329272465,
+          "n_pairs": 515,
+          "n_questions": 186
+        },
+        "adoption_e": {
+          "estimate": 0.007532956685499058,
+          "ci_low": 0.0018484288354898336,
+          "ci_high": 0.015355086372360844,
+          "n_pairs": 531,
+          "n_questions": 190
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.9960025056345243,
+          "separation": 0.6628264282351916,
+          "off_candidate_round0": 0.1028227878813493
+        }
+      },
+      "gsm8k": {
+        "solo_accuracy": 0.8033333333333333,
+        "raw": {
+          "estimate": 0.007613779563916162,
+          "ci_low": 0.0008839596725174474,
+          "ci_high": 0.018803361614056293,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "logodds": {
+          "estimate": 1.4706478984482927,
+          "ci_low": 1.0699676116863863,
+          "ci_high": 1.9091131597089115,
+          "n_pairs": 300,
+          "n_questions": 100
+        },
+        "adoption_pp": 0.33783783783783783,
+        "adoption_wr": {
+          "estimate": 0.0033783783783783786,
+          "ci_low": 0.0,
+          "ci_high": 0.010238907849829351,
+          "n_pairs": 296,
+          "n_questions": 100
+        },
+        "adoption_e": {
+          "estimate": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "n_pairs": 296,
+          "n_questions": 100
+        },
+        "coherence": {
+          "median_p_when_said_correct": 0.15912029904458244,
+          "separation": 0.29573268891496296,
+          "off_candidate_round0": 0.6036258530290085
+        }
+      }
+    }
+  ],
+  "gradient": {
+    "mmlu_pro": {
+      "raw": {
+        "rho": -0.14285714285714288,
+        "p_value": 0.8027777777777778,
+        "p_value_method": "exact_permutation_720",
+        "n": 6,
+        "leave_one_out_min": -0.49999999999999994,
+        "leave_one_out_max": 0.49999999999999994
+      },
+      "logodds": {
+        "rho": 0.2571428571428572,
+        "p_value": 0.6583333333333333,
+        "p_value_method": "exact_permutation_720",
+        "n": 6,
+        "leave_one_out_min": -0.3,
+        "leave_one_out_max": 0.49999999999999994
+      },
+      "adoption_pp": {
+        "rho": -0.48571428571428577,
+        "p_value": 0.35555555555555557,
+        "p_value_method": "exact_permutation_720",
+        "n": 6,
+        "leave_one_out_min": -0.7,
+        "leave_one_out_max": -0.09999999999999999
+      }
+    },
+    "gsm8k": {
+      "raw": {
+        "rho": -0.14285714285714288,
+        "p_value": 0.8027777777777778,
+        "p_value_method": "exact_permutation_720",
+        "n": 6,
+        "leave_one_out_min": -0.39999999999999997,
+        "leave_one_out_max": 0.49999999999999994
+      },
+      "logodds": {
+        "rho": -0.08571428571428573,
+        "p_value": 0.9194444444444444,
+        "p_value_method": "exact_permutation_720",
+        "n": 6,
+        "leave_one_out_min": -0.3,
+        "leave_one_out_max": 0.6
+      },
+      "adoption_pp": {
+        "rho": -0.2571428571428572,
+        "p_value": 0.6583333333333333,
+        "p_value_method": "exact_permutation_720",
+        "n": 6,
+        "leave_one_out_min": -0.49999999999999994,
+        "leave_one_out_max": 0.3
+      }
+    }
+  },
+  "missing": []
+}

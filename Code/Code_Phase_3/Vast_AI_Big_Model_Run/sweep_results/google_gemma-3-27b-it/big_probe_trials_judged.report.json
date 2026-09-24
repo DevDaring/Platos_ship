@@ -1,0 +1,88 @@
+{
+  "calibration": {
+    "n": 200,
+    "n_agree": 188,
+    "agreement": 0.94,
+    "example_disagreements": [
+      {
+        "regex": "1",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "-376",
+        "judge": "H"
+      },
+      {
+        "regex": "100",
+        "judge": "J"
+      },
+      {
+        "regex": "4.67",
+        "judge": "G"
+      },
+      {
+        "regex": "-376",
+        "judge": "H"
+      },
+      {
+        "regex": "C",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "C",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "-42",
+        "judge": "G"
+      },
+      {
+        "regex": "20",
+        "judge": "B"
+      },
+      {
+        "regex": "499.5",
+        "judge": "B"
+      },
+      {
+        "regex": "4.67",
+        "judge": "G"
+      },
+      {
+        "regex": "70",
+        "judge": "UNPARSEABLE"
+      }
+    ]
+  },
+  "recovery": {
+    "round0": {
+      "unparsed_by_regex": 252,
+      "still_unresolved": 25,
+      "recovered": 227,
+      "methods": {
+        "judge_primary": 227,
+        "abstain_primary": 18,
+        "ungrounded_primary": 7
+      }
+    },
+    "round1": {
+      "unparsed_by_regex": 371,
+      "still_unresolved": 118,
+      "recovered": 253,
+      "methods": {
+        "judge_primary": 253,
+        "abstain_primary": 103,
+        "ungrounded_primary": 15
+      }
+    }
+  },
+  "judge_usage": {
+    "total_judge_calls": 823,
+    "tier_usage": {
+      "primary": 823,
+      "secondary": 0,
+      "tertiary": 0,
+      "all_failed": 0
+    }
+  }
+}

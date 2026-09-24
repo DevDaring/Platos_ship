@@ -1,0 +1,26 @@
+
+=== MMLU-Pro  (PRIMARY) ===
+model                 solo   raw shift                   95% CI  log-odds  adopt pp  med P|said right
+Gemma-3-4B           0.378   +0.035891       [+0.0202, +0.0545]    +1.149    +12.20             1.000
+Llama-3.1-8B         0.510   +0.062510       [+0.0478, +0.0782]    +3.029    +11.12             0.904
+Mistral-Small-24B    0.607   +0.170618       [+0.1487, +0.1931]    +4.559    +12.90             0.600
+Gemma-3-27B          0.635   +0.038238       [+0.0207, +0.0570]    +2.210    +13.35             1.000
+Llama-3.1-70B        0.660   +0.142767       [+0.1146, +0.1708]    +4.171     +9.00             0.967
+Qwen2.5-72B          0.690   +0.024470       [+0.0137, +0.0369]    +2.341     +2.35             0.996
+  Spearman vs solo accuracy (exact permutation p, leave-one-out range):
+    raw          rho=-0.143  p=0.8028  LOO=[-0.500, +0.500]  n=6
+    logodds      rho=+0.257  p=0.6583  LOO=[-0.300, +0.500]  n=6
+    adoption_pp  rho=-0.486  p=0.3556  LOO=[-0.700, -0.100]  n=6
+
+=== GSM8K  (SECONDARY: unreasoned-guess read-out) ===
+model                 solo   raw shift                   95% CI  log-odds  adopt pp  med P|said right
+Gemma-3-4B           0.713   +0.027758       [+0.0104, +0.0485]    +3.561     +0.34             0.000
+Llama-3.1-8B         0.740   +0.018823       [+0.0089, +0.0314]    +4.550     +2.85             0.013
+Mistral-Small-24B    0.818   +0.134734       [+0.1059, +0.1639]    +7.654     +3.78             0.033
+Gemma-3-27B          0.876   -0.002706       [-0.0180, +0.0098]    +0.753     +0.00             0.000
+Llama-3.1-70B        0.873   +0.035556       [+0.0182, +0.0541]    +4.552     +0.69             0.071
+Qwen2.5-72B          0.803   +0.007614       [+0.0009, +0.0188]    +1.471     +0.34             0.159
+  Spearman vs solo accuracy (exact permutation p, leave-one-out range):
+    raw          rho=-0.143  p=0.8028  LOO=[-0.400, +0.500]  n=6
+    logodds      rho=-0.086  p=0.9194  LOO=[-0.300, +0.600]  n=6
+    adoption_pp  rho=-0.257  p=0.6583  LOO=[-0.500, +0.300]  n=6
