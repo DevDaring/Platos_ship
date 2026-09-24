@@ -1,0 +1,16 @@
+
+[1m==> Starting the 30-minute autopush to GitHub[0m
+bash: autopush_vast.sh: No such file or directory
+    autopush pid 5678
+
+[1m==> Starting the probe: 300 questions x 3 replicates, tp=2, seed 20260502, numeric=1[0m
+    probe pid 5679
+
+Running detached; the SSH session can be closed.
+
+  follow    : tail -f /workspace/platos/logs/probe.log
+  progress  : python3 -c "import pandas as pd; d=pd.read_parquet('/workspace/platos/results/big_probe_trials.parquet'); print(len(d), d.groupby('condition').size().to_dict())"
+  finished? : ls /workspace/platos/results/big_probe_contrast.parquet
+
+When it finishes: pull the results, then DESTROY the instance. A stopped
+instance still bills for its disk, and 132 GB of checkpoint is not cheap.
