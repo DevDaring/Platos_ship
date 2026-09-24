@@ -1,0 +1,74 @@
+{
+  "model": "google/gemma-3-27b-it",
+  "dtype": "bfloat16",
+  "tensor_parallel_size": 2,
+  "max_model_len": 4096,
+  "gpu": "NVIDIA A100-SXM4-80GB",
+  "n_gpus": 2,
+  "seed": 20260502,
+  "questions": 300,
+  "replicates": 3,
+  "mcq_only": false,
+  "system_role_supported": true,
+  "wall_clock_minutes": 17.4,
+  "contrasts_by_task": [
+    {
+      "contrast": "WR_minus_E",
+      "estimate": -0.002706383740530412,
+      "ci_low": -0.01475804409088055,
+      "ci_high": 0.006893128406542219,
+      "p_value": 1.0,
+      "p_value_method": "sign_flip_permutation",
+      "n_pairs": 300,
+      "median": 4.7395200792197404e-07,
+      "estimate_stated_answer_unchanged": 2.127209861669651e-05,
+      "ci_stated_answer_unchanged": [
+        7.204747013747666e-06,
+        4.014151748324265e-05
+      ],
+      "n_pairs_stated_answer_unchanged": 221,
+      "note": "Paired by (question, replicate); the target is fixed per pair and identical across conditions. The 'unchanged' row restricts to trials whose stated answer PARSED in both rounds and was the same, so an unparsed answer is excluded rather than counted as unchanged.",
+      "source_dataset": "gsm8k",
+      "report": true
+    },
+    {
+      "contrast": "WR_minus_E",
+      "estimate": 0.03823792075613144,
+      "ci_low": 0.022285154421366055,
+      "ci_high": 0.05546656025684356,
+      "p_value": 9.999000099990002e-05,
+      "p_value_method": "sign_flip_permutation",
+      "n_pairs": 600,
+      "median": 2.2276604966583163e-06,
+      "estimate_stated_answer_unchanged": 0.009117183384244129,
+      "ci_stated_answer_unchanged": [
+        0.0012503851945400316,
+        0.018999194802026786
+      ],
+      "n_pairs_stated_answer_unchanged": 362,
+      "note": "Paired by (question, replicate); the target is fixed per pair and identical across conditions. The 'unchanged' row restricts to trials whose stated answer PARSED in both rounds and was the same, so an unparsed answer is excluded rather than counted as unchanged.",
+      "source_dataset": "mmlu_pro",
+      "report": true
+    },
+    {
+      "contrast": "WR_minus_E",
+      "estimate": 0.024589819257244155,
+      "ci_low": 0.013304246663131685,
+      "ci_high": 0.03627408772854493,
+      "p_value": 0.00019998000199980003,
+      "p_value_method": "sign_flip_permutation",
+      "n_pairs": 900,
+      "median": 1.4356568557748894e-06,
+      "estimate_stated_answer_unchanged": 0.005669162125026868,
+      "ci_stated_answer_unchanged": [
+        0.0008412501189872329,
+        0.011856622175602776
+      ],
+      "n_pairs_stated_answer_unchanged": 583,
+      "note": "Paired by (question, replicate); the target is fixed per pair and identical across conditions. The 'unchanged' row restricts to trials whose stated answer PARSED in both rounds and was the same, so an unparsed answer is excluded rather than counted as unchanged.",
+      "source_dataset": "POOLED",
+      "report": false,
+      "why_not": "task families differ in probability scale by ~2 orders of magnitude; the pooled mean is dominated by multiple choice. Report per family."
+    }
+  ]
+}
