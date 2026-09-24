@@ -20,6 +20,7 @@ is Gemini via LinkAPI -> Google direct (4 keys, round-robin) -> OpenRouter.
 import os
 import re
 import time
+import threading
 import logging
 from typing import Optional, Dict, Any, Tuple, List
 
@@ -67,6 +68,8 @@ def extract_answer_regex(raw_text: str) -> Optional[str]:
         for pattern in FINAL_ANSWER_PATTERNS[:2]:
             match = re.search(pattern, line_stripped)
             if match:
+                if _pronoun_not_option(match, line_stripped):
+                    return None
                 return match.group(1).strip().replace(",", "")
 
     # Second pass: all other patterns.
@@ -75,9 +78,25 @@ def extract_answer_regex(raw_text: str) -> Optional[str]:
         for pattern in FINAL_ANSWER_PATTERNS[2:]:
             match = re.search(pattern, line_stripped, re.MULTILINE)
             if match:
+                if _pronoun_not_option(match, line_stripped):
+                    return None
                 return match.group(1).strip().replace(",", "")
 
     return None
+
+
+def _pronoun_not_option(match: "re.Match", line: str) -> bool:
+    """
+    "Final answer: I think it is B" matched the letter pattern and was read
+    as option I; "The answer is A bit unclear" likewise as option A. When
+    the captured letter is I or A and a lower-case word follows, it is a
+    word, not an option. Returning no answer hands the response to the
+    judge, which reads the whole sentence.
+    """
+    letter = match.group(1)
+    if letter not in ("I", "A"):
+        return False
+    return re.match(r"\s+[a-z]", line[match.end(1):]) is not None
 
 
 def extract_confidence_regex(raw_text: str) -> Tuple[Optional[int], str]:
@@ -108,6 +127,10 @@ class JudgeCascade:
     tier returns UNPARSEABLE or errors after its single retry.
     """
 
+    # Class-level default so an instance built without __init__ (as the
+    # tests do) still has one; __init__ gives each cascade its own.
+    _stats_lock = threading.Lock()
+
     JUDGE_SYSTEM_PROMPT = (
         "You are an EXTRACTOR, not a solver. You are shown a question and a "
         "model's response. Your only job is to report the final answer THAT "
@@ -128,7 +151,14 @@ class JudgeCascade:
     @staticmethod
     def _option_text_for_letter(letter: str, options_text: str) -> str:
         """
-        The option body a letter labels, from an "A) foo; B) bar" listing.
+        The option body a letter labels, from an "A) foo; B) bar" listing
+        or the "A. foo" one-per-line listing Phase 3 sends the judge
+        (src/extraction.options_to_string).
+
+        Phase 3 renders "A. foo" lines, and this parser accepted only "A)".
+        So no option body was ever found, and a correct reading of "Final
+        answer: [3, 2]" as the option whose text is "[3, 2]" was rejected as
+        ungrounded (smoke run, 24 Sept 2026).
 
         Returns "" when the listing is not in that form, which makes the
         caller fall back to letter matching alone.
@@ -140,7 +170,7 @@ class JudgeCascade:
         # option absorbed it, so its body never matched anything in a
         # response and that option could not be grounded by its text.
         pattern = (r"(?:^|[;\n])\s*" + re.escape(letter.upper())
-                   + r"\)\s*(.+?)(?=\s*(?:;|\n|--|$))")
+                   + r"[\).]\s*(.+?)(?=\s*(?:;|\n|--|$))")
         found = re.search(pattern, options_text, re.DOTALL)
         return found.group(1).strip() if found else ""
 
@@ -282,6 +312,8 @@ class JudgeCascade:
         self._tier_usage = {t["name"]: 0 for t in self._tiers}
         self._tier_usage["all_failed"] = 0
         self._total_calls = 0
+        # Shard processes call the cascade from several worker threads.
+        self._stats_lock = threading.Lock()
 
         logger.info(
             "JudgeCascade (paid) initialised: "
@@ -306,7 +338,8 @@ class JudgeCascade:
         Extract answer through the paid cascade.
         Returns (answer, method) where method is 'judge_<tier>' or 'parse_failure'.
         """
-        self._total_calls += 1
+        with self._stats_lock:
+            self._total_calls += 1
         user_prompt = self._build_user_prompt(question_text, answer_options, raw_text)
 
         for tier in self._tiers:
@@ -344,7 +377,7 @@ class JudgeCascade:
                 # and was recorded as a fabrication rather than as the
                 # abstention it plainly is.
                 if re.match(r"^[^A-Za-z0-9]*UNPARS", text, re.IGNORECASE):
-                    self._tier_usage[tier["name"]] += 1
+                    self._count(tier["name"])
                     return "UNPARSEABLE", f"abstain_{tier['name']}"
                 if not self._is_grounded(text, raw_text, answer_options):
                     # The tier answered with something the response never
@@ -356,9 +389,9 @@ class JudgeCascade:
                         "Judge tier %s returned %r, which does not occur in "
                         "the response; treating as abstention",
                         tier["name"], text[:40])
-                    self._tier_usage[tier["name"]] += 1
+                    self._count(tier["name"])
                     return "UNPARSEABLE", f"ungrounded_{tier['name']}"
-                self._tier_usage[tier["name"]] += 1
+                self._count(tier["name"])
                 return text, f"judge_{tier['name']}"
             except Exception as e:
                 api_failure_logger.warning(
@@ -366,12 +399,17 @@ class JudgeCascade:
                     f"{type(e).__name__}: {str(e)[:200]}"
                 )
 
-        self._tier_usage["all_failed"] += 1
+        self._count("all_failed")
         return "UNPARSEABLE", "parse_failure"
+
+    def _count(self, key: str) -> None:
+        with self._stats_lock:
+            self._tier_usage[key] += 1
 
     @property
     def usage_stats(self) -> Dict[str, Any]:
-        return {
-            "total_judge_calls": self._total_calls,
-            "tier_usage": dict(self._tier_usage),
-        }
+        with self._stats_lock:
+            return {
+                "total_judge_calls": self._total_calls,
+                "tier_usage": dict(self._tier_usage),
+            }

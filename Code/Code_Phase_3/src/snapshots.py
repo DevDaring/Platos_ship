@@ -109,10 +109,17 @@ class SnapshotAuditor:
         frame = self.to_frame()
         if frame.empty:
             return {"calls": 0, "mismatches": 0, "served_models": {}}
+        # Nested agent -> served model -> calls. A two-column groupby gives a
+        # dict keyed by (agent, model) TUPLES, which JSON cannot represent:
+        # the run-metadata write then raised TypeError after every paid call
+        # had been made, exiting non-zero on every real run. It stayed hidden
+        # because it only fires once calls have actually been audited.
+        served: Dict[str, Dict[str, int]] = {}
+        for (agent, model), count in (frame.groupby(["agent_key", "served_model"])
+                                      .size().items()):
+            served.setdefault(str(agent), {})[str(model)] = int(count)
         return {
             "calls": int(len(frame)),
             "mismatches": int((~frame["matched"]).sum()),
-            "served_models": (
-                frame.groupby(["agent_key", "served_model"]).size().to_dict()
-            ),
+            "served_models": served,
         }

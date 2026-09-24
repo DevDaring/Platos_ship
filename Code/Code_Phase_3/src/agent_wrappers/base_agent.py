@@ -28,6 +28,9 @@ class AgentResponse:
     error_status: str = "success"  # success, api_error_recovered, parse_error_recovered, failure
     retry_attempts_used: int = 0
     judge_tier_used: Optional[str] = None  # For judge responses: gemini, mistral, deepseek
+    # "stop" or "length" (truncated at the token cap). Recorded so truncation
+    # is measured and reported, never hidden inside "unparsed".
+    finish_reason: Optional[str] = None
 
 
 class RoundRobinKeyManager:

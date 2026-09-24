@@ -40,6 +40,8 @@ import pandas as pd
 from .extraction import answers_equal, extract_answer, options_to_string
 from .seeding import derive_rng
 from .store import Checkpoint, IncrementalWriter
+from .call_guard import is_failed_call, record_failure
+from .concurrency import run_units
 
 logger = logging.getLogger("platos_ship3.verifier")
 
@@ -86,6 +88,7 @@ def verify_changes(
     checkpoint: Checkpoint,
     master_seed: int,
     dry_run: bool = False,
+    workers: int = 1,
 ) -> pd.DataFrame:
     """
     Run the verifier on every revision that PROPOSED A CHANGE.
@@ -112,11 +115,12 @@ def verify_changes(
     logger.info("Verifier: %d proposed changes, %d to verify.",
                 len(changed), len(todo))
 
-    for index, revision in enumerate(todo, start=1):
+    def _one_verification(item) -> None:
+        index, revision = item
         unit = f"VERIFY|{revision['unit_id']}"
         question = question_index.get(revision["question_identifier"])
         if question is None:
-            continue
+            return
 
         initial_answer = str(revision["r0_answer"])
         revised_answer = str(revision["extracted_answer"])
@@ -140,9 +144,12 @@ def verify_changes(
                 candidate_2=candidate_2,
             ),
             temperature=float(verifier_spec.get("temperature", 0.0)),
-            maximum_output_tokens=int(verifier_spec.get("max_output_tokens", 400)),
+            maximum_output_tokens=int(verifier_spec.get("max_output_tokens", 2048)),
             request_metadata={"stage": "verify", "unit_id": revision["unit_id"]},
         )
+        if is_failed_call(response):
+            record_failure("verifier", str(revision["unit_id"]), response)
+            return
 
         auditor.check(
             agent_key="verifier",
@@ -155,7 +162,7 @@ def verify_changes(
 
         verifier_answer, method = extract_answer(
             response.raw_text_output, question["question_text"], options_str,
-            judge_cascade,
+            judge_cascade, answer_options=question.get("answer_options"),
         )
         supported_option = _parse_supported_option(response.raw_text_output)
 
@@ -208,6 +215,7 @@ def verify_changes(
                 "total_output_tokens": response.total_output_tokens,
                 "wall_clock_latency_seconds": response.wall_clock_latency_seconds,
                 "error_status": response.error_status,
+                "finish_reason": response.finish_reason,
                 "timestamp_utc": pd.Timestamp.now("UTC").isoformat(),
                 "elapsed_seconds": round(time.time() - started, 3),
             },
@@ -215,5 +223,8 @@ def verify_changes(
         )
         if index % 100 == 0:
             logger.info("Verifier: %d/%d done.", index, len(todo))
+
+    # Independent units; see src/concurrency.py. workers=1 is the old loop.
+    run_units(list(enumerate(todo, start=1)), _one_verification, workers=workers, label="verifier")
 
     return writer.consolidate(dedup_on=VERIFIER_DEDUP_KEYS)

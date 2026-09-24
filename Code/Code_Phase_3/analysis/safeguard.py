@@ -43,6 +43,41 @@ def _score(final_answers: pd.Series, correct: pd.Series) -> np.ndarray:
     )
 
 
+def x6_scoring_units(revisions: pd.DataFrame, experiment: Dict[str, Any],
+                     paths: Dict[str, str], project_root) -> pd.DataFrame:
+    """
+    Every revision unit X6 covers: its conditions, its models, its questions.
+
+    Previously the scoring set was "any WR or H row", i.e. all eight models
+    on all 300 questions, while the verifier ran on three models and 100
+    questions. Units outside the verifier's reach counted as "verifier kept
+    the initial answer", so the verifier policy was mostly always_keep.
+    """
+    from pathlib import Path
+
+    from src.agents import load_models_config, resolve_focal_selector
+
+    spec = experiment["experiments"].get("X6_verification_safeguard", {})
+    models = load_models_config(Path(project_root))
+    focal_specs = models.get("focal_agents", {})
+    verifier_slug = str((models.get("verifier_agent") or {}).get("model_slug", ""))
+    # Same rule as the runner: a model is never scored on self-verification.
+    focal = [k for k in resolve_focal_selector(spec.get("focal", "TIER_X2"), focal_specs)
+             if str(focal_specs.get(k, {}).get("model_slug", "")) != verifier_slug]
+    pool_path = Path(paths["question_pool_file"])
+    if not pool_path.is_absolute():
+        pool_path = Path(project_root) / pool_path
+    pool = pd.read_parquet(pool_path)
+    if experiment["pools"].get(spec.get("pool", "mitigation100"), {}).get(
+            "filter") == "included_in_mitigation_subset":
+        pool = pool[pool["included_in_mitigation_subset"].astype(bool)]
+    return revisions[
+        revisions["condition"].isin(spec.get("conditions", ["WR", "H"]))
+        & revisions["focal_key"].isin(focal)
+        & revisions["question_identifier"].isin(set(pool["question_identifier"]))
+    ].drop_duplicates("unit_id")
+
+
 def score_policies(
     verified: pd.DataFrame,
     all_revisions: pd.DataFrame,

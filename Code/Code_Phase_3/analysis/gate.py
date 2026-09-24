@@ -206,6 +206,21 @@ def legacy_loudness_gate(
     }
 
 
+def distinct_messages(peer_log: pd.DataFrame) -> pd.DataFrame:
+    """
+    One row per distinct peer message, per substrate.
+
+    The gate is a property of the MESSAGES. The peer log has one row per
+    (unit, peer): an honest-bank message recurs for all eight focal models and
+    in both H and Hfilt, and in a filter condition every message is logged
+    twice (offered, then shown). Counting rows weighted each message by how
+    often it was reused.
+    """
+    if peer_log.empty:
+        return peer_log
+    return peer_log.drop_duplicates(["peer_source", "peer_text"])
+
+
 def build_gate_report(
     peer_messages: pd.DataFrame,
     threshold: int = 60,

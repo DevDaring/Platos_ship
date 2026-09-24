@@ -23,6 +23,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
+import numpy as np
 import pandas as pd
 
 from src.extraction import normalise_answer
@@ -138,6 +139,8 @@ def budget_matched_comparison(
         & (cell_metrics["dataset_scope"] == scope)
         & (cell_metrics["condition"].isin(conditions))
     ].copy()
+    if "round_index" in selected.columns:
+        selected = selected[selected["round_index"] == 1]
 
     rows: List[Dict[str, Any]] = []
     for _, row in selected.iterrows():
@@ -147,7 +150,9 @@ def budget_matched_comparison(
                 "focal_key": row["focal_key"],
                 "accuracy": row["accuracy"],
                 "harmful_revision": row.get("harmful_revision"),
-                "focal_calls": 2,          # cached initial answer + one revision
+                # Initial answer + one revision. E's two peers are two MORE
+                # focal samples, so E spends four focal calls, not two.
+                "focal_calls": 4 if row["condition"] == "E" else 2,
                 "mean_output_tokens": row.get("mean_output_tokens"),
                 "n_questions": row.get("n_questions"),
             }
@@ -155,14 +160,21 @@ def budget_matched_comparison(
 
     pooled = voting
     if "source_dataset" in voting.columns:
-        pooled = (
-            voting.groupby("focal_key")
-            .agg(single_sample_accuracy=("single_sample_accuracy", "mean"),
-                 plurality_vote_accuracy=("plurality_vote_accuracy", "mean"),
-                 n_replicates=("n_replicates", "median"),
-                 n_questions=("n_questions", "sum"))
-            .reset_index()
-        )
+        # Weighted by questions per task. The unweighted mean of per-task
+        # accuracies gave a 20-question task the weight of a 100-question one,
+        # so the voting rows were not on the same items as the debate rows.
+        def _weighted(group: pd.DataFrame) -> pd.Series:
+            weights = group["n_questions"].astype(float)
+            return pd.Series({
+                "single_sample_accuracy": float(np.average(
+                    group["single_sample_accuracy"], weights=weights)),
+                "plurality_vote_accuracy": float(np.average(
+                    group["plurality_vote_accuracy"], weights=weights)),
+                "n_replicates": group["n_replicates"].median(),
+                "n_questions": int(weights.sum()),
+            })
+
+        pooled = voting.groupby("focal_key").apply(_weighted).reset_index()
     for _, row in pooled.iterrows():
         rows.append({
             "strategy": "single_sample",

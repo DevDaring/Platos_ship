@@ -31,6 +31,8 @@ import pandas as pd
 from .contexts import build_round0_prompt
 from .extraction import extract_answer, extract_confidence, grade, options_to_string
 from .store import Checkpoint, IncrementalWriter
+from .call_guard import is_failed_call, record_failure
+from .concurrency import run_units
 
 logger = logging.getLogger("platos_ship3.honest_bank")
 
@@ -52,6 +54,7 @@ def build_honest_bank(
     temperature: float = 0.9,
     max_output_tokens: int = 350,
     dry_run: bool = False,
+    workers: int = 1,
 ) -> pd.DataFrame:
     """Generate (or extend) the honest weak-peer message bank."""
     writer = IncrementalWriter(Path(bank_path), flush_every=100, checkpoint=checkpoint)
@@ -63,7 +66,13 @@ def build_honest_bank(
         for replicate in range(replicates)
     ]
     if dry_run:
-        planned = planned[: len(weak_agents)]
+        # One (question, replicate) served by EVERY weak model, so condition H
+        # has its designed peers in a dry run. Taking the first len(weak)
+        # entries of a list ordered weak-model-first gave one model twice and
+        # the other none, so H could never be exercised before a real run.
+        first_q = planned[0][1]["question_identifier"] if planned else None
+        planned = [p for p in planned
+                   if p[1]["question_identifier"] == first_q and p[2] == 0]
 
     todo = [
         p for p in planned
@@ -71,7 +80,8 @@ def build_honest_bank(
     ]
     logger.info("Honest bank: %d planned, %d to generate.", len(planned), len(todo))
 
-    for index, (weak_key, question, replicate) in enumerate(todo, start=1):
+    def _one_message(item) -> None:
+        index, (weak_key, question, replicate) = item
         question_id = question["question_identifier"]
         unit = honest_unit_id(question_id, replicate, weak_key)
         agent = weak_agents[weak_key]
@@ -89,11 +99,15 @@ def build_honest_bank(
             request_metadata={"stage": "honest_bank", "question_id": question_id,
                               "replicate": replicate, "weak": weak_key},
         )
+        if is_failed_call(response):
+            # An empty honest message would still count toward H's peers.
+            record_failure("honest_bank", unit, response)
+            return
 
         options_str = options_to_string(question.get("answer_options"))
         answer, method = extract_answer(
             response.raw_text_output, question["question_text"], options_str,
-            judge_cascade,
+            judge_cascade, answer_options=question.get("answer_options"),
         )
         confidence, confidence_status = extract_confidence(response.raw_text_output)
 
@@ -118,6 +132,7 @@ def build_honest_bank(
                 "total_input_tokens": response.total_input_tokens,
                 "total_output_tokens": response.total_output_tokens,
                 "error_status": response.error_status,
+                "finish_reason": response.finish_reason,
                 "timestamp_utc": pd.Timestamp.now("UTC").isoformat(),
                 "elapsed_seconds": round(time.time() - started, 3),
             },
@@ -125,6 +140,9 @@ def build_honest_bank(
         )
         if index % 200 == 0:
             logger.info("Honest bank: %d/%d done.", index, len(todo))
+
+    # Independent units; see src/concurrency.py. workers=1 is the old loop.
+    run_units(list(enumerate(todo, start=1)), _one_message, workers=workers, label="honest_bank")
 
     bank = writer.consolidate(dedup_on=HONEST_DEDUP_KEYS)
     if not bank.empty:

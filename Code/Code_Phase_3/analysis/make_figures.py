@@ -281,11 +281,17 @@ def figure_budget_matched(
     if voting.empty or metrics.empty:
         return
 
-    pooled = (voting.groupby("focal_key")
-              .agg(single=("single_sample_accuracy", "mean"),
-                   vote=("plurality_vote_accuracy", "mean"),
-                   k=("n_replicates", "median"))
+    # Question-weighted across tasks, as in voting.budget_matched_comparison.
+    weighted = voting.assign(
+        _w=voting["n_questions"].astype(float),
+        _single=voting["single_sample_accuracy"] * voting["n_questions"],
+        _vote=voting["plurality_vote_accuracy"] * voting["n_questions"])
+    pooled = (weighted.groupby("focal_key")
+              .agg(w=("_w", "sum"), single=("_single", "sum"),
+                   vote=("_vote", "sum"), k=("n_replicates", "median"))
               .reset_index())
+    pooled["single"] /= pooled["w"]
+    pooled["vote"] /= pooled["w"]
     wr = metrics[(metrics["protocol"] == "B")
                  & (metrics["dataset_scope"] == "main300")
                  & (metrics["condition"] == "WR")]
@@ -320,8 +326,44 @@ def figure_budget_matched(
     logger.info("Wrote %s", path)
 
 
+def dose_response_table(registry: pd.DataFrame) -> pd.DataFrame:
+    """
+    Harmful revision per (model, dose) on units present at EVERY dose.
+
+    R and WR run on eight models and 300 questions; WR1 and WR4 on X3's two
+    models and 100 questions. Reading the dose levels off the cell metrics
+    drew each point from a different item set, so the curve's shape partly
+    reflected which questions each point used.
+    """
+    from .metrics import harmful
+
+    dose_map = {"R": 0, "WR1": 1, "WR": 2, "WR4": 4}
+    frame = registry[(registry["protocol"] == "B")
+                     & (registry["dataset_scope"] == "main300")
+                     & (registry["condition"].isin(dose_map))]
+    if "round_index" in frame.columns:
+        frame = frame[frame["round_index"].fillna(1).astype(int) == 1]
+    frame = frame.dropna(subset=["is_correct", "r0_is_correct"])
+    rows = []
+    for model, group in frame.groupby("focal_key"):
+        if group["condition"].nunique() < len(dose_map):
+            continue
+        keys = ["question_identifier", "replicate"]
+        unit_sets = [set(map(tuple, g[keys].astype(str).to_numpy()))
+                     for _, g in group.groupby("condition")]
+        common = set.intersection(*unit_sets)
+        mask = [tuple(k) in common for k in group[keys].astype(str).to_numpy()]
+        matched = group[mask]
+        for condition, cell in matched.groupby("condition"):
+            rows.append({"focal_key": model, "condition": condition,
+                         "n_wrong_peers": dose_map[condition],
+                         "harmful_revision": harmful(cell).value,
+                         "n_units": int(len(cell))})
+    return pd.DataFrame(rows)
+
+
 def figure_dose_response(
-    metrics: pd.DataFrame, names: Dict[str, str], figures_dir: Path
+    registry: pd.DataFrame, names: Dict[str, str], figures_dir: Path
 ) -> None:
     """X3: harmful revision against the number of confidently wrong peers."""
     import matplotlib
@@ -330,10 +372,8 @@ def figure_dose_response(
 
     _setup(matplotlib)
     dose_map = {"R": 0, "WR1": 1, "WR": 2, "WR4": 4}
-    selected = metrics[
-        (metrics["protocol"] == "B") & (metrics["condition"].isin(dose_map))
-    ]
-    if selected.empty or selected["condition"].nunique() < 2:
+    selected = dose_response_table(registry)
+    if selected.empty:
         return
 
     fig, ax = plt.subplots(figsize=(4.6, 3.1))
@@ -385,5 +425,5 @@ def make_all_figures(
     figure_capability_gradient(gradients, names, figures_dir)
     figure_decomposition(metrics, names, figures_dir)
     figure_budget_matched(voting, metrics, names, figures_dir)
-    figure_dose_response(metrics, names, figures_dir)
+    figure_dose_response(registry, names, figures_dir)
     logger.info("Figures written to %s", figures_dir)

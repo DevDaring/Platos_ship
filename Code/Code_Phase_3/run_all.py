@@ -35,6 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.call_guard import failure_counts                            # noqa: E402
 from src.agents import build_agents, resolve_focal_selector           # noqa: E402
 from src.honest_bank import build_honest_bank                          # noqa: E402
 from src.hedged_personas import build_hedged_pool, sample_for_hand_audit  # noqa: E402
@@ -104,16 +105,48 @@ def resolve(project_root: Path, raw: str) -> Path:
 # Question pools
 # ──────────────────────────────────────────────────────────────────────────
 
+# --max-questions (smoke tests only). None in a real run.
+MAX_QUESTIONS: Optional[int] = None
+
+
+def _limit(pool: pd.DataFrame, source: str) -> pd.DataFrame:
+    """
+    Smoke-test subset: the first N questions that belong to BOTH the main and
+    the mitigation pool, so X1 and the mitigation-pool experiments share them
+    (X6's H needs honest messages for its questions). GSM-Symbolic: first N
+    (its items carry the mitigation column too, all False).
+    """
+    if MAX_QUESTIONS is None:
+        return pool
+    if source != "gsm_symbolic" and "included_in_mitigation_subset" in pool.columns:
+        pool = pool[pool["included_in_mitigation_subset"].astype(bool)]
+    return pool.head(MAX_QUESTIONS).reset_index(drop=True)
+
+
 def load_pool(
     pool_name: str, experiment: Dict[str, Any], paths: Dict[str, str],
     project_root: Path, master_seed: int,
 ) -> pd.DataFrame:
     """Return the question frame for a named pool, building X4's if needed."""
+    pool = _limit(_load_pool(pool_name, experiment, paths, project_root, master_seed),
+                  experiment["pools"][pool_name]["source"])
+    if pool.empty:
+        raise RuntimeError(f"question pool '{pool_name}' is empty; refusing to "
+                           "run experiments on no questions")
+    return pool
+
+
+def _load_pool(
+    pool_name: str, experiment: Dict[str, Any], paths: Dict[str, str],
+    project_root: Path, master_seed: int,
+) -> pd.DataFrame:
     spec = experiment["pools"][pool_name]
 
     if spec["source"] == "gsm_symbolic":
         from src.gsm_symbolic import audit_pool_answers, build_gsm_symbolic_pool
 
+        pool_path = resolve(project_root, paths["gsm_symbolic_pool_file"])
+        freshly_built = not pool_path.exists()
         pool = build_gsm_symbolic_pool(
             output_path=resolve(project_root, paths["gsm_symbolic_pool_file"]),
             master_seed=master_seed,
@@ -123,11 +156,16 @@ def load_pool(
             n_questions=int(spec.get("n_questions", 100)),
             pair_with_originals=bool(spec.get("pair_with_originals", True)),
         )
-        audit_pool_answers(
-            pool, sample_size=20,
-            output_path=resolve(project_root, paths["processed_data_directory"])
-            / "gsm_symbolic_gold_audit.csv",
-        )
+        # Audit the gold answers only when the pool is BUILT, not every time it
+        # is loaded. The audit writes a CSV into the shared processed/ folder,
+        # so auditing on every load made each X4 process rewrite the same file
+        # at once. Building happens once, in --prepare, before any shard runs.
+        if freshly_built:
+            audit_pool_answers(
+                pool, sample_size=20,
+                output_path=resolve(project_root, paths["processed_data_directory"])
+                / "gsm_symbolic_gold_audit.csv",
+            )
         return pool
 
     question_pool_path = resolve(project_root, paths["question_pool_file"])
@@ -169,10 +207,18 @@ def print_plan(experiment: Dict[str, Any], models_config: Dict[str, Any]) -> Non
     replicates = experiment["replicates_per_question"]
     print("\nPhase 3 experiment plan (Protocol B)\n" + "=" * 72)
     grand_total = 0
+    extra_r0 = 0
     for name, spec in experiment["experiments"].items():
         focal_keys = resolve_focal_selector(spec.get("focal"), focal_specs)
         pool_name = spec.get("pool", "main300")
-        n_questions = experiment["pools"].get(pool_name, {}).get("n_questions", 0)
+        pool_spec = experiment["pools"].get(pool_name, {})
+        n_questions = pool_spec.get("n_questions", 0)
+        # X4's pool holds each GSM-Symbolic item AND its matched original.
+        if pool_spec.get("pair_with_originals"):
+            n_questions *= 2
+        if (spec.get("enabled") and not spec.get("offline")
+                and pool_spec.get("source") == "gsm_symbolic"):
+            extra_r0 += len(focal_keys) * n_questions * replicates
         conditions = spec.get("conditions", [])
         calls = (0 if spec.get("offline")
                  else len(focal_keys) * len(conditions) * n_questions * replicates)
@@ -194,7 +240,8 @@ def print_plan(experiment: Dict[str, Any], models_config: Dict[str, Any]) -> Non
             print(f"      addresses: {', '.join(spec['addresses'])}")
     r0_calls = len(focal_specs) * experiment["pools"]["main300"]["n_questions"] * replicates
     print("\n" + "=" * 72)
-    print(f"Round-0 cache (shared by every condition): ~{r0_calls:,} calls")
+    print(f"Round-0 cache (shared by every condition): ~{r0_calls:,} calls"
+          f" + {extra_r0:,} on the X4 pool")
     print(f"Revision calls across enabled+disabled experiments: ~{grand_total:,}")
     print("Peer banks: honest ~1,800 | hedged rewrite ~1,500 (one-off)\n")
 
@@ -205,7 +252,7 @@ def print_plan(experiment: Dict[str, Any], models_config: Dict[str, Any]) -> Non
 
 def prepare_pools(
     configs: Dict[str, Any], project_root: Path, agents: Dict[str, Any],
-    questions: pd.DataFrame, master_seed: int, dry_run: bool,
+    questions: pd.DataFrame, master_seed: int, dry_run: bool, workers: int = 1,
 ) -> None:
     """Build the honest bank and the hedged pool (both one-off, then reused)."""
     experiment, paths = configs["experiment"], configs["paths"]
@@ -224,9 +271,41 @@ def prepare_pools(
         checkpoint=honest_checkpoint,
         replicates=replicates,
         temperature=float(defaults.get("weak_temperature", 0.9)),
-        max_output_tokens=int(defaults.get("weak_max_output_tokens", 350)),
+        max_output_tokens=int(defaults.get("weak_max_output_tokens", 1024)),
         dry_run=dry_run,
+        workers=workers,
     )
+
+    # ── X4 inputs: the GSM-Symbolic pool and its wrong-anchored personas ──
+    # Built here, once, before any shard runs: every X4 process reads them,
+    # and a shard building them would write them concurrently.
+    if any(spec.get("enabled") and spec.get("pool") == "gsm_symbolic100"
+           for spec in experiment["experiments"].values()):
+        from src.anchored_personas import generate_pool
+
+        gsm_pool = load_pool("gsm_symbolic100", experiment, paths, project_root,
+                             master_seed)
+        generator_key = (agents["models_config"].get("persona_generator_agent")
+                         or agents["models_config"].get("persona_rewrite_agent"))
+        generator = agents["weak_agents"].get(generator_key)
+        if generator is None:
+            raise RuntimeError(
+                f"persona generator '{generator_key}' unavailable; X4 cannot "
+                "run without wrong-anchored personas for its GSM-Symbolic items")
+        generator_spec = agents["weak_specs"].get(generator_key, {})
+        generate_pool(
+            questions=gsm_pool,
+            agent=generator,
+            output_path=resolve(project_root, paths["gsm_symbolic_personas_file"]),
+            checkpoint=Checkpoint(resolve(project_root, paths["output_directory"])
+                                  / "checkpoint_gsm_personas.parquet"),
+            master_seed=master_seed,
+            variants=int(experiment.get("persona_variants_per_question", 5)),
+            anchor_mode="wrong",
+            generator_name=str(generator_spec.get("model_slug", generator_key)),
+            dry_run=dry_run,
+            workers=workers,
+        )
 
     anchored_path = resolve(project_root, paths["anchored_personas_file"])
     if not anchored_path.exists():
@@ -234,7 +313,20 @@ def prepare_pools(
                        "Run tools/fetch_artefacts.py first.", anchored_path)
         return
 
-    anchored = pd.read_parquet(anchored_path)
+    # Hedge only personas that may act as peers. Rewriting the ones that never
+    # state an answer would carry that defect into the hedged pool.
+    from src.anchored_personas import is_usable_persona
+
+    anchored_all = pd.read_parquet(anchored_path)
+    anchored = anchored_all[[is_usable_persona(r, "confident")
+                             for r in anchored_all.to_dict("records")]]
+    # Only questions that are run. WRh (X2) uses the main pool; the persona
+    # file also holds personas for questions outside it, and under
+    # --max-questions this keeps a smoke test from rewriting all 1,500.
+    anchored = anchored[anchored["question_identifier"].isin(
+        set(questions["question_identifier"]))]
+    logger.info("Hedged pool source: %d of %d wrong-anchored personas usable.",
+                len(anchored), len(anchored_all))
     rewrite_key = agents["models_config"].get("persona_rewrite_agent")
     rewrite_agent = agents["weak_agents"].get(rewrite_key)
     if rewrite_agent is None:
@@ -252,6 +344,7 @@ def prepare_pools(
         config=experiment["hedged_pool"],
         master_seed=master_seed,
         dry_run=dry_run,
+        workers=workers,
     )
     sample_for_hand_audit(
         pool,
@@ -269,7 +362,7 @@ def prepare_pools(
 def run_experiments(
     plan: Dict[str, Dict[str, Any]], configs: Dict[str, Any],
     project_root: Path, agents: Dict[str, Any], auditor: SnapshotAuditor,
-    master_seed: int, dry_run: bool,
+    master_seed: int, dry_run: bool, workers: int = 1,
 ) -> Dict[str, Any]:
     experiment, paths = configs["experiment"], configs["paths"]
     replicates = int(experiment["replicates_per_question"])
@@ -336,9 +429,10 @@ def run_experiments(
                     rounds=1,
                     rounds_config=experiment.get("rounds", {}),
                     temperature=float(defaults.get("focal_temperature", 0.7)),
-                    max_output_tokens=int(defaults.get("focal_max_output_tokens", 600)),
+                    max_output_tokens=int(defaults.get("focal_max_output_tokens", 2048)),
                     experiment_name=name,
                     dry_run=dry_run,
+                    workers=workers,
                     prior_rounds=prior_rounds,
                 )
 
@@ -372,9 +466,10 @@ def run_experiments(
                         rounds_config=experiment.get("rounds", {}),
                         temperature=float(defaults.get("focal_temperature", 0.7)),
                         max_output_tokens=int(
-                            defaults.get("focal_max_output_tokens", 600)),
+                            defaults.get("focal_max_output_tokens", 2048)),
                         experiment_name=name,
                         dry_run=dry_run,
+                        workers=workers,
                         prior_rounds=prior_rounds,
                     )
 
@@ -389,9 +484,21 @@ def run_experiments(
     return summary
 
 
+def x6_focal_keys(spec: Dict[str, Any], focal_specs: Dict[str, Any],
+                  verifier_spec: Dict[str, Any]) -> List[str]:
+    """X6's focal models, minus any that is the verifier's own model."""
+    keys = resolve_focal_selector(spec.get("focal", "TIER_X2"), focal_specs)
+    verifier_slug = str((verifier_spec or {}).get("model_slug", ""))
+    same = [k for k in keys
+            if str(focal_specs.get(k, {}).get("model_slug", "")) == verifier_slug]
+    if same:
+        logger.warning("X6: %s excluded; a model cannot verify itself.", same)
+    return [k for k in keys if k not in same]
+
+
 def run_verification(
     configs: Dict[str, Any], project_root: Path, agents: Dict[str, Any],
-    auditor: SnapshotAuditor, master_seed: int, dry_run: bool,
+    auditor: SnapshotAuditor, master_seed: int, dry_run: bool, workers: int = 1,
 ) -> None:
     """X6: verify proposed changes with an independent model."""
     from src.verifier import verify_changes
@@ -410,10 +517,19 @@ def run_verification(
         return
 
     revisions = pd.read_parquet(revisions_path)
+    # Only X6's own models. Selecting by condition alone verified every
+    # model's WR and H rows, including Qwen-2.5-72B checked by Qwen-2.5-72B,
+    # and in shard mode each shard verified whatever model it ran.
+    x6_focal = x6_focal_keys(spec, agents["focal_specs"], agents["verifier_spec"])
     revisions = revisions[
         revisions["experiment"].isin(["X1_common_matrix", "X6_verification_safeguard"])
         & revisions["condition"].isin(spec.get("conditions", ["WR", "H"]))
+        & revisions["focal_key"].isin(x6_focal)
     ]
+    if revisions.empty:
+        logger.info("X6: none of this process's models is an X6 model; "
+                    "nothing to verify.")
+        return
     questions = load_pool(spec.get("pool", "mitigation100"), experiment, paths,
                           project_root, master_seed)
     revisions = revisions[
@@ -433,6 +549,7 @@ def run_verification(
         checkpoint=checkpoint,
         master_seed=master_seed,
         dry_run=dry_run,
+        workers=workers,
     )
 
 
@@ -465,13 +582,55 @@ def main() -> int:
                         help="development only: continue when a focal model's "
                              "provider keys are missing, recording the "
                              "omission in the run metadata")
+    parser.add_argument("--focal", type=str,
+                        help="comma-separated focal model keys; restrict every "
+                             "experiment to these models")
+    parser.add_argument("--shard", type=str,
+                        help="run as an isolated shard: every output, "
+                             "checkpoint and log goes to a private folder. "
+                             "Requires --focal. Used to run one process per "
+                             "model in parallel; see src/sharding.py")
+    parser.add_argument("--max-questions", type=int, default=None,
+                        help="SMOKE TEST ONLY: run every experiment on the first "
+                             "N questions. Recorded in metadata; the merge "
+                             "refuses to mix it with a full run")
+    parser.add_argument("--workers", type=int, default=1,
+                        help="units run concurrently inside this process "
+                             "(threads; see src/concurrency.py). 1 = sequential")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
     configs = load_configs(PROJECT_ROOT)
+    global MAX_QUESTIONS
+    MAX_QUESTIONS = args.max_questions
+
+    # ── Shard mode: isolate every write BEFORE anything is written ────────
+    # Redirected before logging is configured, so even the log file is
+    # private. See src/sharding.py for why each guard exists.
+    from src import sharding
+
+    focal_filter = ([k.strip() for k in args.focal.split(",") if k.strip()]
+                    if args.focal else None)
+    if args.shard:
+        if not focal_filter:
+            raise sharding.ShardError("--shard requires --focal")
+        if args.prepare or args.all:
+            raise sharding.ShardError(
+                "--prepare/--all build SHARED inputs, which must happen once, "
+                "sequentially, before any shard starts")
+        if args.analyse:
+            raise sharding.ShardError(
+                "--analyse reads every model; run it once after tools/merge_shards.py")
+        original_paths = configs["paths"]
+        configs["paths"] = sharding.shard_paths(original_paths, args.shard)
+        sharding.assert_isolated(original_paths, configs["paths"], args.shard)
+
     experiment, paths = configs["experiment"], configs["paths"]
     setup_logging(resolve(PROJECT_ROOT, paths["logs_directory"]), args.verbose)
     load_env(PROJECT_ROOT)
+    if args.shard:
+        logger.info("SHARD %s | focal=%s | outputs -> %s", args.shard,
+                    focal_filter, paths["output_directory"])
 
     master_seed = int(experiment["random_seed"])
 
@@ -519,12 +678,16 @@ def main() -> int:
     # Which focal models do we actually need?
     from src.agents import load_models_config
 
-    focal_specs_all = load_models_config(PROJECT_ROOT).get("focal_agents", {})
+    focal_specs_all = sharding.restrict_focal_specs(
+        load_models_config(PROJECT_ROOT).get("focal_agents", {}), focal_filter)
     needed: set[str] = set()
     for spec in plan.values():
         needed.update(resolve_focal_selector(spec.get("focal"), focal_specs_all))
     if args.prepare or args.all:
         needed.update(focal_specs_all)
+    if focal_filter and not needed:
+        logger.error("None of %s takes part in the selected experiments.", focal_filter)
+        return 1
 
     agents = build_agents(
         PROJECT_ROOT,
@@ -534,11 +697,44 @@ def main() -> int:
         need_verifier=any(n.startswith("X6") for n in plan) or args.all,
         skip_unavailable=args.skip_unavailable,
     )
+    # Restrict to this process's models. An experiment's selector then
+    # resolves to exactly this process's share: "ALL" becomes these models,
+    # and "TIER_X2" becomes them only if they belong to that tier.
+    agents["focal_specs"] = sharding.restrict_focal_specs(
+        agents["focal_specs"], focal_filter)
+    agents["focal_agents"] = {k: v for k, v in agents["focal_agents"].items()
+                              if k in agents["focal_specs"]}
     if agents["unavailable_focal"]:
         logger.warning(
             "Running with an INCOMPLETE focal set; %d model(s) omitted: %s",
             len(agents["unavailable_focal"]), sorted(agents["unavailable_focal"]),
         )
+
+    # Exclusive lock on the output root, in EVERY mode. Two processes on one
+    # root lose data (see src/sharding.py); that includes two ordinary full
+    # runs started by accident, not only two shards.
+    import atexit
+    run_lock = sharding.ShardLock(resolve(PROJECT_ROOT, paths["output_directory"]))
+    run_lock.acquire()
+    atexit.register(run_lock.release)
+
+    if args.shard:
+        # Every input a shard reads must already exist: a shard building a
+        # shared input would write it concurrently with the other seven.
+        required = ["question_pool_file", "anchored_personas_file",
+                    "correct_anchored_personas_file", "honest_bank_file",
+                    "hedged_personas_file"]
+        if any(spec.get("pool") == "gsm_symbolic100" for spec in plan.values()):
+            required += ["gsm_symbolic_pool_file", "gsm_symbolic_personas_file"]
+        if any(experiment["conditions"].get(c, {}).get("peer_source") == "anchored_confidence"
+               for spec in plan.values() for c in spec.get("conditions", [])):
+            required += ["confidence_personas_file"]
+        absent = sharding.missing_shared_inputs(paths, PROJECT_ROOT, required)
+        if absent:
+            raise sharding.ShardError(
+                "shared inputs missing; run `python3 run_all.py --prepare` once "
+                f"before starting any shard: {absent}")
+    input_hashes = sharding.hash_shared_inputs(paths, PROJECT_ROOT)
     auditor = SnapshotAuditor()
 
     main_questions = load_pool("main300", experiment, paths, PROJECT_ROOT, master_seed)
@@ -546,19 +742,32 @@ def main() -> int:
     if args.prepare or args.all:
         logger.info("=== Stage: prepare message banks ===")
         prepare_pools(configs, PROJECT_ROOT, agents, main_questions,
-                      master_seed, args.dry_run)
+                      master_seed, args.dry_run, workers=args.workers)
         if args.prepare and not args.all:
-            return 0
+            return _exit_status()
 
     if not args.skip_r0:
         logger.info("=== Stage 0: Round-0 cache ===")
         r0_checkpoint = Checkpoint(
             resolve(PROJECT_ROOT, paths["output_directory"]) / "checkpoint_r0.parquet")
-        pools_needed = {spec.get("pool", "main300") for spec in plan.values()}
-        for pool_name in sorted(pools_needed):
+        # Round-0 only for the pools each model actually runs. Previously every
+        # model got Round-0 on every pool in the plan, so Gemma-3-4B paid for
+        # 300 GSM-Symbolic first answers no Gemma-3-4B experiment reads. An
+        # answer nobody reads cannot change a result, so this is free and safe.
+        pool_to_focals: Dict[str, set] = {}
+        for spec in plan.values():
+            if spec.get("offline"):
+                continue
+            for focal_key in resolve_focal_selector(spec.get("focal"),
+                                                    agents["focal_specs"]):
+                if focal_key in agents["focal_agents"]:
+                    pool_to_focals.setdefault(
+                        spec.get("pool", "main300"), set()).add(focal_key)
+        for pool_name in sorted(pool_to_focals):
             questions = load_pool(pool_name, experiment, paths, PROJECT_ROOT,
                                   master_seed)
-            focal_for_pool = sorted(needed) or list(agents["focal_agents"])
+            focal_for_pool = sorted(pool_to_focals[pool_name])
+            logger.info("Round-0 for pool %s: %s", pool_name, focal_for_pool)
             build_r0_cache(
                 questions=questions,
                 focal_keys=focal_for_pool,
@@ -572,16 +781,17 @@ def main() -> int:
                 temperature=float(experiment["r0_cache"]["temperature"]),
                 max_output_tokens=int(experiment["r0_cache"]["max_output_tokens"]),
                 dry_run=args.dry_run,
+                workers=args.workers,
             )
 
     logger.info("=== Stage: revision conditions ===")
     summary = run_experiments(plan, configs, PROJECT_ROOT, agents, auditor,
-                              master_seed, args.dry_run)
+                              master_seed, args.dry_run, workers=args.workers)
 
     if any(n.startswith("X6") for n in plan) or args.all:
         logger.info("=== Stage: X6 verification safeguard ===")
         run_verification(configs, PROJECT_ROOT, agents, auditor, master_seed,
-                         args.dry_run)
+                         args.dry_run, workers=args.workers)
 
     r0 = load_r0_cache(resolve(PROJECT_ROOT, paths["r0_cache_file"]))
     write_json(
@@ -609,6 +819,18 @@ def main() -> int:
             "unavailable_focal_models": agents["unavailable_focal"],
             "focal_set_is_complete": not agents["unavailable_focal"],
             "dry_run": bool(args.dry_run),
+            "workers": int(args.workers),
+            "max_questions": args.max_questions,
+            # Shard identity and the SHA-256 of every shared input this
+            # process read. tools/merge_shards.py refuses to combine shards
+            # that did not all read byte-identical inputs.
+            "shard": args.shard,
+            "focal_filter": focal_filter,
+            "shared_input_sha256": input_hashes,
+            # Calls that failed at the provider were NOT recorded and will be
+            # retried by the next run of the same command. Non-empty means
+            # this run is incomplete.
+            "failed_calls_not_recorded": failure_counts(),
         },
     )
 
@@ -619,6 +841,24 @@ def main() -> int:
         run_full_analysis(PROJECT_ROOT)
 
     logger.info("Phase 3 run complete.")
+    return _exit_status()
+
+
+EXIT_INCOMPLETE = 3
+
+
+def _exit_status() -> int:
+    """
+    0 when every call succeeded; EXIT_INCOMPLETE when some failed and were
+    left unrecorded. The launcher re-runs the same command until it gets 0,
+    and each re-run pays only for the missing units.
+    """
+    failures = failure_counts()
+    if failures:
+        logger.warning("INCOMPLETE: %d failed calls not recorded %s; re-run "
+                       "the same command to retry them.",
+                       sum(failures.values()), failures)
+        return EXIT_INCOMPLETE
     return 0
 
 

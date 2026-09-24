@@ -70,14 +70,9 @@ REGISTRY_COLUMNS = [
 
 def _scope_for_question(question_id: str) -> str:
     """Dataset scope from the question id prefix — never pool across these."""
-    qid = str(question_id)
-    if qid.startswith("gsm8k_perturbed"):
-        return "perturbed_quarantined"
-    if qid.startswith("gsmsym_"):
-        return "gsm_symbolic"
-    if qid.startswith("gsmorig_"):
-        return "gsm8k_matched_original"
-    return "main300"
+    from src.scopes import dataset_scope
+
+    return dataset_scope(question_id)
 
 
 def load_protocol_b(paths: Dict[str, str], project_root: Path) -> pd.DataFrame:
@@ -89,7 +84,9 @@ def load_protocol_b(paths: Dict[str, str], project_root: Path) -> pd.DataFrame:
         logger.info("No Protocol-B revision log at %s yet.", path)
         return pd.DataFrame(columns=REGISTRY_COLUMNS)
 
-    frame = pd.read_parquet(path)
+    from src.call_guard import drop_failed_calls
+
+    frame = drop_failed_calls(pd.read_parquet(path), "revision log")
     frame["protocol"] = "B"
     frame["legacy_condition"] = None
     frame["dataset_scope"] = frame["question_identifier"].map(_scope_for_question)
@@ -298,6 +295,11 @@ def cell_metrics(registry: pd.DataFrame) -> pd.DataFrame:
     usable = registry.dropna(subset=["condition", "is_correct", "r0_is_correct"]).copy()
     usable["is_correct"] = usable["is_correct"].astype(bool)
     usable["r0_is_correct"] = usable["r0_is_correct"].astype(bool)
+    # Rounds are separate cells: X3's WR_rounds3 holds rounds 1, 2 and 3 of
+    # the same units, and pooling them averaged three different outcomes.
+    if "round_index" not in usable.columns:
+        usable["round_index"] = 1
+    usable["round_index"] = usable["round_index"].fillna(1).astype(int)
     return summarise_by(
-        usable, ["protocol", "dataset_scope", "condition", "focal_key"]
+        usable, ["protocol", "dataset_scope", "condition", "focal_key", "round_index"]
     )

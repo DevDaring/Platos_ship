@@ -79,13 +79,68 @@ def extract_answer(
     question_text: str,
     answer_options_str: str,
     judge_cascade=None,
+    answer_options: Any = None,
 ) -> Tuple[Optional[str], str]:
     """
     Regex first; judge cascade only when regex fails.
 
     Returns (answer_or_None, method). `method` is one of
-    "regex_success", a judge tier name, or "unrecovered_parse_failure".
+    "regex_success", a judge tier name, or "unrecovered_parse_failure",
+    with "+value_to_letter" appended when a stated option VALUE was mapped
+    to its letter.
+
+    `answer_options` (the question's option list) enables that mapping. A
+    model that answers "Final answer: -42" where -42 is option G was scored
+    wrong even when G is correct, at 1% to 9% of MMLU-Pro answers depending
+    on the model family (analysis/answer_normalise.py). The mapping is exact
+    and refuses ambiguity, so it cannot turn a wrong answer into a right one.
     """
+    options = None
+    if answer_options is not None:
+        from analysis.answer_normalise import parse_options
+
+        options = parse_options(answer_options)
+    # An option stated by its VALUE on the "Final answer:" line ("Final
+    # answer: [3, 2]") matches no regex pattern, which reads letters and
+    # numbers only. Map it exactly, before paying the judge; an ambiguous or
+    # unmatched value falls through untouched.
+    if options and not extract_answer_regex(raw_text):
+        stated = _final_line_value(raw_text)
+        if stated:
+            from analysis.answer_normalise import to_letter
+
+            letter, how = to_letter(stated, options)
+            if how == "mapped":
+                return letter, "final_line+value_to_letter"
+    answer, method = _extract_raw(raw_text, question_text, answer_options_str,
+                                  judge_cascade)
+    if answer is None or answer_options is None:
+        return answer, method
+    from analysis.answer_normalise import parse_options, to_letter
+
+    mapped, how = to_letter(answer, parse_options(answer_options))
+    if how == "mapped":
+        return mapped, f"{method}+value_to_letter"
+    return answer, method
+
+
+def _final_line_value(raw_text: str) -> Optional[str]:
+    """The text after the LAST "Final answer:" marker, minus emphasis marks."""
+    import re
+
+    matches = re.findall(r"[Ff]inal\s+[Aa]nswer\s*:\s*(.+)", raw_text or "")
+    if not matches:
+        return None
+    value = matches[-1].strip().strip("*_`").strip()
+    return value.rstrip(".").strip() or None
+
+
+def _extract_raw(
+    raw_text: str,
+    question_text: str,
+    answer_options_str: str,
+    judge_cascade=None,
+) -> Tuple[Optional[str], str]:
     answer = extract_answer_regex(raw_text)
     if answer:
         return answer, "regex_success"
@@ -133,13 +188,12 @@ def options_to_string(answer_options: Any) -> str:
     """Render the option list for the judge prompt ('' for numeric items)."""
     import json
 
-    if answer_options is None or not isinstance(answer_options, (str, list)):
-        return ""
-    if isinstance(answer_options, str):
-        try:
-            answer_options = json.loads(answer_options)
-        except (ValueError, TypeError):
-            return ""
+    from analysis.answer_normalise import parse_options
+
+    # parse_options also accepts arrays: a list column read back from parquet
+    # arrives as a numpy array, and a str/list-only check showed the judge no
+    # options at all for it.
+    answer_options = parse_options(answer_options)
     if not answer_options:
         return ""
     return "\n".join(f"{chr(65 + i)}. {opt}" for i, opt in enumerate(answer_options))

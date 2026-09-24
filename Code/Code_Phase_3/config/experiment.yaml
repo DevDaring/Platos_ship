@@ -44,7 +44,12 @@ replicates_per_question: 3
 # clones this exact record, so treatment contrasts share an initial state.
 r0_cache:
   temperature: 0.7
-  max_output_tokens: 600
+  # 2048, not the Phase-2 600. The 4-question smoke run (24 Sept 2026) cut
+  # hard MMLU-Pro math off mid-computation at 600 tokens, before any
+  # "Final answer": 15-53% of revisions unparsed depending on the model.
+  # That missingness is not random (hard items, verbose models), so the
+  # cap is raised; only tokens actually produced are billed.
+  max_output_tokens: 2048
   prompt: round0_standard
 
 # ── Revision conditions (CONTEXT_BLOCK is the only difference) ─────────────
@@ -126,8 +131,21 @@ conditions:
     force_distinct_targets: true
     description: Two wrong peers naming DIFFERENT wrong answers
     legacy_analogue: null
+  # WRfilt and WRconf both draw from the CONFIDENCE pool: the same wrong
+  # anchors, generated with an explicit Confidence line. The main wrong pool
+  # has readable confidence on 0 of 1,500 personas, so a filter that drops
+  # unreadable confidence removed every peer on every trial and WRfilt
+  # silently became R, the no-peer baseline -- the Phase 1 C5 failure again
+  # (registry.py maps that legacy run to WRfilt_legacy_broken). The confidence
+  # pool is readable on 1,500 of 1,500. WRconf is the matched arm: same pool,
+  # no filter, so WRfilt vs WRconf isolates the filter and nothing else.
+  WRconf:
+    peer_source: anchored_confidence
+    n_peers: 2
+    description: Two wrong peers stating confidence, unfiltered (matched arm for WRfilt)
+    legacy_analogue: null
   WRfilt:
-    peer_source: anchored_wrong
+    peer_source: anchored_confidence
     n_peers: 2
     confidence_filter:
       enabled: true
@@ -154,8 +172,15 @@ rounds:
 # ── Hedged persona pool (X2) ──────────────────────────────────────────────
 hedged_pool:
   rewrite_temperature: 0.7
-  max_output_tokens: 400
-  max_regeneration_attempts: 3
+  # 600: the validator allows 1.4x the source (~350 tokens), and a rewrite cut
+  # off before its final answer would fail validation for the wrong reason.
+  max_output_tokens: 600
+  # 5, not 3. WRh shows the hedged rewrites of WR's OWN two personas, so a
+  # unit runs only if both rewrites passed validation. Measured on 100 real
+  # rewrites (24 Sept 2026): 95% passed within 3 attempts, i.e. ~90% of WRh
+  # units; the failures were mostly length ratios just over 1.4. Extra
+  # attempts cost calls only on failures.
+  max_regeneration_attempts: 5
   validation:
     final_answer_must_match_source: true
     minimum_hedge_markers: 2
@@ -252,7 +277,8 @@ experiments:
       retention-gap definition. Reported as a negative result, not a
       mitigation contribution. Answers oEjr W3.
     focal: TIER_X2
-    conditions: [WRfilt, Hfilt]
+    # WRconf is WRfilt without the filter, on the same pool; H comes from X1.
+    conditions: [WRconf, WRfilt, Hfilt]
     pool: mitigation100
     addresses: [oEjr-W3]
 

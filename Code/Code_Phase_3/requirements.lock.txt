@@ -1,0 +1,13 @@
+# Exact versions the Phase 3 test suite passed with (Python 3.13).
+# The GCP run installs these, so the VM computes what was tested.
+openai==3.15.0
+python-dotenv==1.0.1
+pandas==3.0.3
+pyarrow==24.0.0
+numpy==2.5.0
+PyYAML==6.0.3
+scipy==1.18.0
+statsmodels==0.14.6
+matplotlib==3.11.0
+datasets==5.0.1
+pytest==9.1.1

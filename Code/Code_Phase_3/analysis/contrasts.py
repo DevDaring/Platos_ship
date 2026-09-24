@@ -57,6 +57,27 @@ def _cell(registry: pd.DataFrame, protocol: str, scope: str, condition: str,
     return frame
 
 
+UNIT_KEYS = ["focal_key", "question_identifier", "replicate"]
+
+
+def _match_units(left: pd.DataFrame, right: pd.DataFrame):
+    """Restrict both arms to the units present in both."""
+    def unit_index(frame):
+        return pd.MultiIndex.from_frame(frame[UNIT_KEYS].astype(str))
+
+    left_units, right_units = unit_index(left), unit_index(right)
+    common = left_units.intersection(right_units)
+    matched_left = left[left_units.isin(common)]
+    matched_right = right[right_units.isin(common)]
+    info = {
+        "models_compared": ",".join(sorted(matched_left["focal_key"].unique())),
+        "n_units_matched": int(len(common)),
+        "n_units_dropped_a": int(len(left) - len(matched_left)),
+        "n_units_dropped_b": int(len(right) - len(matched_right)),
+    }
+    return matched_left, matched_right, info
+
+
 def paired_condition_contrast(
     registry: pd.DataFrame,
     name: str,
@@ -84,6 +105,12 @@ def paired_condition_contrast(
                    "focal_key": focal_key or "ALL"},
         )
 
+    # Both arms on the SAME (model, question, replicate) units. Conditions run
+    # on different model sets (X2's conditions on three models, WR on eight),
+    # and pairing by question alone compared a three-model mean with an
+    # eight-model mean. Matching the units also keeps the shared Round-0
+    # answer, so harmful-revision denominators are identical on both sides.
+    left_frame, right_frame, matching = _match_units(left_frame, right_frame)
     left = per_question_rate(left_frame, rate_name)
     right = per_question_rate(right_frame, rate_name)
     estimate, low, high, n_pairs, differences = paired_bootstrap_difference(
@@ -98,6 +125,7 @@ def paired_condition_contrast(
             "condition_a": condition_a, "condition_b": condition_b,
             "protocol": protocol, "dataset_scope": scope,
             "focal_key": focal_key or "ALL",
+            **matching,
             "rate_a": float(np.nanmean(left)) if len(left) else float("nan"),
             "rate_b": float(np.nanmean(right)) if len(right) else float("nan"),
         },
@@ -171,6 +199,18 @@ def capability_gradient(
     return result
 
 
+def protocol_solo_accuracy(registry: pd.DataFrame, protocol: str,
+                           scope: str = "main300") -> Dict[str, float]:
+    """Per-model Round-0 accuracy from one protocol's own rows."""
+    rows = registry[(registry["protocol"] == protocol)
+                    & (registry["dataset_scope"] == scope)].dropna(
+                        subset=["r0_is_correct"])
+    if rows.empty:
+        return {}
+    return rows.groupby("focal_key")["r0_is_correct"].apply(
+        lambda s: float(s.astype(bool).mean())).to_dict()
+
+
 def run_family(
     registry: pd.DataFrame,
     family_name: str,
@@ -202,14 +242,18 @@ def run_family(
                 )
             )
         elif statistic == "spearman_solo_vs_harmful_excess":
+            protocol = spec.get("protocol", "B")
+            # Each protocol's x-axis is measured within that protocol. The
+            # Phase-3 Round-0 cache describes Protocol B's runs; Protocol A's
+            # gradient reads Protocol A's own first answers instead.
+            solo = (solo_accuracy if protocol == "B"
+                    else protocol_solo_accuracy(registry, protocol, scope))
             gradients[spec["name"]] = capability_gradient(
-                registry, solo_accuracy,
-                protocol=spec.get("protocol", "B"), scope=scope,
+                registry, solo, protocol=protocol, scope=scope,
                 subtract_baseline=True,
             )
             gradients[f"{spec['name']}_raw"] = capability_gradient(
-                registry, solo_accuracy,
-                protocol=spec.get("protocol", "B"), scope=scope,
+                registry, solo, protocol=protocol, scope=scope,
                 subtract_baseline=False,
             )
         else:

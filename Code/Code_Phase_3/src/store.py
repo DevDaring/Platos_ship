@@ -30,6 +30,7 @@ class Checkpoint:
     def __init__(self, path: Path):
         self.path = Path(path)
         self._lock = threading.Lock()
+        self._save_lock = threading.Lock()
         self._ids: Set[str] = set()
         self._load()
 
@@ -58,10 +59,19 @@ class Checkpoint:
             self._ids.update(unit_ids)
 
     def save(self) -> None:
-        with self._lock:
-            ids = sorted(self._ids)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        pd.DataFrame({"unit_id": ids}).to_parquet(self.path, index=False)
+        # One writer at a time, and atomically: two worker threads flushing at
+        # once used to write this file concurrently, and a torn checkpoint
+        # loads as EMPTY, which would re-pay for every completed unit.
+        # os.replace is atomic on POSIX and Windows.
+        import os
+
+        with self._save_lock:
+            with self._lock:
+                ids = sorted(self._ids)
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            temporary = self.path.with_name(self.path.name + ".tmp")
+            pd.DataFrame({"unit_id": ids}).to_parquet(temporary, index=False)
+            os.replace(temporary, self.path)
         logger.info("Checkpoint saved: %d units -> %s", len(ids), self.path)
 
     @property

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import logging
 import re
+import threading
 import time
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -36,6 +37,8 @@ import pandas as pd
 from .extraction import answers_equal, extract_answer_regex
 from .seeding import derive_rng
 from .store import Checkpoint, IncrementalWriter
+from .call_guard import is_failed_call, record_failure
+from .concurrency import run_units
 
 logger = logging.getLogger("platos_ship3.hedged_personas")
 
@@ -109,6 +112,7 @@ def build_hedged_pool(
     config: Dict[str, Any],
     master_seed: int,
     dry_run: bool = False,
+    workers: int = 1,
 ) -> pd.DataFrame:
     """
     Rewrite every wrong-anchored message into a hedged variant.
@@ -121,7 +125,7 @@ def build_hedged_pool(
     validation_config = config.get("validation", {})
     max_attempts = int(config.get("max_regeneration_attempts", 3))
     temperature = float(config.get("rewrite_temperature", 0.7))
-    max_tokens = int(config.get("max_output_tokens", 400))
+    max_tokens = int(config.get("max_output_tokens", 600))
 
     records = anchored_personas.to_dict("records")
     if dry_run:
@@ -131,8 +135,14 @@ def build_hedged_pool(
     logger.info("Hedged pool: %d personas, %d to rewrite.", len(records), len(todo))
 
     stats = {"passed_first": 0, "passed_after_regen": 0, "failed": 0}
+    stats_lock = threading.Lock()      # rewrites run on several threads
 
-    for index, persona in enumerate(todo, start=1):
+    def _tally(key: str) -> None:
+        with stats_lock:
+            stats[key] += 1
+
+    def _one_rewrite(item) -> None:
+        index, persona = item
         source_text = persona.get("generated_persona_text", "") or ""
         source_answer = str(
             persona.get("assigned_wrong_answer_letter_or_value", "")
@@ -141,6 +151,7 @@ def build_hedged_pool(
         rng = derive_rng(master_seed, "hedge", persona_id)
 
         accepted_text, reason, attempts_used = None, "not_attempted", 0
+        call_failed = False
         for attempt in range(max_attempts):
             attempts_used = attempt + 1
             started = time.time()
@@ -155,21 +166,27 @@ def build_hedged_pool(
                                   "persona_identifier": persona_id,
                                   "attempt": attempt},
             )
+            call_failed = is_failed_call(response)
             candidate = response.raw_text_output
             passed, reason = validate_hedged(
                 candidate, source_text, source_answer, validation_config)
             if passed:
                 accepted_text = candidate
                 if attempt == 0:
-                    stats["passed_first"] += 1
+                    _tally("passed_first")
                 else:
-                    stats["passed_after_regen"] += 1
+                    _tally("passed_after_regen")
                 break
             logger.debug("Hedge attempt %d failed for %s: %s",
                          attempt + 1, persona_id, reason)
 
+        if accepted_text is None and call_failed:
+            # The last attempt died at the provider: retry on the next run
+            # instead of recording the persona as unhedgeable.
+            record_failure("hedge_rewrite", persona_id, response)
+            return
         if accepted_text is None:
-            stats["failed"] += 1
+            _tally("failed")
 
         writer.append(
             {
@@ -196,6 +213,9 @@ def build_hedged_pool(
         )
         if index % 200 == 0:
             logger.info("Hedged pool: %d/%d done.", index, len(todo))
+
+    # Independent units; see src/concurrency.py. workers=1 is the old loop.
+    run_units(list(enumerate(todo, start=1)), _one_rewrite, workers=workers, label="hedge_rewrite")
 
     pool = writer.consolidate(dedup_on=HEDGED_DEDUP_KEYS)
     total = max(len(pool), 1)

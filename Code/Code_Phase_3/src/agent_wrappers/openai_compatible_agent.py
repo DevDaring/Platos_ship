@@ -52,6 +52,7 @@ class OpenAICompatibleAgent(BaseAgent):
         retry_backoff_seconds: Optional[list] = None,
         timeout_seconds: int = 120,
         default_headers: Optional[Dict[str, str]] = None,
+        extra_body: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(agent_name=agent_name, provider=provider)
         if not model_name:
@@ -71,6 +72,9 @@ class OpenAICompatibleAgent(BaseAgent):
         self.retry_backoff = retry_backoff_seconds or [2, 4, 8, 16, 32]
         self.timeout_seconds = timeout_seconds
         self.default_headers = default_headers or {}
+        # Provider-specific request fields (config/models.yaml `extra_body`),
+        # e.g. DeepSeek's switch that turns hidden reasoning off.
+        self.extra_body = dict(extra_body) if extra_body else None
         self._key_manager = RoundRobinKeyManager(clean_keys, provider_name=provider)
 
         logger.info(
@@ -108,6 +112,7 @@ class OpenAICompatibleAgent(BaseAgent):
                     ],
                     temperature=temperature,
                     max_tokens=maximum_output_tokens,
+                    **({"extra_body": self.extra_body} if self.extra_body else {}),
                 )
                 # Guard: providers/aggregators can transiently return a 200 with
                 # null/empty choices (upstream provider error, moderation, or a
@@ -139,6 +144,7 @@ class OpenAICompatibleAgent(BaseAgent):
                     model_name_returned_by_provider=response.model or self.model_name,
                     error_status="success" if attempt == 0 else "api_error_recovered",
                     retry_attempts_used=attempt,
+                    finish_reason=getattr(choices[0], "finish_reason", None),
                 )
                 self._track_usage(result)
                 return result
@@ -261,7 +267,8 @@ def resolve_provider(provider_key: str, providers_config: Dict[str, Any]) -> Dic
     else:
         headers = None
 
-    return {"base_url": base_url, "keys": keys, "headers": headers}
+    return {"base_url": base_url, "keys": keys, "headers": headers,
+            "extra_body": entry.get("extra_body")}
 
 
 def build_agent_from_config(
@@ -285,4 +292,5 @@ def build_agent_from_config(
         retry_backoff_seconds=retry_backoff_seconds,
         timeout_seconds=timeout_seconds,
         default_headers=resolved["headers"],
+        extra_body=resolved.get("extra_body"),
     )

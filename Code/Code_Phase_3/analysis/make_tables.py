@@ -42,6 +42,7 @@ CONDITION_LABELS = {
     "WR4": "Four wrong rationales",
     "WRagree": "Two wrong, same target",
     "WRdiff": "Two wrong, different targets",
+    "WRconf": "Two wrong, stating confidence, unfiltered",
     "WRfilt": "Two wrong, confidence-filtered",
     "Hfilt": "Two honest, confidence-filtered",
 }
@@ -172,10 +173,15 @@ def table_main(metrics: pd.DataFrame, tables_dir: Path) -> None:
     header = ["Focal model", "Condition", "Acc.", "H (C$\\to$I)", "B (I$\\to$C)",
               "Adopt", "$n$ units"]
     rows = []
-    for _, row in selected.sort_values(["focal_key", "condition"]).iterrows():
+    order = [c for c in ["focal_key", "condition", "round_index"] if c in selected.columns]
+    for _, row in selected.sort_values(order).iterrows():
+        label = CONDITION_LABELS.get(row["condition"], row["condition"])
+        # X3's multi-round cells are one row per round, never pooled.
+        if int(row.get("round_index", 1) or 1) > 1:
+            label = f"{label}, round {int(row['round_index'])}"
         rows.append([
             _escape(row["focal_key"]),
-            _escape(CONDITION_LABELS.get(row["condition"], row["condition"])),
+            _escape(label),
             _fmt(row["accuracy"]),
             f"{_fmt(row['harmful_revision'])} ({int(row['harmful_revision_denominator'])})",
             f"{_fmt(row['beneficial_revision'])} ({int(row['beneficial_revision_denominator'])})",

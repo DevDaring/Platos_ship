@@ -26,6 +26,9 @@ from .contexts import build_round0_prompt
 from .extraction import extract_answer, extract_confidence, grade, options_to_string
 from .seeding import r0_unit_id
 from .store import Checkpoint, IncrementalWriter
+from .call_guard import drop_failed_calls, is_failed_call, record_failure
+from .concurrency import run_units
+from .scopes import main_scope_only
 
 logger = logging.getLogger("platos_ship3.r0_cache")
 
@@ -46,6 +49,7 @@ def build_r0_cache(
     max_output_tokens: int = 600,
     flush_every: int = 100,
     dry_run: bool = False,
+    workers: int = 1,
 ) -> pd.DataFrame:
     """
     Populate (or extend) the Round-0 cache.
@@ -72,7 +76,8 @@ def build_r0_cache(
         len(planned), len(planned) - len(todo), len(todo),
     )
 
-    for index, (focal_key, question, replicate) in enumerate(todo, start=1):
+    def _one_r0(item) -> None:
+        index, (focal_key, question, replicate) = item
         question_id = question["question_identifier"]
         unit = r0_unit_id(focal_key, question_id, replicate)
         agent = focal_agents[focal_key]
@@ -92,6 +97,11 @@ def build_r0_cache(
             request_metadata={"stage": "r0", "question_id": question_id,
                               "replicate": replicate, "focal": focal_key},
         )
+        if is_failed_call(response):
+            # Not cached, not checkpointed: a failed Round-0 would be shown as
+            # an empty previous answer in EVERY condition. Retried next run.
+            record_failure("r0", unit, response)
+            return
 
         # A focal response must come from the pinned snapshot, or the run stops.
         auditor.check(
@@ -106,7 +116,7 @@ def build_r0_cache(
         options_str = options_to_string(question.get("answer_options"))
         answer, method = extract_answer(
             response.raw_text_output, question["question_text"], options_str,
-            judge_cascade,
+            judge_cascade, answer_options=question.get("answer_options"),
         )
         confidence, confidence_status = extract_confidence(response.raw_text_output)
         is_correct = grade(answer, question["correct_answer"])
@@ -133,6 +143,7 @@ def build_r0_cache(
                 "total_output_tokens": response.total_output_tokens,
                 "wall_clock_latency_seconds": response.wall_clock_latency_seconds,
                 "error_status": response.error_status,
+                "finish_reason": response.finish_reason,
                 "retry_attempts_used": response.retry_attempts_used,
                 "timestamp_utc": pd.Timestamp.now("UTC").isoformat(),
                 "elapsed_seconds": round(time.time() - started, 3),
@@ -142,6 +153,9 @@ def build_r0_cache(
 
         if index % 200 == 0:
             logger.info("R0 cache: %d/%d done.", index, len(todo))
+
+    # Independent units; see src/concurrency.py. workers=1 is the old loop.
+    run_units(list(enumerate(todo, start=1)), _one_r0, workers=workers, label="r0")
 
     return writer.consolidate(dedup_on=R0_DEDUP_KEYS)
 
@@ -154,7 +168,7 @@ def load_r0_cache(cache_path: Path) -> pd.DataFrame:
             columns=["r0_unit_id", "focal_key", "question_identifier", "replicate",
                      "raw_response_text", "extracted_answer", "is_correct"]
         )
-    return pd.read_parquet(path)
+    return drop_failed_calls(pd.read_parquet(path), "Round-0 cache")
 
 
 def r0_lookup(cache: pd.DataFrame) -> Dict[tuple, Dict[str, Any]]:
@@ -169,9 +183,11 @@ def solo_accuracy_by_focal(cache: pd.DataFrame) -> Dict[str, float]:
     """
     Per-model solo (Round-0) accuracy — the x-axis of the capability gradient.
 
-    Measured on the same items and replicates as every treatment, so the
-    'stronger model' label in the paper has one operational definition.
+    Measured on the main 300 items only, the items every model answers. The
+    cache also holds GSM-Symbolic Round-0 for the X4 models; averaging over it
+    gave those models a different denominator from the rest.
     """
+    cache = main_scope_only(cache)
     if cache.empty:
         return {}
     return cache.groupby("focal_key")["is_correct"].mean().to_dict()

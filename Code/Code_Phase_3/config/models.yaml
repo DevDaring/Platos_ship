@@ -27,6 +27,15 @@ providers:
     base_url_env: DEEPSEEK_API_BASE_URL
     base_url_default: https://api.deepseek.com/v1
     api_key_envs: [DEEPSEEK_API_KEY_1, DEEPSEEK_API_KEY_2]
+    # deepseek-v4-flash THINKS by default: measured 24 Sept 2026, all 600
+    # output tokens went to hidden reasoning and the answer came back empty on
+    # 24% of revisions. Phase 1/2 used the non-thinking `deepseek-chat`, and
+    # every other focal model is non-thinking, so thinking is switched off for
+    # every DeepSeek call (focal and judge). Verified: content returned,
+    # reasoning_tokens None.
+    extra_body:
+      thinking:
+        type: disabled
   mistral:
     base_url_env: MISTRAL_API_BASE_URL
     base_url_default: https://api.mistral.ai/v1
@@ -73,8 +82,14 @@ providers:
 request_defaults:
   focal_temperature: 0.7
   weak_temperature: 0.9
-  focal_max_output_tokens: 600     # identical in EVERY revision condition
-  weak_max_output_tokens: 350
+  # 2048, not the Phase-2 600. The 4-question smoke run (24 Sept 2026) cut
+  # hard MMLU-Pro math off mid-computation at 600 tokens, before any
+  # "Final answer": 15-53% of revisions unparsed depending on the model.
+  # That missingness is not random (hard items, verbose models), so the
+  # cap is raised; only tokens actually produced are billed.
+  focal_max_output_tokens: 2048    # identical in EVERY revision condition
+  # Honest-bank and advancing peers: natural messages, not truncated ones.
+  weak_max_output_tokens: 1024
   request_timeout_seconds: 120
   maximum_retry_attempts: 5
   retry_backoff_seconds: [2, 4, 8, 16, 32]
@@ -223,7 +238,14 @@ judge_cascade:
         model_slug: google/gemini-2.5-flash
         max_retries: 0
     temperature: 0.0
-    max_output_tokens: 50
+    # 256, not 50. Gemini 2.5 Flash sometimes spends hidden "thinking" tokens
+    # even with reasoning disabled (measured on LinkAPI, 24 Sept 2026: 41 of
+    # 50 tokens on 2 of 6 identical calls; neither reasoning_effort=none nor
+    # thinking_budget=0 prevented it). At 50 the visible answer was cut to
+    # nothing on 3 of 23 rehearsal calls, which then fell through to the
+    # fallbacks. Only tokens actually produced are billed, so the cap costs
+    # nothing when the model does not think.
+    max_output_tokens: 256
     request_timeout_seconds: 60
   secondary:
     provider: mistral
@@ -250,7 +272,9 @@ verifier_agent:
       model_slug: qwen/qwen-2.5-72b-instruct
       max_retries: 0
   temperature: 0.0
-  max_output_tokens: 400
+  # The verifier SOLVES the question before naming the option it supports;
+  # at 400 tokens it was cut off before the 'Supported option' line.
+  max_output_tokens: 2048
 
 bit_precision_policy:
   policy_description: >
