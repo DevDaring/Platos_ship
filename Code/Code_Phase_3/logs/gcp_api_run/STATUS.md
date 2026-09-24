@@ -1,6 +1,6 @@
 # Phase 3 API run status
 
-- updated: 2026-09-24 18:48:41 UTC
+- updated: 2026-09-24 19:18:46 UTC
 - host: platos-api-run.c.silicon-guru-472717-q9.internal
 
 ```
@@ -21,8 +21,8 @@ Units written per shard (revision rows, part files):
 
 - deepseek_primary: 0 revision part-files
 - gpt4o_mini: 0 revision part-files
-- sweep_gemma_3_27b: 99 revision part-files
-- sweep_gemma_3_4b_focal: 32 revision part-files
+- sweep_gemma_3_27b: 117 revision part-files
+- sweep_gemma_3_4b_focal: 37 revision part-files
 - sweep_llama_3_1_70b: 0 revision part-files
 - sweep_llama_3_1_8b_focal: 0 revision part-files
 - sweep_mistral_small: 0 revision part-files
