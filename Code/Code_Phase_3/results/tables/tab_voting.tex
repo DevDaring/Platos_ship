@@ -6,14 +6,22 @@
 \toprule
 Focal model & Task & Single sample & Plurality vote & $\Delta$ & Calls \\
 \midrule
-deepseek\_primary & mmlu\_pro & 75.0 & 75.0 & 0.0 & 3 \\
-gpt4o\_mini & mmlu\_pro & 58.3 & 75.0 & 16.7 & 3 \\
-sweep\_gemma\_3\_27b & mmlu\_pro & 41.7 & 50.0 & 8.3 & 3 \\
-sweep\_gemma\_3\_4b\_focal & mmlu\_pro & 25.0 & 25.0 & 0.0 & 3 \\
-sweep\_llama\_3\_1\_70b & mmlu\_pro & 16.7 & 25.0 & 8.3 & 3 \\
-sweep\_llama\_3\_1\_8b\_focal & mmlu\_pro & 33.3 & 50.0 & 16.7 & 3 \\
-sweep\_mistral\_small & mmlu\_pro & 75.0 & 75.0 & 0.0 & 3 \\
-sweep\_qwen\_2\_5\_72b & mmlu\_pro & 66.7 & 75.0 & 8.3 & 3 \\
+deepseek\_primary & gsm8k & 94.7 & 96.0 & 1.3 & 3 \\
+deepseek\_primary & mmlu\_pro & 80.8 & 82.0 & 1.2 & 3 \\
+gpt4o\_mini & gsm8k & 83.7 & 85.0 & 1.3 & 3 \\
+gpt4o\_mini & mmlu\_pro & 58.2 & 59.5 & 1.3 & 3 \\
+sweep\_gemma\_3\_27b & gsm8k & 90.7 & 92.0 & 1.3 & 3 \\
+sweep\_gemma\_3\_27b & mmlu\_pro & 63.3 & 64.5 & 1.2 & 3 \\
+sweep\_gemma\_3\_4b\_focal & gsm8k & 75.0 & 78.0 & 3.0 & 3 \\
+sweep\_gemma\_3\_4b\_focal & mmlu\_pro & 37.5 & 38.0 & 0.5 & 3 \\
+sweep\_llama\_3\_1\_70b & gsm8k & 66.7 & 65.0 & -1.7 & 3 \\
+sweep\_llama\_3\_1\_70b & mmlu\_pro & 36.5 & 36.5 & 0.0 & 3 \\
+sweep\_llama\_3\_1\_8b\_focal & gsm8k & 65.3 & 73.0 & 7.7 & 3 \\
+sweep\_llama\_3\_1\_8b\_focal & mmlu\_pro & 46.7 & 49.5 & 2.8 & 3 \\
+sweep\_mistral\_small & gsm8k & 86.3 & 89.0 & 2.7 & 3 \\
+sweep\_mistral\_small & mmlu\_pro & 63.7 & 65.0 & 1.3 & 3 \\
+sweep\_qwen\_2\_5\_72b & gsm8k & 87.3 & 91.0 & 3.7 & 3 \\
+sweep\_qwen\_2\_5\_72b & mmlu\_pro & 70.3 & 71.5 & 1.2 & 3 \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
