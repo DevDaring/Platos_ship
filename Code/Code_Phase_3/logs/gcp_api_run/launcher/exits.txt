@@ -1,0 +1,8 @@
+2026-09-24T12:49:21Z prepare: start
+2026-09-24T12:51:16Z prepare attempt=1 exit=0
+2026-09-24T12:53:35Z gpt4o_mini attempt=1 exit=0
+2026-09-24T12:53:55Z deepseek_primary attempt=1 exit=0
+2026-09-24T12:54:10Z sweep_llama_3_1_70b attempt=1 exit=0
+2026-09-24T12:55:32Z sweep_qwen_2_5_72b attempt=1 exit=0
+2026-09-24T12:56:11Z sweep_mistral_small attempt=1 exit=0
+2026-09-24T12:56:26Z sweep_gemma_3_4b_focal attempt=1 exit=0
