@@ -1,0 +1,60 @@
+\begin{table}[t]
+\centering
+\caption{Verification safeguard against its baselines. The random policy adopts changes at the verifier's own coverage, so adopting fewer changes cannot by itself explain a difference. The oracle row is an upper bound and is not a deployable rule.\label{tab:safeguard}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Policy & Deployable & Accuracy & 95\% CI & H (C$\to$I) & Adoption of changes \\
+\midrule
+always\_keep & yes & 50.0 & [22.2, 77.8] & 0.0 & 0.0 \\
+always\_revise & yes & 52.8 & [22.2, 83.3] & 5.6 & 100.0 \\
+verifier & yes & 55.6 & [27.8, 83.3] & 0.0 & 25.0 \\
+random\_matched & yes & 47.2 & [16.7, 77.8] & 5.6 & 25.0 \\
+confidence & yes & 55.6 & [27.8, 83.3] & 0.0 & 87.5 \\
+oracle\_upper\_bound & no (bound) & 55.6 & [27.8, 83.3] & 0.0 & 25.0 \\
+always\_keep & yes & 50.0 & [22.2, 77.8] & 0.0 & 0.0 \\
+always\_revise & yes & 63.9 & [38.9, 88.9] & 5.6 & 100.0 \\
+verifier & yes & 66.7 & [44.4, 88.9] & 0.0 & 70.0 \\
+random\_matched & yes & 61.1 & [33.3, 88.9] & 0.0 & 70.0 \\
+confidence & yes & 61.1 & [33.3, 88.9] & 5.6 & 80.0 \\
+oracle\_upper\_bound & no (bound) & 66.7 & [44.4, 88.9] & 0.0 & 60.0 \\
+always\_keep & yes & 75.0 & [25.0, 100.0] & 0.0 & 0.0 \\
+always\_revise & yes & 83.3 & [50.0, 100.0] & 0.0 & 100.0 \\
+verifier & yes & 83.3 & [50.0, 100.0] & 0.0 & 100.0 \\
+random\_matched & yes & 83.3 & [50.0, 100.0] & 0.0 & 100.0 \\
+confidence & yes & 83.3 & [50.0, 100.0] & 0.0 & 100.0 \\
+oracle\_upper\_bound & no (bound) & 83.3 & [50.0, 100.0] & 0.0 & 100.0 \\
+always\_keep & yes & 41.7 & [0.0, 83.3] & 0.0 & 0.0 \\
+always\_revise & yes & 50.0 & [0.0, 100.0] & 0.0 & 100.0 \\
+verifier & yes & 50.0 & [0.0, 100.0] & 0.0 & 100.0 \\
+random\_matched & yes & 50.0 & [0.0, 100.0] & 0.0 & 100.0 \\
+confidence & yes & 50.0 & [0.0, 100.0] & 0.0 & 100.0 \\
+oracle\_upper\_bound & no (bound) & 50.0 & [0.0, 100.0] & 0.0 & 100.0 \\
+always\_keep & yes & 33.3 & [8.3, 58.3] & 0.0 & 0.0 \\
+always\_revise & yes & 25.0 & [0.0, 50.0] & 25.0 & 100.0 \\
+verifier & yes & 33.3 & [8.3, 58.3] & 0.0 & 0.0 \\
+random\_matched & yes & 33.3 & [8.3, 58.3] & 0.0 & 0.0 \\
+confidence & yes & 33.3 & [8.3, 58.3] & 0.0 & 83.3 \\
+oracle\_upper\_bound & no (bound) & 33.3 & [8.3, 58.3] & 0.0 & 0.0 \\
+always\_keep & yes & 75.0 & [25.0, 100.0] & 0.0 & 0.0 \\
+always\_revise & yes & 91.7 & [75.0, 100.0] & 0.0 & 100.0 \\
+verifier & yes & 91.7 & [75.0, 100.0] & 0.0 & 100.0 \\
+random\_matched & yes & 91.7 & [75.0, 100.0] & 0.0 & 100.0 \\
+confidence & yes & 91.7 & [75.0, 100.0] & 0.0 & 100.0 \\
+oracle\_upper\_bound & no (bound) & 91.7 & [75.0, 100.0] & 0.0 & 100.0 \\
+always\_keep & yes & 41.7 & [0.0, 83.3] & 0.0 & 0.0 \\
+always\_revise & yes & 58.3 & [16.7, 100.0] & 0.0 & 100.0 \\
+verifier & yes & 58.3 & [16.7, 100.0] & 0.0 & 66.7 \\
+random\_matched & yes & 50.0 & [16.7, 83.3] & 0.0 & 66.7 \\
+confidence & yes & 50.0 & [0.0, 100.0] & 0.0 & 66.7 \\
+oracle\_upper\_bound & no (bound) & 58.3 & [16.7, 100.0] & 0.0 & 66.7 \\
+always\_keep & yes & 33.3 & [8.3, 58.3] & 0.0 & 0.0 \\
+always\_revise & yes & 41.7 & [8.3, 83.3] & 25.0 & 100.0 \\
+verifier & yes & 50.0 & [16.7, 83.3] & 0.0 & 60.0 \\
+random\_matched & yes & 33.3 & [8.3, 58.3] & 25.0 & 80.0 \\
+confidence & yes & 41.7 & [8.3, 83.3] & 25.0 & 80.0 \\
+oracle\_upper\_bound & no (bound) & 50.0 & [16.7, 83.3] & 0.0 & 40.0 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

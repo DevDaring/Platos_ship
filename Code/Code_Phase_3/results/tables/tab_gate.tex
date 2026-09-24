@@ -1,0 +1,26 @@
+\begin{table}[t]
+\centering
+\caption{Retention gap $\Delta_{\mathrm{ret}} = P(\text{retained}\mid\text{correct}) - P(\text{retained}\mid\text{wrong})$, which is the quantity a retain-high-confidence filter needs to be positive. A substrate with one correctness class is undefined rather than zero.\label{tab:gate}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{@{}llrrrrl@{}}
+\toprule
+Substrate & Unparsed counted as & $P(\text{ret}\mid C)$ & $P(\text{ret}\mid W)$ & $\Delta_{\mathrm{ret}}$ & AUROC & Verdict \\
+\midrule
+anchored\_confidence & dropped & -- & -- & -- & -- & undefined\_single\_class \\
+anchored\_confidence & retained & -- & -- & -- & -- & undefined\_single\_class \\
+anchored\_hedged & dropped & -- & -- & -- & -- & undefined\_single\_class \\
+anchored\_hedged & retained & -- & -- & -- & -- & undefined\_single\_class \\
+anchored\_split & dropped & 0.0 & 0.0 & 0.000 & -- & failed \\
+anchored\_split & retained & 100.0 & 100.0 & 0.000 & -- & failed \\
+anchored\_wrong & dropped & -- & -- & -- & -- & undefined\_single\_class \\
+anchored\_wrong & retained & -- & -- & -- & -- & undefined\_single\_class \\
+bare\_answer & dropped & -- & -- & -- & -- & undefined\_single\_class \\
+bare\_answer & retained & -- & -- & -- & -- & undefined\_single\_class \\
+honest & dropped & 100.0 & 83.3 & 0.167 & 0.48 & failed \\
+honest & retained & 100.0 & 100.0 & 0.000 & 0.48 & failed \\
+self\_samples & dropped & -- & -- & -- & -- & undefined\_single\_class \\
+self\_samples & retained & -- & -- & -- & -- & undefined\_single\_class \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

@@ -1,0 +1,29 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Decomposing the peer message. R is a matched re-answer, G a content-free challenge, W bare wrong answers, WR wrong rationales, WRh the same rationales in tentative wording, SF the same content without peer attribution, and H natural weak peers.\label{tab:decomposition}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{@{}llrrrrrrr@{}}
+\toprule
+Focal model & Metric & R & G & W & WR & WRh & SF & H \\
+\midrule
+deepseek\_primary & Accuracy & 100.0 & 100.0 & 91.7 & 91.7 & 91.7 & 100.0 & 83.3 \\
+ & H (C$\to$I) & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+gpt4o\_mini & Accuracy & 75.0 & -- & -- & 66.7 & -- & -- & 58.3 \\
+ & H (C$\to$I) & 0.0 & -- & -- & 0.0 & -- & -- & 14.3 \\
+sweep\_gemma\_3\_27b & Accuracy & 75.0 & 75.0 & 66.7 & 58.3 & 66.7 & 58.3 & 50.0 \\
+ & H (C$\to$I) & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+sweep\_gemma\_3\_4b\_focal & Accuracy & 33.3 & -- & -- & 41.7 & -- & -- & 33.3 \\
+ & H (C$\to$I) & 0.0 & -- & -- & 0.0 & -- & -- & 33.3 \\
+sweep\_llama\_3\_1\_70b & Accuracy & 41.7 & -- & -- & 41.7 & -- & -- & 25.0 \\
+ & H (C$\to$I) & 0.0 & -- & -- & 0.0 & -- & -- & 0.0 \\
+sweep\_llama\_3\_1\_8b\_focal & Accuracy & 25.0 & 41.7 & 58.3 & 41.7 & 33.3 & 16.7 & 25.0 \\
+ & H (C$\to$I) & 50.0 & 25.0 & 25.0 & 25.0 & 50.0 & 50.0 & 25.0 \\
+sweep\_mistral\_small & Accuracy & 75.0 & -- & -- & 58.3 & -- & -- & 58.3 \\
+ & H (C$\to$I) & 22.2 & -- & -- & 22.2 & -- & -- & 22.2 \\
+sweep\_qwen\_2\_5\_72b & Accuracy & 66.7 & -- & -- & 66.7 & -- & -- & 50.0 \\
+ & H (C$\to$I) & 12.5 & -- & -- & 0.0 & -- & -- & 37.5 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

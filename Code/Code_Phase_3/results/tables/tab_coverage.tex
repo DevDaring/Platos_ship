@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Condition matrix under Protocol~B. Every focal model receives the same questions, the same replication count, and the same revision template; only the peer block differs.\label{tab:coverage}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{@{}lrrrrrrrrrrrrrrrrrrr@{}}
+\toprule
+Focal model & CR & E & G & H & Hfilt & R & SF & W & WR & WR1 & WR4 & WR\_rounds2 & WR\_rounds3 & WRagree & WRconf & WRdiff & WRfilt & WRh & Reps \\
+\midrule
+deepseek\_primary & 12 & 12 & 12 & 12 & 12 & 24 & 12 & 12 & 24 & 12 & 12 & 24 & 36 & 6 & 12 & 12 & 12 & 12 & 3 \\
+gpt4o\_mini & 12 & 12 & 0 & 12 & 0 & 12 & 0 & 0 & 12 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 3 \\
+sweep\_gemma\_3\_27b & 12 & 12 & 12 & 12 & 12 & 24 & 12 & 12 & 24 & 12 & 12 & 24 & 36 & 6 & 12 & 12 & 12 & 12 & 3 \\
+sweep\_gemma\_3\_4b\_focal & 12 & 12 & 0 & 12 & 0 & 12 & 0 & 0 & 12 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 3 \\
+sweep\_llama\_3\_1\_70b & 12 & 12 & 0 & 12 & 0 & 12 & 0 & 0 & 12 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 3 \\
+sweep\_llama\_3\_1\_8b\_focal & 12 & 12 & 12 & 12 & 12 & 24 & 12 & 12 & 24 & 0 & 0 & 0 & 0 & 0 & 12 & 0 & 12 & 12 & 3 \\
+sweep\_mistral\_small & 12 & 12 & 0 & 12 & 0 & 12 & 0 & 0 & 12 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 3 \\
+sweep\_qwen\_2\_5\_72b & 12 & 12 & 0 & 12 & 0 & 12 & 0 & 0 & 12 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 3 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

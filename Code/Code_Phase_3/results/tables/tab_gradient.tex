@@ -1,11 +1,27 @@
 \begin{table}[t]
 \centering
-\caption{Harmful revision against focal ability. Excess is H under two wrong rationales minus H under the matched re-answer baseline, which removes the revision churn common to every condition. capability\_gradient\_A\_raw: $\rho = -0.95$, $p = 0.001$ (exact\_permutation\_40320).\label{tab:gradient}}
+\caption{Harmful revision against focal ability. Excess is H under two wrong rationales minus H under the matched re-answer baseline, which removes the revision churn common to every condition. capability\_gradient\_B: $\rho = 0.05$, $p = 0.857$ (exact\_permutation\_40320); capability\_gradient\_B\_raw: $\rho = 0.12$, $p = 0.804$ (exact\_permutation\_40320); capability\_gradient\_A\_raw: $\rho = -0.95$, $p = 0.001$ (exact\_permutation\_40320).\label{tab:gradient}}
 \begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{@{}lrrrrc@{}}
 \toprule
 Focal model & Solo acc. & H under WR & H under R & Excess & Protocol \\
 \midrule
+deepseek\_primary & 75.0 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_mistral\_small & 75.0 & 22.2 & 22.2 & 0.0 & B \\
+sweep\_qwen\_2\_5\_72b & 66.7 & 0.0 & 12.5 & -12.5 & B \\
+gpt4o\_mini & 58.3 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_gemma\_3\_27b & 41.7 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_llama\_3\_1\_8b\_focal & 33.3 & 25.0 & 50.0 & -25.0 & B \\
+sweep\_gemma\_3\_4b\_focal & 25.0 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_llama\_3\_1\_70b & 16.7 & 0.0 & 0.0 & 0.0 & B \\
+deepseek\_primary & 75.0 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_mistral\_small & 75.0 & 22.2 & 22.2 & 22.2 & B \\
+sweep\_qwen\_2\_5\_72b & 66.7 & 0.0 & 12.5 & 0.0 & B \\
+gpt4o\_mini & 58.3 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_gemma\_3\_27b & 41.7 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_llama\_3\_1\_8b\_focal & 33.3 & 25.0 & 50.0 & 25.0 & B \\
+sweep\_gemma\_3\_4b\_focal & 25.0 & 0.0 & 0.0 & 0.0 & B \\
+sweep\_llama\_3\_1\_70b & 16.7 & 0.0 & 0.0 & 0.0 & B \\
 deepseek\_primary & 76.3 & 6.5 & 3.3 & 3.2 & A \\
 sweep\_llama\_3\_1\_70b & 67.5 & 12.2 & -- & -- & A \\
 sweep\_qwen\_2\_5\_72b & 66.4 & 12.2 & -- & -- & A \\

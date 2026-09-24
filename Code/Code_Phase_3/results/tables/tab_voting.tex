@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\caption{Self-consistency baseline computed from the cached initial answers, reported per task rather than pooled, with the number of focal calls each strategy spends.\label{tab:voting}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Focal model & Task & Single sample & Plurality vote & $\Delta$ & Calls \\
+\midrule
+deepseek\_primary & mmlu\_pro & 75.0 & 75.0 & 0.0 & 3 \\
+gpt4o\_mini & mmlu\_pro & 58.3 & 75.0 & 16.7 & 3 \\
+sweep\_gemma\_3\_27b & mmlu\_pro & 41.7 & 50.0 & 8.3 & 3 \\
+sweep\_gemma\_3\_4b\_focal & mmlu\_pro & 25.0 & 25.0 & 0.0 & 3 \\
+sweep\_llama\_3\_1\_70b & mmlu\_pro & 16.7 & 25.0 & 8.3 & 3 \\
+sweep\_llama\_3\_1\_8b\_focal & mmlu\_pro & 33.3 & 50.0 & 16.7 & 3 \\
+sweep\_mistral\_small & mmlu\_pro & 75.0 & 75.0 & 0.0 & 3 \\
+sweep\_qwen\_2\_5\_72b & mmlu\_pro & 66.7 & 75.0 & 8.3 & 3 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

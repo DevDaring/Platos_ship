@@ -1,0 +1,154 @@
+{
+  "shards": {
+    "deepseek_primary": {
+      "focal_filter": [
+        "deepseek_primary"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    },
+    "gpt4o_mini": {
+      "focal_filter": [
+        "gpt4o_mini"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    },
+    "sweep_gemma_3_27b": {
+      "focal_filter": [
+        "sweep_gemma_3_27b"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    },
+    "sweep_gemma_3_4b_focal": {
+      "focal_filter": [
+        "sweep_gemma_3_4b_focal"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    },
+    "sweep_llama_3_1_70b": {
+      "focal_filter": [
+        "sweep_llama_3_1_70b"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    },
+    "sweep_llama_3_1_8b_focal": {
+      "focal_filter": [
+        "sweep_llama_3_1_8b_focal"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    },
+    "sweep_mistral_small": {
+      "focal_filter": [
+        "sweep_mistral_small"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    },
+    "sweep_qwen_2_5_72b": {
+      "focal_filter": [
+        "sweep_qwen_2_5_72b"
+      ],
+      "experiments_run": [
+        "X1_common_matrix",
+        "X2_message_decomposition",
+        "X3_scaling",
+        "X4_gsm_symbolic",
+        "X5_voting_baseline",
+        "X6_verification_safeguard",
+        "X7_confidence_filter"
+      ],
+      "unavailable_focal_models": {}
+    }
+  },
+  "models": {
+    "deepseek_primary": "deepseek_primary",
+    "gpt4o_mini": "gpt4o_mini",
+    "sweep_gemma_3_27b": "sweep_gemma_3_27b",
+    "sweep_gemma_3_4b_focal": "sweep_gemma_3_4b_focal",
+    "sweep_llama_3_1_70b": "sweep_llama_3_1_70b",
+    "sweep_llama_3_1_8b_focal": "sweep_llama_3_1_8b_focal",
+    "sweep_mistral_small": "sweep_mistral_small",
+    "sweep_qwen_2_5_72b": "sweep_qwen_2_5_72b"
+  },
+  "rows": {
+    "r0_cache.parquet": 9000,
+    "revision_log.parquet": 58347,
+    "peer_message_log.parquet": 93864,
+    "completed_units.parquet": 58347,
+    "safeguard_results.parquet": 347,
+    "snapshot_audit.parquet": 61987
+  },
+  "shared_input_sha256": {
+    "question_pool_file": "76a2ac588e6532a7f886bec7e38d916cf8c515fc031c5670802aa453756bcbf2",
+    "anchored_personas_file": "08599e6086c856d3446516980c2ff6fd9b2db0f5fd390cb85e69cb23ba52b552",
+    "correct_anchored_personas_file": "8f73cc5af950ffede1b32dd9e6a22ed5ccb9090f3494fdc6032d542744c27363",
+    "confidence_personas_file": "8f76012e18cc060bc592cefde63a3ce71568be1b808763c2b95212da9a09a612",
+    "hedged_personas_file": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71",
+    "honest_bank_file": "9560e2406888672fd93db49a0b3affc47060051c216a1538619a52fcdf804223",
+    "gsm_symbolic_pool_file": "4d60eab0b4e64874b1d6ec67f31687d22f8a5e9019486a830e4d8a1f46dd9d33",
+    "gsm_symbolic_personas_file": "4f5c1606d8d589ea6991ec69cb918f6ccbe6b62a6386b172c5c9e163f35c2e33"
+  },
+  "dry_run": false,
+  "merged_at_utc": "2026-09-24T20:29:42.969325+00:00"
+}
