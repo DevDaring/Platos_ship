@@ -1,2 +1,4 @@
 2026-09-24T13:17:47Z prepare: start
 2026-09-24T14:15:57Z prepare attempt=1 exit=0
+2026-09-24T15:33:40Z gpt4o_mini attempt=1 exit=0
+2026-09-24T15:34:57Z deepseek_primary attempt=1 exit=0
