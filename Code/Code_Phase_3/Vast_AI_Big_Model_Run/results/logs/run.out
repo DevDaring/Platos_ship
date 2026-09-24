@@ -14,3 +14,6 @@ Running detached; the SSH session can be closed.
 
 When it finishes: pull the results, then DESTROY the instance. A stopped
 instance still bills for its disk, and 132 GB of checkpoint is not cheap.
+
+[1m==> Probe finished — final push[0m
+cannot delete non-empty directory: logs
