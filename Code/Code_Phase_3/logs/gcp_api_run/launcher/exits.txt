@@ -2,3 +2,5 @@
 2026-09-24T14:15:57Z prepare attempt=1 exit=0
 2026-09-24T15:33:40Z gpt4o_mini attempt=1 exit=0
 2026-09-24T15:34:57Z deepseek_primary attempt=1 exit=0
+2026-09-24T16:38:55Z sweep_llama_3_1_70b attempt=1 exit=0
+2026-09-24T16:44:09Z sweep_mistral_small attempt=1 exit=0
