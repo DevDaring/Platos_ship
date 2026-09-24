@@ -39,7 +39,8 @@ chmod 600 "$HOME/platos/Code/.env"
 ls -l "$HOME/platos/Code/.env"
 
 say "Test suite"
-python -m pytest -q 2>&1 | tail -3
+# test_big_probe_offline.py tests the GPU probe, whose folder is not uploaded.
+python -m pytest -q --ignore=tests/test_big_probe_offline.py 2>&1 | tail -3
 
 say "Plan"
 python run_all.py --list 2>&1 | tail -6

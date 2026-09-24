@@ -22,15 +22,22 @@ if pgrep -f "tools/run_parallel.sh" >/dev/null; then
 fi
 rm -f logs/launcher/RUN_EXIT
 
-if ! pgrep -f "GCP_API_Run/autopush.sh$" >/dev/null; then
+EXTRA="${*:-}"
+# A smoke or dry run must never reach GitHub: its 4-question outputs would sit
+# next to the real results. Only a full run starts the pushes.
+case " $EXTRA " in
+  *" --max-questions "*|*" --dry-run "*) PUSH=0 ;;
+  *) PUSH=1 ;;
+esac
+
+if [ "$PUSH" = 1 ] && ! pgrep -f "GCP_API_Run/autopush.sh$" >/dev/null; then
   nohup setsid bash GCP_API_Run/autopush.sh > logs/autopush.log 2>&1 < /dev/null &
 fi
 
-EXTRA="${*:-}"
 nohup setsid bash -c "
   PYTHON='$PY' bash tools/run_parallel.sh $EXTRA
   echo \$? > logs/launcher/RUN_EXIT
-  bash GCP_API_Run/autopush.sh --final >> logs/autopush.log 2>&1
+  [ '$PUSH' = 1 ] && bash GCP_API_Run/autopush.sh --final >> logs/autopush.log 2>&1
 " > logs/launcher/run.out 2>&1 < /dev/null &
 
 sleep 2
