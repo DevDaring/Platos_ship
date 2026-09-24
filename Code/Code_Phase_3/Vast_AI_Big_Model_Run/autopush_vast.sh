@@ -73,6 +73,19 @@ setup_repo() {
 }
 
 push_once() {
+  # GUARD: the local folder and the remote folder must be the same folder.
+  # This sync uses `rsync --delete`, so pointing a source at the wrong
+  # destination deletes whatever the destination holds that the source does
+  # not. That is exactly how the sweep erased the 70B results from main:
+  # source sweep_results/, destination .../results/. Refuse the mismatch.
+  local src_name dst_name
+  src_name="$(basename "${RESULTS_DIR%/}")"
+  dst_name="$(basename "${REMOTE_SUBDIR%/}")"
+  if [ "$src_name" != "$dst_name" ]; then
+    say "REFUSING TO PUSH: source '$src_name' does not match destination '$dst_name'"
+    say "  rsync --delete would erase files in $REMOTE_SUBDIR that $RESULTS_DIR lacks"
+    return 1
+  fi
   setup_repo
   mkdir -p "$WORKDIR/$REMOTE_SUBDIR" "$WORKDIR/$REMOTE_SUBDIR/logs"
 
@@ -125,7 +138,7 @@ PY
     say "no change"
     return 0
   fi
-  git commit -q -m "L4 probe results $(date -u '+%Y-%m-%d %H:%M UTC')"
+  git commit -q -m "Vast probe results ($dst_name) $(date -u '+%Y-%m-%d %H:%M UTC')"
   if git push -q origin "$BRANCH" 2>/dev/null; then
     say "pushed to $BRANCH"
   else

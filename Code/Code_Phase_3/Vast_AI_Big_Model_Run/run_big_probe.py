@@ -201,11 +201,42 @@ def main() -> int:
     scorer = ExactCandidateScorer(tokenizer)
     logger.info("Model ready in %.1f min.", (time.time() - started) / 60)
 
+    def _system_role_supported() -> bool:
+        """
+        Not every chat template accepts a system role.
+
+        Gemma's raises outright, so hardcoding the two-message form would
+        have failed on gemma-3-4b and gemma-3-27b AFTER the checkpoint was
+        downloaded and the GPUs were billing. Probed once here rather than
+        assumed, and recorded in the run metadata so a reader can see which
+        prompt shape each model actually received.
+        """
+        try:
+            tokenizer.apply_chat_template(
+                [{"role": "system", "content": "probe"},
+                 {"role": "user", "content": "probe"}],
+                tokenize=False, add_generation_prompt=True,
+            )
+            return True
+        except Exception as exc:                       # template rejects it
+            logger.info("chat template rejects a system role (%s); folding "
+                        "the system text into the user turn", type(exc).__name__)
+            return False
+
+    system_role_supported = _system_role_supported()
+
     def chat(system: str, user: str) -> str:
+        if system_role_supported:
+            messages = [{"role": "system", "content": system},
+                        {"role": "user", "content": user}]
+        else:
+            # Same text, one turn. The instruction still precedes the
+            # question, so the model sees identical content; only the
+            # envelope differs, and it differs identically in every
+            # condition, which is what the matched design requires.
+            messages = [{"role": "user", "content": f"{system}\n\n{user}"}]
         return tokenizer.apply_chat_template(
-            [{"role": "system", "content": system},
-             {"role": "user", "content": user}],
-            tokenize=False, add_generation_prompt=True,
+            messages, tokenize=False, add_generation_prompt=True,
         )
 
     def _teacher_force(prefixes: List[str],
@@ -450,6 +481,10 @@ def main() -> int:
             "questions": len(rows),
             "replicates": args.replicates,
             "mcq_only": not args.include_numeric,
+            # Which prompt envelope this model received. Gemma's template
+            # rejects a system role, so its system text is folded into the
+            # user turn; every other model keeps the two-message form.
+            "system_role_supported": system_role_supported,
             "wall_clock_minutes": round((time.time() - started) / 60, 1),
             "contrasts_by_task": contrasts,
         }, handle, indent=2, default=str)

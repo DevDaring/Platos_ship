@@ -1,0 +1,72 @@
+{
+  "calibration": {
+    "n": 200,
+    "n_agree": 192,
+    "agreement": 0.96,
+    "example_disagreements": [
+      {
+        "regex": "14000",
+        "judge": "14,000"
+      },
+      {
+        "regex": "D",
+        "judge": "J"
+      },
+      {
+        "regex": "20",
+        "judge": "B"
+      },
+      {
+        "regex": "A",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "499.5",
+        "judge": "B"
+      },
+      {
+        "regex": "A",
+        "judge": "UNPARSEABLE"
+      },
+      {
+        "regex": "15",
+        "judge": "I"
+      },
+      {
+        "regex": "490",
+        "judge": "B"
+      }
+    ]
+  },
+  "recovery": {
+    "round0": {
+      "unparsed_by_regex": 297,
+      "still_unresolved": 79,
+      "recovered": 218,
+      "methods": {
+        "judge_primary": 218,
+        "abstain_primary": 56,
+        "ungrounded_primary": 14
+      }
+    },
+    "round1": {
+      "unparsed_by_regex": 340,
+      "still_unresolved": 138,
+      "recovered": 202,
+      "methods": {
+        "judge_primary": 202,
+        "abstain_primary": 105,
+        "ungrounded_primary": 15
+      }
+    }
+  },
+  "judge_usage": {
+    "total_judge_calls": 810,
+    "tier_usage": {
+      "primary": 810,
+      "secondary": 0,
+      "tertiary": 0,
+      "all_failed": 0
+    }
+  }
+}

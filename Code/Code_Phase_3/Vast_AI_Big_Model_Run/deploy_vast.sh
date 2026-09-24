@@ -55,7 +55,8 @@ mkdir -p "$STAGE/GPU_Only/src" "$STAGE/src/agent_wrappers" "$STAGE/analysis" \
 # on an instance that can be reclaimed at any moment.
 cp "$HERE/run_big_probe.py" "$HERE/requirements_big.txt" \
    "$HERE/vast_bootstrap.sh" "$HERE/smoke_test_vast.sh" \
-   "$HERE/run_full_vast.sh" "$HERE/autopush_vast.sh" "$STAGE/"
+   "$HERE/run_full_vast.sh" "$HERE/autopush_vast.sh" \
+   "$HERE/run_sweep_vast.sh" "$STAGE/"
 cp "$PHASE3/GPU_Only/src/corrected_probe.py" "$STAGE/GPU_Only/src/"
 cp "$PHASE3/GPU_Only/vram_planner.py"        "$STAGE/GPU_Only/"
 cp "$PHASE3/src/contexts.py" "$PHASE3/src/extraction.py" \
@@ -103,11 +104,11 @@ ssh "${SSH_OPTS[@]}" "$HOST" "chmod +x '$REMOTE'/*.sh"
 # ── bootstrap ─────────────────────────────────────────────────────────────
 say "Bootstrapping (vLLM + FlashAttention, then the 132 GB checkpoint)"
 ssh "${SSH_OPTS[@]}" "$HOST" \
-  "cd '$REMOTE' && HUGGINGFACE_TOKEN='$HUGGINGFACE_TOKEN' bash vast_bootstrap.sh"
+  "cd '$REMOTE' && HUGGINGFACE_TOKEN='$HUGGINGFACE_TOKEN' MODEL='${MODEL:-meta-llama/Llama-3.1-70B-Instruct}' bash vast_bootstrap.sh"
 
 if [ "${SKIP_SMOKE:-0}" != "1" ]; then
   say "Smoke test — 2 questions, all three conditions, output checked"
-  ssh "${SSH_OPTS[@]}" "$HOST" "cd '$REMOTE' && bash smoke_test_vast.sh"
+  ssh "${SSH_OPTS[@]}" "$HOST" "cd '$REMOTE' && MODEL='${MODEL:-meta-llama/Llama-3.1-70B-Instruct}' bash smoke_test_vast.sh"
 fi
 
 cat <<MSG
