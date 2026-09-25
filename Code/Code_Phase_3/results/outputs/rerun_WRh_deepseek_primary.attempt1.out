@@ -1,4 +1,4 @@
-2026-09-25 08:41:05,212 [INFO] platos_ship3.run_all: Loaded environment from D:\PhD\Platos_ship\Code\.env
+2026-09-25 08:41:05,212 [INFO] platos_ship3.run_all: Loaded environment from <repo_root>\Code\.env
 2026-09-25 08:41:05,295 [INFO] platos_ship.agents: RoundRobinKeyManager initialized for deepseek with 2 keys
 2026-09-25 08:41:05,295 [INFO] platos_ship.agents.openai_compatible: OpenAICompatibleAgent 'deepseek_primary' ready: provider=deepseek, model=deepseek-v4-flash, keys=2, base_url=https://api.deepseek.com/v1
 2026-09-25 08:41:05,295 [INFO] platos_ship.agents: RoundRobinKeyManager initialized for nanogpt with 1 keys
@@ -85,7 +85,7 @@
 2026-09-25 08:41:22,219 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:22,266 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:22,479 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:41:23,102 [INFO] platos_ship3.store: Checkpoint saved: 50 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:41:23,102 [INFO] platos_ship3.store: Checkpoint saved: 50 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:41:23,334 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:23,359 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:23,513 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -138,7 +138,7 @@
 2026-09-25 08:41:41,037 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:41,365 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:41,875 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:41:42,045 [INFO] platos_ship3.store: Checkpoint saved: 100 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:41:42,045 [INFO] platos_ship3.store: Checkpoint saved: 100 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:41:42,261 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:42,559 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:42,559 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -188,7 +188,7 @@
 2026-09-25 08:41:57,257 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:57,333 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:57,459 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:41:58,577 [INFO] platos_ship3.store: Checkpoint saved: 150 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:41:58,577 [INFO] platos_ship3.store: Checkpoint saved: 150 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:41:58,649 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:58,793 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:41:58,837 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -241,7 +241,7 @@
 2026-09-25 08:42:14,348 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:14,810 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:14,868 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:42:15,180 [INFO] platos_ship3.store: Checkpoint saved: 200 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:42:15,180 [INFO] platos_ship3.store: Checkpoint saved: 200 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:42:15,211 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:15,430 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:15,441 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -294,7 +294,7 @@
 2026-09-25 08:42:26,526 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:26,562 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:26,760 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:42:27,342 [INFO] platos_ship3.store: Checkpoint saved: 250 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:42:27,342 [INFO] platos_ship3.store: Checkpoint saved: 250 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:42:27,554 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:27,707 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:27,828 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -343,7 +343,7 @@
 2026-09-25 08:42:44,035 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:44,043 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:44,520 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:42:44,926 [INFO] platos_ship3.store: Checkpoint saved: 300 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:42:44,926 [INFO] platos_ship3.store: Checkpoint saved: 300 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:42:44,978 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:45,137 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:45,163 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -395,7 +395,7 @@
 2026-09-25 08:42:58,207 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:58,467 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:58,479 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:42:58,613 [INFO] platos_ship3.store: Checkpoint saved: 350 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:42:58,613 [INFO] platos_ship3.store: Checkpoint saved: 350 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:42:58,889 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:58,913 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:59,346 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -445,7 +445,7 @@
 2026-09-25 08:43:11,038 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:11,924 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:12,078 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:43:12,485 [INFO] platos_ship3.store: Checkpoint saved: 400 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:43:12,485 [INFO] platos_ship3.store: Checkpoint saved: 400 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:43:12,528 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:12,660 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:12,718 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -498,7 +498,7 @@
 2026-09-25 08:43:26,652 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:26,710 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:26,765 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:43:27,252 [INFO] platos_ship3.store: Checkpoint saved: 450 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:43:27,252 [INFO] platos_ship3.store: Checkpoint saved: 450 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:43:27,492 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:27,868 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:28,181 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -549,7 +549,7 @@
 2026-09-25 08:43:42,599 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:42,735 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:43,206 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:43:43,522 [INFO] platos_ship3.store: Checkpoint saved: 500 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:43:43,522 [INFO] platos_ship3.store: Checkpoint saved: 500 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:43:43,783 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:44,061 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:44,793 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -600,7 +600,7 @@
 2026-09-25 08:43:56,868 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:57,064 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:57,167 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:43:57,570 [INFO] platos_ship3.store: Checkpoint saved: 550 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:43:57,570 [INFO] platos_ship3.store: Checkpoint saved: 550 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:43:57,637 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:57,777 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:57,804 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -654,7 +654,7 @@
 2026-09-25 08:44:09,500 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:09,968 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:10,314 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:44:10,388 [INFO] platos_ship3.store: Checkpoint saved: 600 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:44:10,388 [INFO] platos_ship3.store: Checkpoint saved: 600 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:44:10,612 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:11,149 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:11,570 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -710,7 +710,7 @@
 2026-09-25 08:44:21,070 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:21,449 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:21,867 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:44:22,176 [INFO] platos_ship3.store: Checkpoint saved: 650 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:44:22,176 [INFO] platos_ship3.store: Checkpoint saved: 650 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:44:22,279 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:22,398 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:22,416 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -771,7 +771,7 @@
 2026-09-25 08:44:33,817 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:33,851 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:34,022 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:44:34,087 [INFO] platos_ship3.store: Checkpoint saved: 700 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:44:34,087 [INFO] platos_ship3.store: Checkpoint saved: 700 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:44:34,160 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:34,318 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:34,349 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -830,7 +830,7 @@
 2026-09-25 08:44:45,998 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:46,299 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:46,341 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:44:46,800 [INFO] platos_ship3.store: Checkpoint saved: 750 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:44:46,800 [INFO] platos_ship3.store: Checkpoint saved: 750 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:44:47,023 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:47,302 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:47,408 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -895,7 +895,7 @@
 2026-09-25 08:45:01,327 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:01,331 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:01,395 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:45:01,468 [INFO] platos_ship3.store: Checkpoint saved: 800 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:45:01,468 [INFO] platos_ship3.store: Checkpoint saved: 800 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:45:01,639 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:01,651 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:01,724 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -966,7 +966,7 @@
 2026-09-25 08:45:16,855 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:16,985 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:17,022 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:45:18,066 [INFO] platos_ship3.store: Checkpoint saved: 850 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:45:18,066 [INFO] platos_ship3.store: Checkpoint saved: 850 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
 2026-09-25 08:45:18,281 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:18,287 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:18,383 [INFO] httpx2: HTTP Request: POST https://api.deepseek.com/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1012,9 +1012,9 @@
 2026-09-25 08:45:27,181 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:29,410 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:45:29,513 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:45:29,646 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
-2026-09-25 08:45:30,050 [INFO] platos_ship3.store: Consolidated 888 rows -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\revision_log.parquet
-2026-09-25 08:45:30,260 [INFO] platos_ship3.store: Consolidated 1776 rows -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\peer_message_log.parquet
-2026-09-25 08:45:30,265 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
-2026-09-25 08:45:30,273 [INFO] platos_ship3.snapshots: Snapshot audit: 888 calls, 0 mismatches -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\snapshot_audit.parquet
+2026-09-25 08:45:29,646 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:45:30,050 [INFO] platos_ship3.store: Consolidated 888 rows -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\revision_log.parquet
+2026-09-25 08:45:30,260 [INFO] platos_ship3.store: Consolidated 1776 rows -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\peer_message_log.parquet
+2026-09-25 08:45:30,265 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\checkpoint.parquet
+2026-09-25 08:45:30,273 [INFO] platos_ship3.snapshots: Snapshot audit: 888 calls, 0 mismatches -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\deepseek_primary\snapshot_audit.parquet
 2026-09-25 08:45:30,274 [INFO] rerun: WRh/deepseek_primary: 888 calls, failures {}

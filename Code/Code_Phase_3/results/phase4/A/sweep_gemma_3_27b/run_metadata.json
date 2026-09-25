@@ -1,0 +1,19 @@
+{
+  "experiment": "A",
+  "focal": "sweep_gemma_3_27b",
+  "conditions": [
+    "A_R",
+    "A_WR",
+    "A_Rhid",
+    "A_WRhid"
+  ],
+  "revision_calls": {
+    "A_R": 872,
+    "A_WR": 874,
+    "A_WRhid": 877,
+    "A_Rhid": 877
+  },
+  "failed_calls_not_recorded": {},
+  "prereg": "PREREG_PHASE4.md",
+  "run_timestamp_utc": "2026-09-25T12:08:30.795171+00:00"
+}

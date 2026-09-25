@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{Frozen primary contrasts and one exploratory contrast, pooled over the models listed. Percentage points; question-level bootstrap 95\% CI; Holm within each frozen family; bounds = worst case over unparsed answers (Appendix~\ref{app:bounds}).}
+\caption{Frozen contrast families and one exploratory contrast, pooled over the models listed. Percentage points; question-level bootstrap 95\% CI; Holm over every declared entry of a family (six in the common matrix); bounds = worst case over unparsed answers.}
 \label{tab:contrasts}
 \begin{adjustbox}{max width=\textwidth}
 \small
@@ -8,14 +8,16 @@
 \toprule
 Family & Contrast & Estimate [95\% CI] & $p$ & $p_{\text{Holm}}$ & Worst-case bounds & Models \\
 \midrule
-Common matrix & Acc(WR) $-$ Acc(R) & -1.2 [-2.1, -0.2] & 0.016 & 0.047 & [-2.9, +0.0] & 8 \\
-Common matrix & Acc(N) $-$ Acc(R) & +0.6 [-0.7, +1.8] & 0.381 & 0.502 & [-1.2, +1.9] & 8 \\
-Common matrix & Acc(E) $-$ Acc(R) & +2.2 [+1.2, +3.1] & $<$0.001 & $<$0.001 & [+0.4, +3.7] & 8 \\
-Common matrix & $H$(WR) $-$ $H$(R) & -1.1 [-2.9, +0.7] & 0.251 & 0.502 & [-1.5, -0.1] & 8 \\
+Common matrix & Acc(WR) $-$ Acc(R) & -1.2 [-2.1, -0.2] & 0.016 & 0.078 & [-2.94, +0.01] & 8 \\
+Common matrix & Acc(N) $-$ Acc(R) & +0.6 [-0.7, +1.8] & 0.381 & 1.000 & [-1.22, +1.88] & 8 \\
+Common matrix & Acc(E) $-$ Acc(R) & +2.2 [+1.2, +3.1] & $<$0.001 & 0.001 & [+0.36, +3.68] & 8 \\
+Common matrix & $H$(WR) $-$ $H$(R) & -1.1 [-2.9, +0.7] & 0.251 & 1.000 & [-1.50, -0.13] & 8 \\
+Common matrix & $\rho$(solo, $H$(WR) $-$ $H$(R)), B & +0.21 & 0.619 & 1.000 & -- & 8 \\
+Common matrix & $\rho$(solo, $H$(WR) $-$ $H$(R)), A & not estimable & -- & (p = 1) & -- & 2 \\
 \midrule
-Message decomp. & Acc(WR) $-$ Acc(G) & -0.5 [-2.1, +1.2] & 0.557 & 0.557 & [-3.3, +1.6] & 3 \\
-Message decomp. & Acc(WR) $-$ Acc(W) & -1.0 [-2.4, +0.4] & 0.168 & 0.336 & [-3.5, +1.1] & 3 \\
-Message decomp. & $H$(WR) $-$ $H$(WRh) & +2.0 [-0.4, +4.3] & 0.098 & 0.295 & [+1.1, +3.3] & 3 \\
+Message decomp. & Acc(WR) $-$ Acc(G) & -0.5 [-2.1, +1.2] & 0.557 & 0.557 & [-3.26, +1.59] & 3 \\
+Message decomp. & Acc(WR) $-$ Acc(W) & -1.0 [-2.4, +0.4] & 0.168 & 0.336 & [-3.52, +1.07] & 3 \\
+Message decomp. & $H$(WR) $-$ $H$(WRh) & +2.0 [-0.4, +4.3] & 0.098 & 0.295 & [+1.10, +3.32] & 3 \\
 \midrule
 Exploratory & $B$(WR) $-$ $B$(R) & -3.4 [-7.2, +0.3] & 0.075 & -- & -- & 8 \\
 \bottomrule

@@ -1,26 +1,33 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
-\caption{Verification safeguard on three focal models and the 100-item subset, \%. $H$ = harmful revision; $B$ = beneficial revision; the oracle is an upper bound, not a policy.}
+\caption{Safeguard policies on the WR and N units of three focal models, 100-item subset. Acc, $H$, $B$ and Accepted (share of proposed changes kept) in \%; extra calls per unit; last column: verifier minus policy accuracy with a question-paired 95\% CI (pp).}
 \label{tab:safeguard}
-\begin{adjustbox}{max width=\linewidth}
+\begin{adjustbox}{max width=\textwidth}
 \small
-\begin{tabular}{@{}llrrrr@{}}
+\begin{tabular}{@{}llrrrrrr@{}}
 \toprule
-Cond. & Policy & Acc & 95\% CI & $H$ & $B$ \\
+Cond. & Policy & Acc & $H$ & $B$ & Accepted & Calls & Verifier $-$ policy \\
 \midrule
-WR & always keep & 67.4 & [61.0, 73.6] & 0.0 & 0.0 \\
-WR & always revise & 68.0 & [61.8, 73.9] & 7.7 & 17.7 \\
-WR & verifier & 70.8 & [64.2, 76.8] & 1.0 & 12.3 \\
-WR & random matched & 67.2 & [60.9, 73.1] & 2.0 & 3.4 \\
-WR & confidence & 68.8 & [62.6, 74.7] & 5.6 & 15.7 \\
-WR & oracle upper bound & 73.2 & [67.1, 78.9] & 0.0 & 17.7 \\
-N & always keep & 67.4 & [61.0, 73.6] & 0.0 & 0.0 \\
-N & always revise & 70.9 & [64.4, 77.0] & 6.8 & 24.6 \\
-N & verifier & 72.3 & [65.8, 78.3] & 2.3 & 19.8 \\
-N & random matched & 69.0 & [62.6, 74.9] & 2.1 & 9.2 \\
-N & confidence & 72.3 & [66.1, 78.2] & 4.0 & 23.2 \\
-N & oracle upper bound & 75.4 & [69.3, 80.9] & 0.0 & 24.6 \\
+WR & always keep & 67.4 & 0.0 & 0.0 & 0 & 0 & +3.3 [+1.7, +5.1] \\
+WR & always revise & 68.0 & 7.7 & 17.7 & 100 & 0 & +2.8 [+0.7, +4.9] \\
+WR & verifier (Qwen2.5-72B) & 70.8 & 1.0 & 12.3 & 31 & 0.19 & -- \\
+WR & random, matched rate & 68.3 & 2.1 & 7.0 & 31 & 0 & +2.5 [+1.2, +3.8] \\
+WR & own confidence $\geq$ 90 & 68.8 & 5.6 & 15.7 & 73 & 0 & +2.0 [+0.2, +3.9] \\
+WR & Qwen2.5-72B solo answer agrees & 69.8 & 0.7 & 8.5 & 18 & 0.22 & +1.0 [-0.4, +2.4] \\
+WR & another focal sample agrees & 69.1 & 0.8 & 6.8 & 20 & 0.22 & +1.7 [0.0, +3.3] \\
+WR & Qwen2.5-72B answers alone & 75.7 & 11.0 & 48.1 & -- & 1.00 & -4.9 [-10.8, +0.8] \\
+WR & oracle (upper bound) & 73.2 & 0.0 & 17.7 & 27 & 0 & -2.4 [-3.9, -1.3] \\
+\midrule
+N & always keep & 67.4 & 0.0 & 0.0 & 0 & 0 & +4.9 [+2.2, +7.6] \\
+N & always revise & 70.9 & 6.8 & 24.6 & 100 & 0 & +1.4 [0.0, +3.1] \\
+N & verifier (Qwen2.5-72B) & 72.3 & 2.3 & 19.8 & 45 & 0.19 & -- \\
+N & random, matched rate & 69.0 & 3.1 & 11.2 & 45 & 0 & +3.3 [+1.8, +4.9] \\
+N & own confidence $\geq$ 90 & 72.3 & 4.0 & 23.2 & 77 & 0 & 0.0 [-1.6, +1.7] \\
+N & Qwen2.5-72B solo answer agrees & 71.8 & 0.8 & 15.0 & 29 & 0.23 & +0.6 [-1.2, +2.3] \\
+N & another focal sample agrees & 69.0 & 1.0 & 6.8 & 20 & 0.23 & +3.3 [+0.8, +6.0] \\
+N & Qwen2.5-72B answers alone & 75.7 & 11.0 & 48.1 & -- & 1.00 & -3.3 [-8.9, +1.9] \\
+N & oracle (upper bound) & 75.4 & 0.0 & 24.6 & 35 & 0 & -3.1 [-4.9, -1.7] \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
-\end{table}
+\end{table*}

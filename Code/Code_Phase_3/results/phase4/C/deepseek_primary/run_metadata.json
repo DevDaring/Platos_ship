@@ -1,0 +1,15 @@
+{
+  "experiment": "C",
+  "focal": "deepseek_primary",
+  "conditions": [
+    "C_R",
+    "C_WR"
+  ],
+  "revision_calls": {
+    "C_WR": 900,
+    "C_R": 900
+  },
+  "failed_calls_not_recorded": {},
+  "prereg": "PREREG_PHASE4.md",
+  "run_timestamp_utc": "2026-09-25T10:41:12.733843+00:00"
+}

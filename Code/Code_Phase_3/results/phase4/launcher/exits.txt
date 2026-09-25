@@ -1,0 +1,18 @@
+2026-09-25T10:22:42Z RESTART with higher Gemma/bank workers
+2026-09-25T10:32:18Z A_deepseek attempt=1 exit=0
+2026-09-25T10:41:13Z C_deepseek attempt=1 exit=0
+2026-09-25T10:53:09Z bank attempt=1 exit=0
+2026-09-25T10:53:12Z eligible attempt=1 exit=0
+2026-09-25T10:54:38Z r0_deepseek attempt=1 exit=0
+2026-09-25T10:59:44Z r0_llama8 attempt=1 exit=0
+2026-09-25T11:03:54Z r0_gemma27 attempt=1 exit=0
+2026-09-25T11:10:46Z B_deepseek attempt=1 exit=0
+2026-09-25T11:59:58Z B_llama8 attempt=1 exit=0
+2026-09-25T12:08:31Z A_gemma27 attempt=1 exit=0
+2026-09-25T13:09:26Z C_gemma27 attempt=1 exit=0
+2026-09-25T13:53:27Z B_gemma27 attempt=1 exit=0
+2026-09-25T13:53:27Z ALL DONE
+2026-09-25T13:55:16Z RESUME B after natural-panel type fix (B_P2 incomplete: 307/459 per model)
+2026-09-25T13:57:31Z B_resume_deepseek_primary attempt=1 exit=0
+2026-09-25T14:05:55Z B_resume_sweep_gemma_3_27b attempt=1 exit=0
+2026-09-25T14:10:04Z B_resume_sweep_llama_3_1_8b_focal attempt=1 exit=0

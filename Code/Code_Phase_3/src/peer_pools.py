@@ -359,7 +359,8 @@ def build_peers(
         # nested: the one-error panel is the first correct message of the
         # zero-error panel plus the first wrong message of the two-error one.
         bank = [m for m in (pools.natural_bank or {}).get(question_id, [])
-                if str(m.get("extracted_answer") or "").strip()]
+                if not pd.isna(m.get("extracted_answer"))
+                and str(m.get("extracted_answer")).strip()]
         bank.sort(key=lambda m: (str(m.get("weak_model_key", "")),
                                  int(m.get("replicate", 0))))
         correct = [m for m in bank if bool(m.get("is_correct"))]
@@ -384,7 +385,9 @@ def build_peers(
             peers.append(PeerMessage(
                 display_name=PEER_DISPLAY_NAMES[i % len(PEER_DISPLAY_NAMES)],
                 text=text,
-                final_answer=message.get("extracted_answer"),
+                # Stored answers can be numeric in the parquet; peers carry
+                # strings everywhere else, and mixing types breaks target ranking.
+                final_answer=str(message.get("extracted_answer")).strip(),
                 confidence=confidence,
                 message_generator_model=message.get("served_model", "")
                 or message.get("weak_model_key", ""),
@@ -392,7 +395,8 @@ def build_peers(
                 served_model=message.get("served_model", ""),
                 peer_source="natural_panel",
                 anchor_mode="wrong" if is_wrong else "correct",
-                assigned_target=message.get("extracted_answer") if is_wrong else None,
+                assigned_target=(str(message.get("extracted_answer")).strip()
+                                 if is_wrong else None),
                 persona_identifier=message.get("honest_unit_id"),
             ))
         diagnostics["n_peers_built"] = len(peers)

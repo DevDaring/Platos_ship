@@ -1,21 +1,22 @@
 \begin{table}[t]
 \centering
-\caption{Closest studies by estimand. Peers: N = natural answers, C =
-constructed (instructed to argue a position). Shared state = the model's own
-initial answer held fixed across conditions. Sweep = the ability of the model
-under test varied systematically. Budget = a baseline matched in model calls.}
+\caption{Closest studies by design. Peers: N = natural answers, C = constructed
+(instructed to argue a position). Shared state: compared conditions start from
+the same initial answers. Sweep: ability of the answering model varied on one
+pool. No-peer control: a revision without peers. Sampling: a vote or
+self-consistency baseline. Sources for each cell in Appendix~\ref{app:setup}.}
 \label{tab:relwork}
 \begin{adjustbox}{max width=\linewidth}
 \small
 \begin{tabular}{@{}lccccc@{}}
 \toprule
-Study & Peers & Shared state & Sweep & Re-answer & Budget \\
+Study & Peers & Shared state & Sweep & No-peer control & Sampling \\
 \midrule
-\citet{du2023improving}           & N    & $-$          & $-$          & $-$          & $-$          \\
+\citet{du2023improving}           & N    & $-$          & $-$          & $-$          & $\checkmark$ \\
 \citet{amayuelas2024multiagent}   & C    & $-$          & $-$          & $-$          & $-$          \\
-\citet{choi2025debate}            & N    & $-$          & $-$          & $-$          & $\checkmark$ \\
+\citet{choi2025debate}            & N    & $\checkmark$ & $-$          & $-$          & $\checkmark$ \\
 \citet{zhang2025stop}             & N    & $-$          & $-$          & $-$          & $\checkmark$ \\
-\citet{nilayam2026heterogeneous}  & N, C & $-$          & $-$          & $-$          & $-$          \\
+\citet{nilayam2026heterogeneous}  & N, C & $-$          & partial      & $-$          & $-$          \\
 This work                         & N, C & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
 \bottomrule
 \end{tabular}

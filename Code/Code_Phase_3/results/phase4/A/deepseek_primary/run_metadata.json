@@ -1,0 +1,19 @@
+{
+  "experiment": "A",
+  "focal": "deepseek_primary",
+  "conditions": [
+    "A_R",
+    "A_WR",
+    "A_Rhid",
+    "A_WRhid"
+  ],
+  "revision_calls": {
+    "A_R": 585,
+    "A_WR": 577,
+    "A_Rhid": 615,
+    "A_WRhid": 623
+  },
+  "failed_calls_not_recorded": {},
+  "prereg": "PREREG_PHASE4.md",
+  "run_timestamp_utc": "2026-09-25T10:32:17.895982+00:00"
+}

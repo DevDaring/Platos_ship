@@ -49,7 +49,12 @@ def pct(x, d=1):
 
 
 def pp(x, d=1):
-    return "--" if x is None or pd.isna(x) else f"{100 * x:+.{d}f}"
+    if x is None or pd.isna(x):
+        return "--"
+    value = 100 * x
+    if round(value, d) == 0:          # never print a signed zero ("-0.0")
+        return f"{0:.{d}f}"
+    return f"{value:+.{d}f}"
 
 
 def fmt_p(p: float) -> str:
@@ -147,13 +152,30 @@ def main() -> int:
                          labels.get(r["name"], r["name"]),
                          f"{pp(r['estimate'])} [{pp(r['ci_low'])}, {pp(r['ci_high'])}]",
                          fmt_p(r["p_value"]), fmt_p(r["p_holm"]),
-                         "--" if b is None else f"[{pp(b['worst_case_low'])}, {pp(b['worst_case_high'])}]",
+                         "--" if b is None else f"[{pp(b['worst_case_low'], 2)}, {pp(b['worst_case_high'], 2)}]",
                          r["models_compared"].count(",") + 1 if isinstance(r["models_compared"], str) else "--"])
             FACTS[f"contrast_{r['name']}"] = {"est": round(100 * r["estimate"], 2),
                                               "ci": [round(100 * r["ci_low"], 2), round(100 * r["ci_high"], 2)],
                                               "p": round(r["p_value"], 4), "p_holm": round(r["p_holm"], 4),
                                               "bounds": None if b is None else [round(100 * b["worst_case_low"], 2),
                                                                                 round(100 * b["worst_case_high"], 2)]}
+    # The two declared correlation entries of the common-matrix family, placed
+    # after its paired contrasts (Holm was computed over all six).
+    grads = numbers["capability_gradients"]
+    x1_end = max(i for i, r in enumerate(rows) if r and r[0] == "Common matrix") + 1
+    gb, ga = grads["capability_gradient_B"], grads["capability_gradient_A"]
+    rows[x1_end:x1_end] = [
+        ["Common matrix", r"$\rho$(solo, $H$(WR) $-$ $H$(R)), B",
+         f"{gb['rho']:+.2f}", fmt_p(gb["p_value"]), fmt_p(gb["p_holm"]), "--", 8],
+        ["Common matrix", r"$\rho$(solo, $H$(WR) $-$ $H$(R)), A",
+         "not estimable", "--", "(p = 1)", "--", 2],
+    ]
+    FACTS["holm_six_test"] = {
+        "WR_minus_R_p_holm": FACTS["contrast_WR_minus_R_accuracy"]["p_holm"],
+        "WR_minus_R_p_holm_dropping_unavailable": round(
+            float(c.loc[c["name"] == "WR_minus_R_accuracy", "p_holm_dropping_unavailable"].iloc[0]), 4),
+        "E_minus_R_p_holm": FACTS["contrast_E_minus_R_accuracy"]["p_holm"],
+        "gradient_B_p_holm": round(gb["p_holm"], 4)}
     ben = paired_condition_contrast(reg, "WR_minus_R_beneficial", "beneficial_delta", "WR", "R",
                                     protocol="B", n_resamples=5000)
     rows.append(["MIDRULE"])
@@ -165,9 +187,9 @@ def main() -> int:
                                                "p": round(ben.p_value, 4), "exploratory": True}
     rows = [[str(x) for x in r] for r in rows]
     write(tables, "tab_contrasts", table(
-        r"Frozen primary contrasts and one exploratory contrast, pooled over the models listed. "
-        r"Percentage points; question-level bootstrap 95\% CI; Holm within each frozen family; "
-        r"bounds = worst case over unparsed answers (Appendix~\ref{app:bounds}).",
+        r"Frozen contrast families and one exploratory contrast, pooled over the models listed. "
+        r"Percentage points; question-level bootstrap 95\% CI; Holm over every declared entry "
+        r"of a family (six in the common matrix); bounds = worst case over unparsed answers.",
         "tab:contrasts", "@{}llrrrrr@{}",
         ["Family", "Contrast", r"Estimate [95\% CI]", "$p$", r"$p_{\text{Holm}}$", "Worst-case bounds", "Models"],
         rows, star=True))
@@ -307,9 +329,9 @@ def main() -> int:
                  f"{pp(r['excess'])} [{pp(r['ci_low'])}, {pp(r['ci_high'])}]"]
                 for r in sorted(ae["per_model"], key=lambda r: -r["solo_accuracy"])]
         write(tables, "tab_adoption", table(
-            r"Per-model effects of two wrong peers (WR) over the re-answer baseline (R). "
-            r"Harmful excess = $H$(WR) $-$ $H$(R), paired by question (pp); Adopt = final answer "
-            r"is a peer's wrong answer; Chance = the R answer lands on the same target (\%).",
+            r"Per-model effects of two wrong peers (WR) over the re-answer baseline (R). Harmful "
+            r"excess: $H$(WR) $-$ $H$(R), question-weighted (pp). Adopt, Chance and their excess: "
+            r"trial-weighted over initially correct units (\%), CI by question-cluster bootstrap.",
             "tab:adoption", "@{}lrrrrr@{}",
             ["Focal", "Solo", r"Harmful excess [95\% CI]", "Adopt", "Chance",
              r"Adoption excess [95\% CI]"], rows, star=True))
@@ -333,19 +355,95 @@ def main() -> int:
     s = pd.DataFrame(numbers["safeguard_policies"])
     s = s[s["focal_key"] == "ALL"]
     rows = []
+    policy_label = {"always_keep": "always keep", "always_revise": "always revise",
+                    "verifier": "verifier (Qwen2.5-72B)", "random_matched": "random, matched rate",
+                    "confidence": "own confidence $\\geq$ 90",
+                    "independent_answer": "Qwen2.5-72B solo answer agrees",
+                    "extra_focal_sample": "another focal sample agrees",
+                    "verifier_model_alone": "Qwen2.5-72B answers alone",
+                    "oracle_upper_bound": "oracle (upper bound)"}
+    order_p = list(policy_label)
     for cond in ["WR", "H"]:
-        for _, r in s[s["condition"] == cond].iterrows():
-            rows.append([SHOW.get(cond, cond), r["policy"].replace("_", " "), pct(r["accuracy"]),
-                         f"[{pct(r['accuracy_ci_low'])}, {pct(r['accuracy_ci_high'])}]",
-                         pct(r["harmful_revision"]), pct(r["beneficial_revision"])])
-        FACTS.setdefault("x6", {})[cond] = {r["policy"]: {"acc": round(100 * r["accuracy"], 1),
-                                                          "H": round(100 * r["harmful_revision"], 1),
-                                                          "B": round(100 * r["beneficial_revision"], 1)}
-                                            for _, r in s[s["condition"] == cond].iterrows()}
+        block = s[s["condition"] == cond].set_index("policy")
+        if rows:
+            rows.append(["MIDRULE"])
+        for pol in order_p:
+            if pol not in block.index:
+                continue
+            r = block.loc[pol]
+            diff = ("--" if pol == "verifier" or pd.isna(r.get("verifier_minus_accuracy"))
+                    else f"{pp(r['verifier_minus_accuracy'])} [{pp(r['verifier_minus_accuracy_ci_low'])}, "
+                         f"{pp(r['verifier_minus_accuracy_ci_high'])}]")
+            accepted = ("--" if pd.isna(r.get("adoption_rate_of_changes"))
+                        else pct(r["adoption_rate_of_changes"], 0))
+            extra = {"verifier": f"{numbers['verifier_cost'].get('verifier_calls_per_unit', 0):.2f}",
+                     "independent_answer": f"{r.get('extra_calls_per_unit', 0):.2f}",
+                     "extra_focal_sample": f"{r.get('extra_calls_per_unit', 0):.2f}",
+                     "verifier_model_alone": "1.00"}.get(pol, "0")
+            rows.append([SHOW.get(cond, cond), policy_label[pol], pct(r["accuracy"]),
+                         pct(r["harmful_revision"]), pct(r["beneficial_revision"]),
+                         accepted, extra, diff])
+        FACTS.setdefault("x6", {})[cond] = {
+            pol: {"acc": round(100 * block.loc[pol, "accuracy"], 1),
+                  "H": round(100 * block.loc[pol, "harmful_revision"], 1),
+                  "B": round(100 * block.loc[pol, "beneficial_revision"], 1),
+                  "accepted": (None if pd.isna(block.loc[pol, "adoption_rate_of_changes"])
+                               else round(100 * block.loc[pol, "adoption_rate_of_changes"], 1)),
+                  "verifier_minus_acc": (None if pd.isna(block.loc[pol, "verifier_minus_accuracy"]) else
+                                         [round(100 * block.loc[pol, k], 1) for k in (
+                                             "verifier_minus_accuracy", "verifier_minus_accuracy_ci_low",
+                                             "verifier_minus_accuracy_ci_high")]),
+                  "verifier_minus_harm": (None if pd.isna(block.loc[pol, "verifier_minus_harmful"]) else
+                                          [round(100 * block.loc[pol, k], 1) for k in (
+                                              "verifier_minus_harmful", "verifier_minus_harmful_ci_low",
+                                              "verifier_minus_harmful_ci_high")])}
+            for pol in block.index}
     write(tables, "tab_safeguard", table(
-        r"Verification safeguard on three focal models and the 100-item subset, \%. "
-        r"$H$ = harmful revision; $B$ = beneficial revision; the oracle is an upper bound, not a policy.",
-        "tab:safeguard", "@{}llrrrr@{}", ["Cond.", "Policy", "Acc", r"95\% CI", "$H$", "$B$"], rows))
+        r"Safeguard policies on the WR and N units of three focal models, 100-item subset. Acc, "
+        r"$H$, $B$ and Accepted (share of proposed changes kept) in \%; extra calls per unit; last "
+        r"column: verifier minus policy accuracy with a question-paired 95\% CI (pp).",
+        "tab:safeguard", "@{}llrrrrrr@{}",
+        ["Cond.", "Policy", "Acc", "$H$", "$B$", "Accepted", "Calls", r"Verifier $-$ policy"],
+        rows, star=True))
+    # ── robustness of the pooled WR - R contrast (exploratory) ───────────
+    rob = numbers.get("robustness_exploratory", {})
+    rows = []
+    stat_label = {"accuracy_delta": "Acc", "harmful_delta": "$H$", "beneficial_delta": "$B$"}
+    for r in rob.get("task_split", []):
+        task = {"mmlu_pro": "MMLU-Pro only", "gsm8k": "GSM8K only"}[r["task"]]
+        rows.append([task, stat_label[r["statistic"]],
+                     f"{pp(r['estimate'])} [{pp(r['ci_low'])}, {pp(r['ci_high'])}]", fmt_p(r["p_value"])])
+    rows.append(["MIDRULE"])
+    for r in rob.get("leave_one_model_out", []):
+        rows.append([f"without {NAMES[r['dropped']]}", "Acc",
+                     f"{pp(r['estimate'])} [{pp(r['ci_low'])}, {pp(r['ci_high'])}]", fmt_p(r["p_value"])])
+    d70 = rob.get("degraded_70b", {})
+    if d70.get("estimate") is not None:
+        rows.append(["degraded Llama-3.1-70B run swapped in", "Acc",
+                     f"{pp(d70['estimate'])} [{pp(d70['ci_low'])}, {pp(d70['ci_high'])}]",
+                     fmt_p(d70["p_value"])])
+    gs = rob.get("gsm_symbolic_pairs", {}).get("pooled")
+    if gs:
+        rows.append(["MIDRULE"])
+        rows.append(["GSM-Symbolic minus original, by template", "Acc",
+                     f"{pp(gs['interaction'])} [{pp(gs['ci_low'])}, {pp(gs['ci_high'])}]",
+                     fmt_p(gs["p_value"])])
+    FACTS["robustness"] = {
+        "task_split": {f"{r['task']}:{r['statistic']}": [round(100 * r[k], 2) for k in
+                                                         ("estimate", "ci_low", "ci_high")]
+                       + [round(r["p_value"], 4)] for r in rob.get("task_split", [])},
+        "leave_one_model_out": {NAMES[r["dropped"]]: [round(100 * r[k], 2) for k in
+                                                      ("estimate", "ci_low", "ci_high")]
+                                for r in rob.get("leave_one_model_out", [])},
+        "degraded_70b": ([round(100 * d70[k], 2) for k in ("estimate", "ci_low", "ci_high")]
+                         if d70.get("estimate") is not None else None),
+        "gsm_symbolic_interaction": ([round(100 * gs[k], 2) for k in ("interaction", "ci_low", "ci_high")]
+                                     + [round(gs["p_value"], 4)] if gs else None)}
+    write(tables, "tab_robust", table(
+        r"Exploratory sensitivity of WR $-$ R (pp), question-level bootstrap 95\% CI and "
+        r"sign-flip $p$. Pooled over all eight focal models unless a model is removed.",
+        "tab:robust", "@{}llrr@{}", ["Analysis", "Rate", r"WR $-$ R [95\% CI]", "$p$"],
+        [[str(x) for x in r] if r != ["MIDRULE"] else r for r in rows]))
     x4 = reg[(reg["protocol"] == "B") & reg["question_identifier"].str.startswith(("gsmsym", "gsmorig"))
              & reg["condition"].isin(["R", "WR"])]
     rows = []
@@ -391,6 +489,49 @@ def main() -> int:
         r"peer. Bottom: how well stated confidence separates correct from wrong natural peers.",
         "tab:filter", "@{}lrr@{}", ["Focal", "WRfilt", "Nfilt"], rows))
     FACTS["verifier_cost"] = numbers.get("verifier_cost", {})
+    # ── Phase 4 (pre-registered; PREREG_PHASE4.md) ────────────────────────
+    p4_path = ROOT / "results/phase4/phase4_numbers.json"
+    if p4_path.exists():
+        p4 = json.loads(p4_path.read_text(encoding="utf-8"))
+        FACTS["phase4"] = p4
+
+        def cell(d):
+            if not d or d.get("estimate") is None or pd.isna(d.get("estimate")):
+                return None
+            return [f"{pp(d['estimate'])} [{pp(d['ci_low'])}, {pp(d['ci_high'])}]",
+                    fmt_p(d["p_value"]), str(d.get("n_questions", "--"))]
+
+        spec = [
+            ("A", "primary", r"Visibility interaction, Acc", p4.get("A", {}).get("primary_interaction_accuracy")),
+            ("A", "", r"WR $-$ R, first answer shown", p4.get("A", {}).get("wr_minus_r_shown")),
+            ("A", "", r"WR $-$ R, first answer hidden", p4.get("A", {}).get("wr_minus_r_hidden")),
+            ("A", "", r"Visibility interaction, adoption", p4.get("A", {}).get("secondary_interaction_adoption")),
+            ("C", "primary", r"Round 3 minus round 1, $H$(WR) $-$ $H$(R)", p4.get("C", {}).get("primary_interaction_harmful")),
+            ("C", "", r"Round 3 minus round 1, Acc(WR) $-$ Acc(R)", p4.get("C", {}).get("secondary_interaction_accuracy")),
+            ("B", "primary", r"Excess adoption, two natural wrong peers", p4.get("B", {}).get("primary_excess_adoption_B_P2")),
+            ("B", "", r"Excess adoption, one natural wrong peer", p4.get("B", {}).get("secondary_excess_adoption_B_P1")),
+            ("B", "", r"Acc, two wrong peers $-$ R", p4.get("B", {}).get("accuracy_B_P2_minus_R")),
+            ("B", "", r"Acc, one wrong peer $-$ R", p4.get("B", {}).get("accuracy_B_P1_minus_R")),
+            ("B", "", r"Acc, two correct peers $-$ R", p4.get("B", {}).get("accuracy_B_P0_minus_R")),
+        ]
+        rows, last = [], None
+        for exp, role, label, d in spec:
+            c = cell(d)
+            if c is None:
+                continue
+            if last is not None and exp != last:
+                rows.append(["MIDRULE"])
+            last = exp
+            rows.append([exp, label + (" $^{\\dagger}$" if role == "primary" else "")] + c)
+        if rows:
+            write(tables, "tab_phase4", table(
+                r"Pre-registered Phase 4 experiments (pp; question-level bootstrap 95\% CI, "
+                r"sign-flip $p$). $\dagger$ = the experiment's single primary estimand. "
+                r"Excess adoption is trial-weighted with a question-cluster bootstrap.",
+                "tab:phase4", "@{}llrrr@{}",
+                ["Exp.", "Estimand", r"Estimate [95\% CI]", "$p$", "Questions"],
+                [r if r == ["MIDRULE"] else [str(x) for x in r] for r in rows], star=True))
+
     (tables / "paper_facts.json").write_text(json.dumps(FACTS, indent=1, default=str), encoding="utf-8")
     print(f"wrote tables to {tables} and Figure 1 to {images}")
     return 0

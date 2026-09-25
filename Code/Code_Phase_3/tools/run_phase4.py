@@ -178,7 +178,16 @@ def cmd_run(exp: str, focal: str, workers: int) -> int:
     auditor = SnapshotAuditor()
     calls: dict = {}
 
+    errors: dict = {}
+
     def arm(condition: str) -> None:
+        try:
+            _arm(condition)
+        except Exception as exc:          # a crashed arm must fail the step
+            errors[condition] = repr(exc)
+            logging.getLogger("phase4").exception("arm %s failed", condition)
+
+    def _arm(condition: str) -> None:
         calls[condition] = run_condition(
             condition_name=condition, condition=experiment["conditions"][condition],
             focal_key=focal, focal_agent=agents["focal_agents"][focal],
@@ -208,11 +217,12 @@ def cmd_run(exp: str, focal: str, workers: int) -> int:
     (folder / "run_metadata.json").write_text(json.dumps({
         "experiment": exp, "focal": focal, "conditions": design["conditions"],
         "revision_calls": calls, "failed_calls_not_recorded": failed,
+        "arm_errors": errors,
         "prereg": "PREREG_PHASE4.md",
         "run_timestamp_utc": pd.Timestamp.now("UTC").isoformat(),
     }, indent=2), encoding="utf-8")
     logging.getLogger("phase4").info("%s/%s: %s calls, failures %s", exp, focal, calls, failed)
-    return 3 if failed else 0
+    return 3 if (failed or errors) else 0
 
 
 def _prior_rounds(folder: Path):

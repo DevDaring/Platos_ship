@@ -1,0 +1,20 @@
+{
+  "experiment": "B",
+  "focal": "sweep_llama_3_1_8b_focal",
+  "conditions": [
+    "B_R",
+    "B_P0",
+    "B_P1",
+    "B_P2"
+  ],
+  "revision_calls": {
+    "B_P1": 0,
+    "B_P0": 0,
+    "B_R": 0,
+    "B_P2": 152
+  },
+  "failed_calls_not_recorded": {},
+  "arm_errors": {},
+  "prereg": "PREREG_PHASE4.md",
+  "run_timestamp_utc": "2026-09-25T14:10:03.725336+00:00"
+}

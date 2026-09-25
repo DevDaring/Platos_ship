@@ -1,4 +1,4 @@
-2026-09-25 08:41:05,193 [INFO] platos_ship3.run_all: Loaded environment from D:\PhD\Platos_ship\Code\.env
+2026-09-25 08:41:05,193 [INFO] platos_ship3.run_all: Loaded environment from <repo_root>\Code\.env
 2026-09-25 08:41:05,278 [INFO] platos_ship.agents: RoundRobinKeyManager initialized for nanogpt with 1 keys
 2026-09-25 08:41:05,278 [INFO] platos_ship.agents.openai_compatible: OpenAICompatibleAgent 'sweep_llama_3_1_8b_focal' ready: provider=nanogpt, model=meta-llama/llama-3.1-8b-instruct, keys=1, base_url=https://nano-gpt.com/api/v1
 2026-09-25 08:41:05,278 [INFO] platos_ship.agents: RoundRobinKeyManager initialized for openrouter with 2 keys
@@ -89,7 +89,7 @@
 2026-09-25 08:42:58,187 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:42:59,989 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:00,403 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:43:00,419 [INFO] platos_ship3.store: Checkpoint saved: 50 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:43:00,419 [INFO] platos_ship3.store: Checkpoint saved: 50 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:43:03,844 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:03,980 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:43:10,421 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -146,7 +146,7 @@
 2026-09-25 08:44:48,374 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:51,713 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:51,795 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:44:51,851 [INFO] platos_ship3.store: Checkpoint saved: 100 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:44:51,851 [INFO] platos_ship3.store: Checkpoint saved: 100 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:44:54,303 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:54,392 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:44:54,732 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -206,7 +206,7 @@
 2026-09-25 08:46:55,944 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:46:59,887 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:47:04,249 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:47:04,296 [INFO] platos_ship3.store: Checkpoint saved: 150 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:47:04,296 [INFO] platos_ship3.store: Checkpoint saved: 150 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:47:05,130 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:47:06,887 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:47:08,602 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -267,7 +267,7 @@
 2026-09-25 08:48:36,438 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:48:37,482 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:48:37,498 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:48:37,507 [INFO] platos_ship3.store: Checkpoint saved: 200 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:48:37,507 [INFO] platos_ship3.store: Checkpoint saved: 200 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:48:38,538 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:48:39,040 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:48:40,122 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -322,7 +322,7 @@
 2026-09-25 08:49:37,929 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:49:38,029 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:49:38,102 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:49:38,125 [INFO] platos_ship3.store: Checkpoint saved: 250 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:49:38,125 [INFO] platos_ship3.store: Checkpoint saved: 250 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:49:39,007 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:49:39,843 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:49:41,058 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -377,7 +377,7 @@
 2026-09-25 08:50:34,346 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:50:36,218 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:50:38,683 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:50:38,778 [INFO] platos_ship3.store: Checkpoint saved: 300 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:50:38,778 [INFO] platos_ship3.store: Checkpoint saved: 300 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:50:38,918 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:50:39,430 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:50:40,339 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -430,7 +430,7 @@
 2026-09-25 08:51:36,797 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:51:38,841 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:51:38,871 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:51:38,902 [INFO] platos_ship3.store: Checkpoint saved: 350 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:51:38,902 [INFO] platos_ship3.store: Checkpoint saved: 350 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:51:40,027 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:51:40,535 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:51:47,444 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -485,7 +485,7 @@
 2026-09-25 08:52:50,976 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:52:51,446 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:52:51,601 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:52:51,633 [INFO] platos_ship3.store: Checkpoint saved: 400 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:52:51,633 [INFO] platos_ship3.store: Checkpoint saved: 400 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:52:51,928 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:52:52,091 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:52:53,049 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -536,7 +536,7 @@
 2026-09-25 08:53:37,133 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:53:37,840 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:53:38,794 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:53:38,839 [INFO] platos_ship3.store: Checkpoint saved: 450 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:53:38,839 [INFO] platos_ship3.store: Checkpoint saved: 450 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:53:41,018 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:53:42,007 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:53:42,154 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -587,7 +587,7 @@
 2026-09-25 08:54:23,633 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:54:24,180 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:54:25,036 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:54:25,084 [INFO] platos_ship3.store: Checkpoint saved: 500 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:54:25,084 [INFO] platos_ship3.store: Checkpoint saved: 500 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:54:25,743 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:54:27,320 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:54:27,967 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -638,7 +638,7 @@
 2026-09-25 08:55:15,380 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:55:16,222 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:55:16,648 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:55:16,691 [INFO] platos_ship3.store: Checkpoint saved: 550 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:55:16,691 [INFO] platos_ship3.store: Checkpoint saved: 550 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:55:16,803 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:55:17,873 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:55:18,765 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -692,7 +692,7 @@
 2026-09-25 08:56:04,105 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:06,498 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:07,263 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:56:07,287 [INFO] platos_ship3.store: Checkpoint saved: 600 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:56:07,287 [INFO] platos_ship3.store: Checkpoint saved: 600 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:56:09,111 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:09,334 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:09,685 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -749,7 +749,7 @@
 2026-09-25 08:56:44,966 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:46,184 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:46,591 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:56:46,640 [INFO] platos_ship3.store: Checkpoint saved: 650 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:56:46,640 [INFO] platos_ship3.store: Checkpoint saved: 650 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:56:48,047 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:48,949 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:56:50,010 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -814,7 +814,7 @@
 2026-09-25 08:57:34,985 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:57:35,321 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:57:36,025 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:57:36,052 [INFO] platos_ship3.store: Checkpoint saved: 700 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:57:36,052 [INFO] platos_ship3.store: Checkpoint saved: 700 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:57:36,061 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:57:39,451 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:57:39,867 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -877,7 +877,7 @@
 2026-09-25 08:58:21,880 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:58:22,854 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:58:23,574 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:58:23,625 [INFO] platos_ship3.store: Checkpoint saved: 750 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:58:23,625 [INFO] platos_ship3.store: Checkpoint saved: 750 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:58:25,909 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:58:26,869 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:58:27,039 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -948,7 +948,7 @@
 2026-09-25 08:59:20,410 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:59:22,545 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:59:24,420 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 08:59:24,459 [INFO] platos_ship3.store: Checkpoint saved: 800 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 08:59:24,459 [INFO] platos_ship3.store: Checkpoint saved: 800 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 08:59:24,576 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:59:24,844 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 08:59:25,170 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1021,7 +1021,7 @@
 2026-09-25 09:00:52,879 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:00:53,085 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:00:53,869 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:00:53,911 [INFO] platos_ship3.store: Checkpoint saved: 850 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 09:00:53,911 [INFO] platos_ship3.store: Checkpoint saved: 850 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
 2026-09-25 09:00:54,480 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:00:59,533 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:01:00,941 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1076,9 +1076,9 @@
 2026-09-25 09:02:17,978 [INFO] httpx2: HTTP Request: POST https://nano-gpt.com/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:18,298 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:21,797 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:02:21,847 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
-2026-09-25 09:02:22,056 [INFO] platos_ship3.store: Consolidated 888 rows -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\revision_log.parquet
-2026-09-25 09:02:22,175 [INFO] platos_ship3.store: Consolidated 1776 rows -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\peer_message_log.parquet
-2026-09-25 09:02:22,185 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
-2026-09-25 09:02:22,197 [INFO] platos_ship3.snapshots: Snapshot audit: 888 calls, 0 mismatches -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\snapshot_audit.parquet
+2026-09-25 09:02:21,847 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 09:02:22,056 [INFO] platos_ship3.store: Consolidated 888 rows -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\revision_log.parquet
+2026-09-25 09:02:22,175 [INFO] platos_ship3.store: Consolidated 1776 rows -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\peer_message_log.parquet
+2026-09-25 09:02:22,185 [INFO] platos_ship3.store: Checkpoint saved: 888 units -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\checkpoint.parquet
+2026-09-25 09:02:22,197 [INFO] platos_ship3.snapshots: Snapshot audit: 888 calls, 0 mismatches -> <repo_root>\Code\Code_Phase_3\results\outputs\rerun_WRh\sweep_llama_3_1_8b_focal\snapshot_audit.parquet
 2026-09-25 09:02:22,198 [INFO] rerun: WRh/sweep_llama_3_1_8b_focal: 888 calls, failures {}

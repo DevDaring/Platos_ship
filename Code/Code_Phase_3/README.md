@@ -13,10 +13,24 @@ python3 run_all.py --list             # the plan and its call counts
 python3 run_all.py --dry-run          # 1 unit per cell; exercises every path
 python3 run_all.py --all              # prepare, run, analyse
 python3 run_all.py --analyse          # offline: tables and figures only
-python3 -m pytest tests/ -q           # 77 offline tests, no API key needed
+python3 -m pytest tests/ -q           # offline tests, no API key needed
 python3 tools/routing_report.py       # which account pays for which call
 python3 tools/routing_report.py --probe   # confirm every route's served model
 ```
+
+**Regenerate every submitted table, Figure 1 and every number in the paper,
+offline, from the released logs** (no API key, a few minutes on a laptop):
+
+```bash
+python3 run_all.py --analyse && python3 -m analysis.phase4 && \
+python3 tools/paper_tables.py --out <paper dir>
+```
+
+`run_all.py --analyse` rebuilds `results/outputs/paper_numbers.json` from the
+Protocol-B logs; `analysis.phase4` rebuilds `results/phase4/phase4_numbers.json`
+from the Phase 4 logs; `tools/paper_tables.py` writes every LaTeX table,
+Figure 1 and `paper_facts.json`. Phase 4 (pre-registered in
+`PREREG_PHASE4.md`) is re-run with `tools/run_phase4_all.sh`.
 
 ---
 

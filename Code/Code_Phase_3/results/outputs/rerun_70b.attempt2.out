@@ -1,4 +1,4 @@
-2026-09-25 09:01:28,187 [INFO] platos_ship3.run_all: Loaded environment from D:\PhD\Platos_ship\Code\.env
+2026-09-25 09:01:28,187 [INFO] platos_ship3.run_all: Loaded environment from <repo_root>\Code\.env
 2026-09-25 09:01:28,187 [INFO] platos_ship3.run_all: SHARD sweep_llama_3_1_70b | focal=['sweep_llama_3_1_70b'] | outputs -> ./results/outputs/shards/sweep_llama_3_1_70b
 
 ==========================================================================
@@ -36,12 +36,12 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:01:28,269 [INFO] platos_ship3.pinned_fallback: 'verifier' pinned chain: nanogpt(retries=2) -> openrouter(retries=0) (pin='qwen/qwen-2.5-72b')
 2026-09-25 09:01:28,269 [INFO] platos_ship3.agents: Phase 3 agents ready: 1 focal, 2 weak, judge=True, verifier=True
 2026-09-25 09:01:28,353 [INFO] platos_ship3.run_all: === Stage 0: Round-0 cache ===
-2026-09-25 09:01:28,358 [INFO] platos_ship3.store: Checkpoint: 900 completed units in D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\checkpoint_r0.parquet
+2026-09-25 09:01:28,358 [INFO] platos_ship3.store: Checkpoint: 900 completed units in <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\checkpoint_r0.parquet
 2026-09-25 09:01:28,364 [INFO] platos_ship3.run_all: Round-0 for pool main300: ['sweep_llama_3_1_70b']
 2026-09-25 09:01:28,385 [INFO] platos_ship3.r0_cache: R0 cache: 900 planned, 900 already cached, 0 to run.
-2026-09-25 09:01:28,403 [INFO] platos_ship3.store: Consolidated 900 rows -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\r0_cache.parquet
+2026-09-25 09:01:28,403 [INFO] platos_ship3.store: Consolidated 900 rows -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\r0_cache.parquet
 2026-09-25 09:01:28,404 [INFO] platos_ship3.run_all: === Stage: revision conditions ===
-2026-09-25 09:01:28,408 [INFO] platos_ship3.store: Checkpoint: 500 completed units in D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:01:28,408 [INFO] platos_ship3.store: Checkpoint: 500 completed units in <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:01:28,566 [INFO] platos_ship3.peer_pools: Pool wrong: 7 persona(s) excluded as unusable (confident rule).
 2026-09-25 09:01:28,667 [INFO] platos_ship3.peer_pools: Pool gsm_symbolic_wrong: 4 persona(s) excluded as unusable (confident rule).
 2026-09-25 09:01:28,833 [INFO] platos_ship3.peer_pools: Pool correct: 6 persona(s) excluded as unusable (confident rule).
@@ -163,7 +163,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:01:58,800 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:01:58,951 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:01:59,262 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:01:59,838 [INFO] platos_ship3.store: Checkpoint saved: 600 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:01:59,838 [INFO] platos_ship3.store: Checkpoint saved: 600 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:02:00,173 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:00,354 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:00,592 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -267,7 +267,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:02:14,008 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:14,127 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:14,577 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:02:14,644 [INFO] platos_ship3.store: Checkpoint saved: 700 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:02:14,644 [INFO] platos_ship3.store: Checkpoint saved: 700 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:02:14,752 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:14,759 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:14,789 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
@@ -399,7 +399,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:02:35,137 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:35,235 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:35,242 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:02:35,268 [INFO] platos_ship3.store: Checkpoint saved: 800 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:02:35,268 [INFO] platos_ship3.store: Checkpoint saved: 800 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:02:35,505 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:35,516 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:35,868 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -519,7 +519,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:02:54,875 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:55,104 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:56,810 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:02:56,842 [INFO] platos_ship3.store: Checkpoint saved: 900 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:02:56,842 [INFO] platos_ship3.store: Checkpoint saved: 900 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:02:56,848 [INFO] platos_ship3.run_all: X1_common_matrix | sweep_llama_3_1_70b | E — starting.
 2026-09-25 09:02:57,452 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:02:57,475 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -636,7 +636,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:03:29,775 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:30,046 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:30,372 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:03:30,415 [INFO] platos_ship3.store: Checkpoint saved: 1000 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:03:30,415 [INFO] platos_ship3.store: Checkpoint saved: 1000 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:03:30,422 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:30,591 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:31,259 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -738,7 +738,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:03:53,811 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:53,880 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:54,086 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:03:54,243 [INFO] platos_ship3.store: Checkpoint saved: 1100 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:03:54,243 [INFO] platos_ship3.store: Checkpoint saved: 1100 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:03:54,284 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:54,322 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:03:54,538 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -843,7 +843,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:04:19,692 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:19,914 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:20,286 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:04:20,356 [INFO] platos_ship3.store: Checkpoint saved: 1200 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:04:20,356 [INFO] platos_ship3.store: Checkpoint saved: 1200 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:04:20,559 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:20,842 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:20,971 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -947,7 +947,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:04:40,835 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:40,876 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:40,944 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:04:41,169 [INFO] platos_ship3.store: Checkpoint saved: 1300 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:04:41,169 [INFO] platos_ship3.store: Checkpoint saved: 1300 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:04:41,953 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:42,012 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:42,254 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1045,7 +1045,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:04:58,535 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:58,786 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:58,827 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:04:58,943 [INFO] platos_ship3.store: Checkpoint saved: 1400 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:04:58,943 [INFO] platos_ship3.store: Checkpoint saved: 1400 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:04:59,008 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:59,247 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:04:59,277 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1149,7 +1149,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:05:18,529 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:18,717 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:18,744 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:05:19,074 [INFO] platos_ship3.store: Checkpoint saved: 1500 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:05:19,074 [INFO] platos_ship3.store: Checkpoint saved: 1500 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:05:19,905 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:19,940 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:19,987 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1256,7 +1256,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:05:35,957 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:36,040 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:36,337 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:05:36,358 [INFO] platos_ship3.store: Checkpoint saved: 1600 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:05:36,358 [INFO] platos_ship3.store: Checkpoint saved: 1600 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:05:36,395 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:36,400 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:36,685 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1381,7 +1381,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:05:54,445 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:54,507 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:54,760 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:05:54,783 [INFO] platos_ship3.store: Checkpoint saved: 1700 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:05:54,783 [INFO] platos_ship3.store: Checkpoint saved: 1700 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:05:54,806 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:55,021 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:05:55,065 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1503,7 +1503,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:06:15,198 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:06:15,309 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:06:16,332 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:06:16,361 [INFO] platos_ship3.store: Checkpoint saved: 1800 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:06:16,361 [INFO] platos_ship3.store: Checkpoint saved: 1800 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:06:16,370 [INFO] platos_ship3.run_all: X1_common_matrix | sweep_llama_3_1_70b | WR — starting.
 2026-09-25 09:06:17,025 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:06:17,035 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1619,7 +1619,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:06:44,032 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:06:44,276 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:06:44,510 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:06:44,513 [INFO] platos_ship3.store: Checkpoint saved: 1900 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:06:44,513 [INFO] platos_ship3.store: Checkpoint saved: 1900 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:06:44,770 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:06:45,291 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:06:45,568 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1722,7 +1722,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:07:13,237 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:13,443 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:13,755 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:07:13,935 [INFO] platos_ship3.store: Checkpoint saved: 2000 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:07:13,935 [INFO] platos_ship3.store: Checkpoint saved: 2000 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:07:14,143 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:14,414 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:14,476 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1826,7 +1826,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:07:38,002 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:38,404 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:38,414 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:07:38,632 [INFO] platos_ship3.store: Checkpoint saved: 2100 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:07:38,632 [INFO] platos_ship3.store: Checkpoint saved: 2100 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:07:38,827 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:39,057 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:07:39,258 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -1928,7 +1928,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:08:02,954 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:03,044 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:03,127 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:08:03,196 [INFO] platos_ship3.store: Checkpoint saved: 2200 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:08:03,196 [INFO] platos_ship3.store: Checkpoint saved: 2200 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:08:03,291 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:03,819 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:04,018 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2029,7 +2029,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:08:26,462 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:26,744 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:26,789 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:08:26,971 [INFO] platos_ship3.store: Checkpoint saved: 2300 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:08:26,971 [INFO] platos_ship3.store: Checkpoint saved: 2300 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:08:26,999 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:27,463 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:27,777 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2129,7 +2129,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:08:50,617 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:50,640 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:51,141 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:08:51,143 [INFO] platos_ship3.store: Checkpoint saved: 2400 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:08:51,143 [INFO] platos_ship3.store: Checkpoint saved: 2400 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:08:51,368 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:51,405 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:08:51,470 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2238,7 +2238,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:09:09,081 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:09,455 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:09,657 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:09:10,724 [INFO] platos_ship3.store: Checkpoint saved: 2500 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:09:10,724 [INFO] platos_ship3.store: Checkpoint saved: 2500 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:09:10,798 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:10,826 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:10,844 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2366,7 +2366,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:09:33,584 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:33,683 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:33,915 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:09:34,008 [INFO] platos_ship3.store: Checkpoint saved: 2600 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:09:34,008 [INFO] platos_ship3.store: Checkpoint saved: 2600 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:09:34,277 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:34,454 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:34,661 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2485,7 +2485,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:09:57,966 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:58,940 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:09:59,298 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:09:59,332 [INFO] platos_ship3.store: Checkpoint saved: 2700 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:09:59,332 [INFO] platos_ship3.store: Checkpoint saved: 2700 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:09:59,341 [INFO] platos_ship3.run_all: X1_common_matrix | sweep_llama_3_1_70b | H — starting.
 2026-09-25 09:09:59,987 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:00,020 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2600,7 +2600,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:10:24,281 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:24,382 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:24,699 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:10:25,012 [INFO] platos_ship3.store: Checkpoint saved: 2800 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:10:25,012 [INFO] platos_ship3.store: Checkpoint saved: 2800 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:10:25,053 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:25,106 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:25,435 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2704,7 +2704,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:10:54,379 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:54,450 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:55,280 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:10:55,464 [INFO] platos_ship3.store: Checkpoint saved: 2900 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:10:55,464 [INFO] platos_ship3.store: Checkpoint saved: 2900 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:10:55,674 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:55,851 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:10:55,998 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2814,7 +2814,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:11:20,791 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:21,258 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:21,440 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:11:21,539 [INFO] platos_ship3.store: Checkpoint saved: 3000 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:11:21,539 [INFO] platos_ship3.store: Checkpoint saved: 3000 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:11:21,592 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:21,699 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:22,117 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -2915,7 +2915,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:11:44,717 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:44,870 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:44,969 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:11:45,247 [INFO] platos_ship3.store: Checkpoint saved: 3100 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:11:45,247 [INFO] platos_ship3.store: Checkpoint saved: 3100 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:11:45,567 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:45,617 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:11:45,833 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3015,7 +3015,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:12:03,955 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:04,055 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:04,151 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:12:04,899 [INFO] platos_ship3.store: Checkpoint saved: 3200 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:12:04,899 [INFO] platos_ship3.store: Checkpoint saved: 3200 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:12:05,089 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:05,134 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:05,146 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3118,7 +3118,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:12:27,467 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:27,568 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:27,661 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:12:27,991 [INFO] platos_ship3.store: Checkpoint saved: 3300 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:12:27,991 [INFO] platos_ship3.store: Checkpoint saved: 3300 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:12:28,071 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:28,204 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:28,586 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3227,7 +3227,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:12:44,234 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:44,285 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:45,003 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:12:45,032 [INFO] platos_ship3.store: Checkpoint saved: 3400 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:12:45,032 [INFO] platos_ship3.store: Checkpoint saved: 3400 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:12:45,199 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:45,356 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:12:45,535 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3358,7 +3358,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:13:05,905 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:05,908 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:05,927 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:13:05,984 [INFO] platos_ship3.store: Checkpoint saved: 3500 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:13:05,984 [INFO] platos_ship3.store: Checkpoint saved: 3500 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:13:06,113 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:06,587 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:06,817 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3479,7 +3479,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:13:27,162 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:27,855 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:29,915 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:13:29,945 [INFO] platos_ship3.store: Checkpoint saved: 3600 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:13:29,945 [INFO] platos_ship3.store: Checkpoint saved: 3600 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:13:29,954 [INFO] platos_ship3.run_all: X1_common_matrix | sweep_llama_3_1_70b | CR — starting.
 2026-09-25 09:13:30,602 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:30,605 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3594,7 +3594,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:13:55,839 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:56,502 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:56,518 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:13:57,840 [INFO] platos_ship3.store: Checkpoint saved: 3700 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:13:57,840 [INFO] platos_ship3.store: Checkpoint saved: 3700 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:13:57,973 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:58,155 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:13:58,418 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3696,7 +3696,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:14:26,964 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:27,149 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:27,605 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:14:27,702 [INFO] platos_ship3.store: Checkpoint saved: 3800 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:14:27,702 [INFO] platos_ship3.store: Checkpoint saved: 3800 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:14:27,981 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:28,193 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:28,270 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3798,7 +3798,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:14:52,472 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:52,699 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:52,800 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:14:52,814 [INFO] platos_ship3.store: Checkpoint saved: 3900 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:14:52,814 [INFO] platos_ship3.store: Checkpoint saved: 3900 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:14:52,986 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:53,086 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:14:53,309 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -3900,7 +3900,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:15:15,110 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:15,250 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:15,330 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:15:15,676 [INFO] platos_ship3.store: Checkpoint saved: 4000 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:15:15,676 [INFO] platos_ship3.store: Checkpoint saved: 4000 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:15:15,778 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:15,863 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:16,217 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -4003,7 +4003,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:15:36,377 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:36,477 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:36,912 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:15:37,078 [INFO] platos_ship3.store: Checkpoint saved: 4100 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:15:37,078 [INFO] platos_ship3.store: Checkpoint saved: 4100 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:15:37,330 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:37,484 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:37,865 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -4102,7 +4102,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:15:58,099 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:58,451 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:58,526 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:15:58,795 [INFO] platos_ship3.store: Checkpoint saved: 4200 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:15:58,795 [INFO] platos_ship3.store: Checkpoint saved: 4200 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:15:58,941 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:59,080 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:15:59,155 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -4215,7 +4215,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:16:17,588 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:18,127 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:18,148 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:16:18,438 [INFO] platos_ship3.store: Checkpoint saved: 4300 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:16:18,438 [INFO] platos_ship3.store: Checkpoint saved: 4300 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:16:19,034 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:19,189 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:19,296 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
@@ -4339,7 +4339,7 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:16:40,749 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:40,893 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:40,918 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:16:40,943 [INFO] platos_ship3.store: Checkpoint saved: 4400 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:16:40,943 [INFO] platos_ship3.store: Checkpoint saved: 4400 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:16:41,039 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:41,115 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:16:41,216 [INFO] httpx2: HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
@@ -4457,19 +4457,19 @@ DESIGN CHECK — selected experiments
 2026-09-25 09:17:03,423 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:17:04,058 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-09-25 09:17:05,304 [INFO] httpx2: HTTP Request: POST https://api.linkapi.ai/v1/chat/completions "HTTP/1.1 200 OK"
-2026-09-25 09:17:05,332 [INFO] platos_ship3.store: Checkpoint saved: 4500 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:17:05,332 [INFO] platos_ship3.store: Checkpoint saved: 4500 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
 2026-09-25 09:17:05,341 [INFO] platos_ship3.run_all: X1_common_matrix complete: 4000 revision calls.
 2026-09-25 09:17:05,345 [INFO] platos_ship3.run_all: X2_message_decomposition complete: 0 revision calls.
 2026-09-25 09:17:05,352 [INFO] platos_ship3.run_all: X3_scaling complete: 0 revision calls.
-2026-09-25 09:17:05,354 [INFO] platos_ship3.gsm_symbolic: GSM-Symbolic pool exists at D:\PhD\Platos_ship\Code\Code_Phase_3\results\processed\gsm_symbolic_pool.parquet — loading.
+2026-09-25 09:17:05,354 [INFO] platos_ship3.gsm_symbolic: GSM-Symbolic pool exists at <repo_root>\Code\Code_Phase_3\results\processed\gsm_symbolic_pool.parquet — loading.
 2026-09-25 09:17:05,359 [INFO] platos_ship3.run_all: X4_gsm_symbolic complete: 0 revision calls.
 2026-09-25 09:17:05,359 [INFO] platos_ship3.run_all: X5_voting_baseline is offline-only; handled in the analysis stage.
 2026-09-25 09:17:05,364 [INFO] platos_ship3.run_all: X6_verification_safeguard complete: 0 revision calls.
 2026-09-25 09:17:05,370 [INFO] platos_ship3.run_all: X7_confidence_filter complete: 0 revision calls.
-2026-09-25 09:17:06,173 [INFO] platos_ship3.store: Consolidated 4500 rows -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\revision_log.parquet
-2026-09-25 09:17:06,585 [INFO] platos_ship3.store: Consolidated 7200 rows -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\peer_message_log.parquet
-2026-09-25 09:17:06,593 [INFO] platos_ship3.store: Checkpoint saved: 4500 units -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
-2026-09-25 09:17:06,612 [INFO] platos_ship3.snapshots: Snapshot audit: 4000 calls, 0 mismatches -> D:\PhD\Platos_ship\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\snapshot_audit.parquet
+2026-09-25 09:17:06,173 [INFO] platos_ship3.store: Consolidated 4500 rows -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\revision_log.parquet
+2026-09-25 09:17:06,585 [INFO] platos_ship3.store: Consolidated 7200 rows -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\peer_message_log.parquet
+2026-09-25 09:17:06,593 [INFO] platos_ship3.store: Checkpoint saved: 4500 units -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\completed_units.parquet
+2026-09-25 09:17:06,612 [INFO] platos_ship3.snapshots: Snapshot audit: 4000 calls, 0 mismatches -> <repo_root>\Code\Code_Phase_3\results\outputs\shards\sweep_llama_3_1_70b\snapshot_audit.parquet
 2026-09-25 09:17:06,617 [INFO] platos_ship3.run_all: === Stage: X6 verification safeguard ===
 2026-09-25 09:17:06,647 [INFO] platos_ship3.run_all: X6: none of this process's models is an X6 model; nothing to verify.
 2026-09-25 09:17:06,669 [INFO] platos_ship3.run_all: Phase 3 run complete.
