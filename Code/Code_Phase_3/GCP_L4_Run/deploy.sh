@@ -17,7 +17,7 @@ NAME="${NAME:-platos-ship}"
 REMOTE="${REMOTE:-platos}"
 
 # `gcloud compute ssh` resolves the Linux username and key for you, which
-# matters here: the key comment is `DESKTOP-9952NT0\Debz@...`, so the username
+# matters here: the key comment is `DESKTOP-9952NT0\user@...`, so the username
 # GCP derived is not guessable from the key alone. If you would rather use the
 # key directly, set SSH_USER and SSH_HOST and the script will use plain ssh/scp.
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_rsa_gcp}"

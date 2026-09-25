@@ -66,6 +66,24 @@ def _numbers_in(text: str) -> set:
     return {m.group(0).replace(",", "") for m in _NUMBER_RE.finditer(text or "")}
 
 
+# The rewriter often opened with an instruction echo such as "Here's a
+# rewritten version of the message with tentative wording:". Shown to a focal
+# model as a peer's message, that line announces the message was rewritten,
+# which can lower its credibility for a reason other than its wording and so
+# confounds WR vs WRh. Found in 63.9% of the first hedged pool and in 85.6% of
+# WRh units (hand audit, 25 Sept 2026). It is stripped deterministically, and
+# any remaining meta-text fails validation.
+_PREAMBLE = re.compile(
+    r"^\s*(?:here(?:'s| is)|sure|okay|certainly)[^\n:]{0,120}:\s*\n+", re.IGNORECASE)
+_META = re.compile(r"rewritten|rewrite|tentative wording|tentative tone|original message",
+                   re.IGNORECASE)
+
+
+def clean_rewrite(text: str) -> str:
+    """Remove a leading instruction echo; the rewrite itself is untouched."""
+    return _PREAMBLE.sub("", text or "", count=1).strip()
+
+
 def validate_hedged(
     rewritten: str,
     source_text: str,
@@ -75,6 +93,8 @@ def validate_hedged(
     """Return (passed, reason)."""
     if not rewritten or not rewritten.strip():
         return False, "empty"
+    if _META.search(rewritten):
+        return False, "meta_text: mentions the rewrite itself"
 
     if config.get("final_answer_must_match_source", True):
         parsed = extract_answer_regex(rewritten)
@@ -167,7 +187,7 @@ def build_hedged_pool(
                                   "attempt": attempt},
             )
             call_failed = is_failed_call(response)
-            candidate = response.raw_text_output
+            candidate = clean_rewrite(response.raw_text_output)
             passed, reason = validate_hedged(
                 candidate, source_text, source_answer, validation_config)
             if passed:

@@ -68,6 +68,7 @@ def _build_one(
         provider_key=spec["provider"],
         model_slug=spec["model_slug"],
         providers_config=providers,
+        extra_body=spec.get("extra_body"),
         max_retries=primary_retries,
         retry_backoff_seconds=backoff,
         timeout_seconds=timeout,

@@ -283,6 +283,16 @@ def run_full_analysis(project_root: Path) -> Dict[str, Any]:
         identity.to_parquet(output_dir / "accounting_identity_check.parquet",
                             index=False)
 
+    # ── secondary: GEE ladder and worst-case parse bounds (plan §5) ───────
+    from .secondary import adoption_excess, gee_condition_ladder, parse_failure_bounds
+
+    gee = gee_condition_ladder(registry)
+    if not gee.empty:
+        gee.to_parquet(output_dir / "gee_condition_ladder.parquet", index=False)
+    bounds = parse_failure_bounds(registry, analysis_config.get("contrast_families", {}))
+    if not bounds.empty:
+        bounds.to_parquet(output_dir / "parse_failure_bounds.parquet", index=False)
+
     # ── tables and figures ────────────────────────────────────────────────
     from .make_figures import make_all_figures
     from .make_tables import make_all_tables
@@ -311,6 +321,9 @@ def run_full_analysis(project_root: Path) -> Dict[str, Any]:
         "verifier_cost": cost,
         "confidence_filter_firing": _filter_firing(project_root, paths),
         "truncation_and_parsing": _truncation_and_parsing(project_root, paths),
+        "gee_condition_ladder": gee.to_dict("records") if not gee.empty else [],
+        "parse_failure_bounds": bounds.to_dict("records") if not bounds.empty else [],
+        "adoption_excess_exploratory": adoption_excess(registry, solo_accuracy),
         "accounting_identity_max_deviation": (
             float(identity["absolute_difference"].max()) if not identity.empty
             else None),

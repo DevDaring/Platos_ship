@@ -1,0 +1,8 @@
+{
+  "rows": 1493,
+  "passed_before": 1482,
+  "preamble_removed": 947,
+  "passed_after_cleaning": 1481,
+  "dropped_by_cleaning": 1,
+  "kept_first_version_as": "hedged_personas_v1_preamble.parquet"
+}

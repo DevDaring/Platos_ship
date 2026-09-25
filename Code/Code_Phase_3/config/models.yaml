@@ -149,6 +149,16 @@ focal_agents:
     # would silently change which model the paper reports on.
     provider: openrouter
     model_slug: meta-llama/llama-3.1-70b-instruct
+    # PINNED TO AMAZON BEDROCK. OpenRouter serves this name from DeepInfra
+    # (fp8) and Amazon Bedrock. The 24 Sept run was served a degraded model:
+    # MMLU-Pro solo accuracy 36.5%, GSM8K no better than Llama-3.1-8B; on a
+    # 30-item check the run scored 41.1% where the same items scored 77.8% in
+    # May, 77% via Bedrock and 60% via DeepInfra (25 Sept). The model-name pin
+    # cannot see the host, so the host is pinned here, with no fallback.
+    extra_body:
+      provider:
+        order: ["Amazon Bedrock"]
+        allow_fallbacks: false
     expected_served_prefix: meta-llama/llama-3.1-70b
     capability_tier: strong
     paper_name: Llama-3.1-70B

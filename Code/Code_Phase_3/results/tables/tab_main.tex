@@ -26,7 +26,7 @@ deepseek\_primary & Two wrong, same target & 90.4 & 1.4 (214) & 23.1 (26) & 0.0 
 deepseek\_primary & Two wrong, stating confidence, unfiltered & 90.0 & 1.5 (260) & 35.0 (40) & 0.0 & 300 \\
 deepseek\_primary & Two wrong, different targets & 89.3 & 1.9 (260) & 32.5 (40) & 0.8 & 300 \\
 deepseek\_primary & Two wrong, confidence-filtered & 89.7 & 1.5 (260) & 32.5 (40) & 0.4 & 300 \\
-deepseek\_primary & Two hedged wrong rationales & 88.2 & 0.9 (759) & 24.6 (130) & 0.1 & 889 \\
+deepseek\_primary & Two hedged wrong rationales & 88.9 & 0.9 (758) & 29.2 (130) & 0.3 & 888 \\
 gpt4o\_mini & One wrong, one correct & 75.9 & 1.8 (600) & 31.3 (300) & 0.5 & 900 \\
 gpt4o\_mini & Two self-samples & 73.2 & 3.3 (600) & 26.3 (300) & -- & 900 \\
 gpt4o\_mini & Two honest weak peers & 72.0 & 5.7 (600) & 27.3 (300) & -- & 900 \\
@@ -52,17 +52,17 @@ sweep\_gemma\_3\_27b & Two wrong, same target & 60.4 & 15.2 (164) & 7.9 (76) & 1
 sweep\_gemma\_3\_27b & Two wrong, stating confidence, unfiltered & 62.3 & 13.6 (198) & 15.7 (102) & 11.6 & 300 \\
 sweep\_gemma\_3\_27b & Two wrong, different targets & 64.0 & 11.1 (198) & 15.7 (102) & 8.6 & 300 \\
 sweep\_gemma\_3\_27b & Two wrong, confidence-filtered & 61.0 & 14.1 (198) & 12.7 (102) & 11.6 & 300 \\
-sweep\_gemma\_3\_27b & Two hedged wrong rationales & 70.9 & 7.9 (642) & 15.8 (247) & 4.5 & 889 \\
+sweep\_gemma\_3\_27b & Two hedged wrong rationales & 71.6 & 7.3 (642) & 16.7 (246) & 4.5 & 888 \\
 sweep\_gemma\_3\_4b\_focal & One wrong, one correct & 57.2 & 12.9 (450) & 27.3 (450) & 6.2 & 900 \\
 sweep\_gemma\_3\_4b\_focal & Two self-samples & 55.7 & 3.8 (450) & 15.1 (450) & -- & 900 \\
 sweep\_gemma\_3\_4b\_focal & Two honest weak peers & 57.4 & 7.1 (450) & 22.0 (450) & -- & 900 \\
 sweep\_gemma\_3\_4b\_focal & Re-answer (no peers) & 52.0 & 13.6 (450) & 17.6 (450) & -- & 900 \\
 sweep\_gemma\_3\_4b\_focal & Two wrong rationales & 51.4 & 13.3 (450) & 16.2 (450) & 8.2 & 900 \\
-sweep\_llama\_3\_1\_70b & One wrong, one correct & 59.0 & 19.1 (419) & 39.9 (481) & 4.3 & 900 \\
-sweep\_llama\_3\_1\_70b & Two self-samples & 52.1 & 18.4 (419) & 26.4 (481) & -- & 900 \\
-sweep\_llama\_3\_1\_70b & Two honest weak peers & 58.1 & 16.9 (419) & 36.4 (481) & -- & 900 \\
-sweep\_llama\_3\_1\_70b & Re-answer (no peers) & 47.4 & 23.4 (419) & 22.0 (481) & -- & 900 \\
-sweep\_llama\_3\_1\_70b & Two wrong rationales & 46.9 & 24.1 (419) & 21.6 (481) & 11.7 & 900 \\
+sweep\_llama\_3\_1\_70b & One wrong, one correct & 80.1 & 3.1 (673) & 30.4 (227) & 1.5 & 900 \\
+sweep\_llama\_3\_1\_70b & Two self-samples & 79.1 & 3.6 (673) & 27.8 (227) & -- & 900 \\
+sweep\_llama\_3\_1\_70b & Two honest weak peers & 74.7 & 8.5 (673) & 24.7 (227) & -- & 900 \\
+sweep\_llama\_3\_1\_70b & Re-answer (no peers) & 76.0 & 5.3 (673) & 20.7 (227) & -- & 900 \\
+sweep\_llama\_3\_1\_70b & Two wrong rationales & 76.7 & 4.3 (673) & 20.3 (227) & 2.1 & 900 \\
 sweep\_llama\_3\_1\_8b\_focal & One wrong, one correct & 58.3 & 11.6 (476) & 24.5 (424) & 3.4 & 900 \\
 sweep\_llama\_3\_1\_8b\_focal & Two self-samples & 56.2 & 10.9 (476) & 19.3 (424) & -- & 900 \\
 sweep\_llama\_3\_1\_8b\_focal & Generic challenge & 52.3 & 15.5 (476) & 16.3 (424) & -- & 900 \\
@@ -74,7 +74,7 @@ sweep\_llama\_3\_1\_8b\_focal & Bare wrong answers & 51.6 & 15.5 (476) & 14.6 (4
 sweep\_llama\_3\_1\_8b\_focal & Two wrong rationales & 52.7 & 12.6 (476) & 13.7 (424) & 5.5 & 900 \\
 sweep\_llama\_3\_1\_8b\_focal & Two wrong, stating confidence, unfiltered & 50.3 & 12.1 (149) & 13.2 (151) & 6.7 & 300 \\
 sweep\_llama\_3\_1\_8b\_focal & Two wrong, confidence-filtered & 49.7 & 10.7 (149) & 10.6 (151) & 7.4 & 300 \\
-sweep\_llama\_3\_1\_8b\_focal & Two hedged wrong rationales & 52.9 & 12.6 (467) & 14.7 (422) & 5.4 & 889 \\
+sweep\_llama\_3\_1\_8b\_focal & Two hedged wrong rationales & 52.9 & 12.4 (467) & 14.5 (421) & 6.0 & 888 \\
 sweep\_mistral\_small & One wrong, one correct & 76.2 & 8.3 (641) & 37.8 (259) & 4.1 & 900 \\
 sweep\_mistral\_small & Two self-samples & 75.6 & 5.0 (641) & 27.4 (259) & -- & 900 \\
 sweep\_mistral\_small & Two honest weak peers & 70.7 & 12.0 (641) & 27.8 (259) & -- & 900 \\

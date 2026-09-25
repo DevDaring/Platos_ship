@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\caption{Voting baseline, \%: single sample (1 call) / plurality vote over 3 samples (3 calls) / E, revision after two self-samples (4 calls), per task.}
+\label{tab:voting}
+\begin{adjustbox}{max width=\linewidth}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Focal & MMLU-Pro & GSM8K \\
+\midrule
+DeepSeek-v4-flash & 80.8 / 82.0 / 85.8 & 94.7 / 96.0 / 95.0 \\
+Qwen2.5-72B & 70.3 / 71.5 / 73.7 & 87.3 / 91.0 / 90.0 \\
+Llama-3.1-70B & 66.0 / 67.0 / 71.2 & 92.3 / 94.0 / 95.0 \\
+Gemma-3-27B & 63.3 / 64.5 / 64.3 & 90.7 / 92.0 / 92.0 \\
+Mistral-Small-24B & 63.7 / 65.0 / 67.2 & 86.3 / 89.0 / 92.3 \\
+GPT-4o-mini & 58.2 / 59.5 / 64.2 & 83.7 / 85.0 / 91.3 \\
+Llama-3.1-8B & 46.7 / 49.5 / 47.8 & 65.3 / 73.0 / 73.0 \\
+Gemma-3-4B & 37.5 / 38.0 / 41.2 & 75.0 / 78.0 / 84.7 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

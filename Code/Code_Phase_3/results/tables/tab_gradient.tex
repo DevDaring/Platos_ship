@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering
-\caption{Harmful revision against focal ability. Excess is H under two wrong rationales minus H under the matched re-answer baseline, which removes the revision churn common to every condition. capability\_gradient\_B: $\rho = 0.14$, $p = 0.752$ (exact\_permutation\_40320); capability\_gradient\_B\_raw: $\rho = -0.74$, $p = 0.046$ (exact\_permutation\_40320); capability\_gradient\_A\_raw: $\rho = -0.95$, $p = 0.001$ (exact\_permutation\_40320).\label{tab:gradient}}
+\caption{Harmful revision against focal ability. Excess is H under two wrong rationales minus H under the matched re-answer baseline, which removes the revision churn common to every condition. capability\_gradient\_B: $\rho = 0.21$, $p = 0.619$ (exact\_permutation\_40320); capability\_gradient\_B\_raw: $\rho = -0.64$, $p = 0.096$ (exact\_permutation\_40320); capability\_gradient\_A\_raw: $\rho = -0.95$, $p = 0.001$ (exact\_permutation\_40320).\label{tab:gradient}}
 \begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{@{}lrrrrc@{}}
 \toprule
@@ -8,20 +8,20 @@ Focal model & Solo acc. & H under WR & H under R & Excess & Protocol \\
 \midrule
 deepseek\_primary & 85.4 & 1.0 & 1.2 & -0.1 & B \\
 sweep\_qwen\_2\_5\_72b & 76.0 & 3.5 & 4.4 & -0.9 & B \\
+sweep\_llama\_3\_1\_70b & 74.8 & 4.3 & 5.3 & -1.0 & B \\
 sweep\_gemma\_3\_27b & 72.4 & 12.3 & 10.4 & 1.8 & B \\
 sweep\_mistral\_small & 71.2 & 15.1 & 11.5 & 3.6 & B \\
 gpt4o\_mini & 66.7 & 2.8 & 3.8 & -1.0 & B \\
 sweep\_llama\_3\_1\_8b\_focal & 52.9 & 12.6 & 13.7 & -1.1 & B \\
 sweep\_gemma\_3\_4b\_focal & 50.0 & 13.3 & 13.6 & -0.2 & B \\
-sweep\_llama\_3\_1\_70b & 46.6 & 24.1 & 23.4 & 0.7 & B \\
 deepseek\_primary & 85.4 & 1.0 & 1.2 & 1.0 & B \\
 sweep\_qwen\_2\_5\_72b & 76.0 & 3.5 & 4.4 & 3.5 & B \\
+sweep\_llama\_3\_1\_70b & 74.8 & 4.3 & 5.3 & 4.3 & B \\
 sweep\_gemma\_3\_27b & 72.4 & 12.3 & 10.4 & 12.3 & B \\
 sweep\_mistral\_small & 71.2 & 15.1 & 11.5 & 15.1 & B \\
 gpt4o\_mini & 66.7 & 2.8 & 3.8 & 2.8 & B \\
 sweep\_llama\_3\_1\_8b\_focal & 52.9 & 12.6 & 13.7 & 12.6 & B \\
 sweep\_gemma\_3\_4b\_focal & 50.0 & 13.3 & 13.6 & 13.3 & B \\
-sweep\_llama\_3\_1\_70b & 46.6 & 24.1 & 23.4 & 24.1 & B \\
 deepseek\_primary & 76.3 & 6.5 & 3.3 & 3.2 & A \\
 sweep\_llama\_3\_1\_70b & 67.5 & 12.2 & -- & -- & A \\
 sweep\_qwen\_2\_5\_72b & 66.4 & 12.2 & -- & -- & A \\

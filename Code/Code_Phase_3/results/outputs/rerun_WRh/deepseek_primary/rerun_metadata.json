@@ -1,0 +1,9 @@
+{
+  "condition": "WRh",
+  "experiment": "X2_message_decomposition",
+  "focal": "deepseek_primary",
+  "revision_calls": 888,
+  "failed_calls_not_recorded": {},
+  "reason": "hedged messages cleaned of rewrite preambles (tools/clean_hedged_pool.py)",
+  "run_timestamp_utc": "2026-09-25T03:15:30.273613+00:00"
+}

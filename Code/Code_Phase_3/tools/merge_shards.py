@@ -84,7 +84,7 @@ def load_metadata(shard: Path) -> Dict[str, Any]:
     return json.loads(meta.read_text(encoding="utf-8"))
 
 
-def verify(shards: List[Path]) -> Dict[str, Any]:
+def verify(shards: List[Path], accept_changed: Optional[List[str]] = None) -> Dict[str, Any]:
     if not shards:
         raise MergeRefused(f"no shards found under {SHARD_PARENT}")
     problems: List[str] = []
@@ -110,6 +110,12 @@ def verify(shards: List[Path]) -> Dict[str, Any]:
         reference = hashes[reference_name]
         for name, h in hashes.items():
             for key in sorted(set(reference) | set(h)):
+                # An input named with --accept-changed-input may differ, and
+                # the difference is written to the manifest. Used once: the
+                # hedged pool was cleaned after the first merge, and the one
+                # shard re-run later (Llama-3.1-70B) does not read it.
+                if key in (accept_changed or []):
+                    continue
                 if reference.get(key) != h.get(key):
                     problems.append(
                         f"input {key} differs: {reference_name}={str(reference.get(key))[:12]} "
@@ -172,6 +178,9 @@ def merge_output(shards: List[Path], filename: str,
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="verify only")
+    parser.add_argument("--accept-changed-input", action="append", default=[],
+                        help="a shared input key allowed to differ between shards "
+                             "(recorded in the manifest)")
     parser.add_argument("--force", action="store_true",
                         help="overwrite existing canonical outputs")
     args = parser.parse_args()
@@ -179,7 +188,7 @@ def main() -> int:
     paths = yaml.safe_load((ROOT / "config" / "paths.yaml").read_text(encoding="utf-8"))
     shards = discover(ROOT / SHARD_PARENT)
     try:
-        info = verify(shards)
+        info = verify(shards, args.accept_changed_input)
     except MergeRefused as exc:
         print(exc)
         return 1
@@ -220,6 +229,10 @@ def main() -> int:
         "rows": {Path(paths[k]).name: int(len(f)) for k, f in merged.items()},
         "shared_input_sha256": next(iter(info["metadata"].values())).get("shared_input_sha256"),
         "dry_run": info["dry_run"],
+        "accepted_changed_inputs": {
+            key: {name: (m.get("shared_input_sha256") or {}).get(key)
+                  for name, m in info["metadata"].items()}
+            for key in args.accept_changed_input},
         "merged_at_utc": pd.Timestamp.now("UTC").isoformat(),
     }
     meta_target = _resolve(paths["experiment_metadata_file"])

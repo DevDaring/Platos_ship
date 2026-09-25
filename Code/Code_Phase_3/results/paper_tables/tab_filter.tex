@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\caption{Confidence filter. Top: share of units (\%) in which the filter removed at least one peer. Bottom: how well stated confidence separates correct from wrong natural peers.}
+\label{tab:filter}
+\begin{adjustbox}{max width=\linewidth}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Focal & WRfilt & Nfilt \\
+\midrule
+DeepSeek-v4-flash & 2.0 & 1.3 \\
+Gemma-3-27B & 2.0 & 1.3 \\
+Llama-3.1-8B & 2.0 & 1.3 \\
+\midrule
+Retention gap $\Delta_{\mathrm{ret}}$ / AUROC, 1{,}794 natural-peer messages & +0.01 & 0.63 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

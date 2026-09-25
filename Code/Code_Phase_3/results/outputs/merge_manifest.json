@@ -137,7 +137,7 @@
     "peer_message_log.parquet": 93864,
     "completed_units.parquet": 58347,
     "safeguard_results.parquet": 347,
-    "snapshot_audit.parquet": 61987
+    "snapshot_audit.parquet": 60587
   },
   "shared_input_sha256": {
     "question_pool_file": "76a2ac588e6532a7f886bec7e38d916cf8c515fc031c5670802aa453756bcbf2",
@@ -150,5 +150,17 @@
     "gsm_symbolic_personas_file": "4f5c1606d8d589ea6991ec69cb918f6ccbe6b62a6386b172c5c9e163f35c2e33"
   },
   "dry_run": false,
-  "merged_at_utc": "2026-09-24T20:29:42.969325+00:00"
+  "accepted_changed_inputs": {
+    "hedged_personas_file": {
+      "deepseek_primary": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71",
+      "gpt4o_mini": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71",
+      "sweep_gemma_3_27b": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71",
+      "sweep_gemma_3_4b_focal": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71",
+      "sweep_llama_3_1_70b": "7c685ca11ccc09629cb9e98b7d0e349068c2710945dbcb7ba424d9acb9360346",
+      "sweep_llama_3_1_8b_focal": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71",
+      "sweep_mistral_small": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71",
+      "sweep_qwen_2_5_72b": "885370f848dc0783f455e3ea4912f136dfd7b4488bd27713a6477fb42c60ca71"
+    }
+  },
+  "merged_at_utc": "2026-09-25T03:49:54.789243+00:00"
 }

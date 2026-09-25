@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\caption{Scaling study on the 100-item subset, 3 replicates, \%. DS = DeepSeek-v4-flash; G27 = Gemma-3-27B; $H$ = harmful revision; Adopt = adoption of a peer's wrong answer.}
+\label{tab:x3}
+\begin{adjustbox}{max width=\linewidth}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Cell & $H$ DS & Adopt DS & $H$ G27 & Adopt G27 \\
+\midrule
+1 peer & 1.5 & 0.4 & 8.6 & 6.1 \\
+2 peers & 1.2 & 0.4 & 11.6 & 7.6 \\
+4 peers & 2.3 & 0.8 & 15.2 & 13.1 \\
+2, same target & 1.4 & 0.0 & 15.2 & 11.6 \\
+2, different targets & 1.9 & 0.8 & 11.1 & 8.6 \\
+round 1 of 3 & 1.5 & 0.0 & 11.1 & 8.6 \\
+round 2 of 3 & 1.2 & 0.4 & 19.7 & 13.6 \\
+round 3 of 3 & 1.9 & 0.8 & 23.2 & 19.2 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}

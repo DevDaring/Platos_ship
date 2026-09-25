@@ -145,7 +145,13 @@ class OpenAICompatibleAgent(BaseAgent):
                     error_status="success" if attempt == 0 else "api_error_recovered",
                     retry_attempts_used=attempt,
                     finish_reason=getattr(choices[0], "finish_reason", None),
-                    served_route=self.provider,
+                    # The upstream host too, when the provider reports one:
+                    # OpenRouter serves one model name from several hosts,
+                    # and on 24 Sept 2026 one of them served a degraded
+                    # Llama-3.1-70B under the correct name.
+                    served_route=(f"{self.provider}:{getattr(response, 'provider', None)}"
+                                  if getattr(response, "provider", None)
+                                  else self.provider),
                 )
                 self._track_usage(result)
                 return result
@@ -280,9 +286,14 @@ def build_agent_from_config(
     max_retries: int = 5,
     retry_backoff_seconds: Optional[list] = None,
     timeout_seconds: int = 120,
+    extra_body: Optional[Dict[str, Any]] = None,
 ) -> OpenAICompatibleAgent:
-    """Factory: build an OpenAICompatibleAgent for (provider_key, model_slug)."""
+    """Factory: build an OpenAICompatibleAgent for (provider_key, model_slug).
+
+    `extra_body` (a model's own request fields) is merged over the provider's.
+    """
     resolved = resolve_provider(provider_key, providers_config)
+    merged_body = {**(resolved.get("extra_body") or {}), **(extra_body or {})} or None
     return OpenAICompatibleAgent(
         agent_name=agent_name,
         provider=provider_key,
@@ -293,5 +304,5 @@ def build_agent_from_config(
         retry_backoff_seconds=retry_backoff_seconds,
         timeout_seconds=timeout_seconds,
         default_headers=resolved["headers"],
-        extra_body=resolved.get("extra_body"),
+        extra_body=merged_body,
     )

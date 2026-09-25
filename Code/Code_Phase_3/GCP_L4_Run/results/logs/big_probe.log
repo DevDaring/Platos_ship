@@ -9,7 +9,7 @@
 2026-09-23 09:16:16,934 [INFO] platos_ship3.big_probe: Stage B: condition WR
 2026-09-23 09:16:30,209 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
 2026-09-23 09:16:30,326 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.0224 (95% CI [0.0001, 0.0448], n=2)
-2026-09-23 09:16:30,326 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_smoke — pull them, then DESTROY the instance.
+2026-09-23 09:16:30,326 [INFO] platos_ship3.big_probe: Results in /home/user/platos/results_smoke — pull them, then DESTROY the instance.
 2026-09-23 09:18:41,494 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
 2026-09-23 09:18:52,878 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
 2026-09-23 09:21:13,548 [INFO] platos_ship3.big_probe: Model ready in 2.3 min.
@@ -21,7 +21,7 @@
 2026-09-23 09:21:58,101 [INFO] platos_ship3.big_probe: Stage B: condition WR
 2026-09-23 09:22:17,518 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
 2026-09-23 09:22:17,635 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.0127 (95% CI [0.0012, 0.0243], n=2)
-2026-09-23 09:22:17,635 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_gsm — pull them, then DESTROY the instance.
+2026-09-23 09:22:17,635 [INFO] platos_ship3.big_probe: Results in /home/user/platos/results_gsm — pull them, then DESTROY the instance.
 2026-09-23 09:24:34,627 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
 2026-09-23 09:24:47,111 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
 2026-09-23 09:27:07,868 [INFO] platos_ship3.big_probe: Model ready in 2.3 min.
@@ -33,7 +33,7 @@
 2026-09-23 09:27:52,162 [INFO] platos_ship3.big_probe: Stage B: condition WR
 2026-09-23 09:28:11,601 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
 2026-09-23 09:28:11,714 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.0127 (95% CI [0.0012, 0.0243], n=2)
-2026-09-23 09:28:11,714 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_gsm — pull them, then DESTROY the instance.
+2026-09-23 09:28:11,714 [INFO] platos_ship3.big_probe: Results in /home/user/platos/results_gsm — pull them, then DESTROY the instance.
 2026-09-23 10:21:48,269 [INFO] platos_ship3.big_probe: 2 questions x 1 replicates; 2 fixed targets.
 2026-09-23 10:22:01,146 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
 2026-09-23 10:24:20,481 [INFO] platos_ship3.big_probe: Model ready in 2.3 min.
@@ -45,7 +45,7 @@
 2026-09-23 10:25:04,725 [INFO] platos_ship3.big_probe: Stage B: condition WR
 2026-09-23 10:25:24,149 [INFO] platos_ship3.big_probe:   WR written (6 rows total).
 2026-09-23 10:25:24,261 [INFO] platos_ship3.big_probe: Done. WR-minus-E shift = 0.1741 (95% CI [0.0018, 0.3465], n=2)
-2026-09-23 10:25:24,261 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_gsm — pull them, then DESTROY the instance.
+2026-09-23 10:25:24,261 [INFO] platos_ship3.big_probe: Results in /home/user/platos/results_gsm — pull them, then DESTROY the instance.
 2026-09-23 11:13:01,616 [INFO] platos_ship3.big_probe: 4 questions x 1 replicates; 4 fixed targets.
 2026-09-23 11:13:13,975 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
 2026-09-23 11:15:35,057 [INFO] platos_ship3.big_probe: Model ready in 2.4 min.
@@ -59,7 +59,7 @@
 2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: WR-minus-E [gsm8k]: 0.091275 (95% CI [0.002056, 0.180494], n=2)
 2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: WR-minus-E [mmlu_pro]: 0.022932 (95% CI [0.000254, 0.045610], n=2)
 2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: WR-minus-E [POOLED]: 0.057103 (95% CI [0.001155, 0.135884], n=4)   (pooled - do not report)
-2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results_mixed — pull them, then DESTROY the instance.
+2026-09-23 11:16:31,023 [INFO] platos_ship3.big_probe: Results in /home/user/platos/results_mixed — pull them, then DESTROY the instance.
 2026-09-23 11:51:55,230 [INFO] platos_ship3.big_probe: 300 questions x 3 replicates; 900 fixed targets.
 2026-09-23 11:52:07,818 [INFO] platos_ship3.big_probe: Loading meta-llama/Llama-3.1-8B-Instruct (bf16, tp=1)…
 2026-09-23 11:54:29,392 [INFO] platos_ship3.big_probe: Model ready in 2.4 min.
@@ -73,4 +73,4 @@
 2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: WR-minus-E [gsm8k]: 0.018871 (95% CI [0.010939, 0.028688], n=300)
 2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: WR-minus-E [mmlu_pro]: 0.060349 (95% CI [0.047586, 0.074238], n=600)
 2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: WR-minus-E [POOLED]: 0.046523 (95% CI [0.037490, 0.056171], n=900)   (pooled - do not report)
-2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: Results in /home/Debz/platos/results — pull them, then DESTROY the instance.
+2026-09-23 12:48:18,499 [INFO] platos_ship3.big_probe: Results in /home/user/platos/results — pull them, then DESTROY the instance.
