@@ -163,6 +163,58 @@ conditions:
     description: Confidence filter on honest peers
     legacy_analogue: C5H
 
+  # ── Phase 4 (PREREG_PHASE4.md; run by tools/run_phase4.py) ────────────
+  # Experiment A: 2 x 2 visibility factorial, run contemporaneously. The
+  # visible arms repeat R and WR under new names so all four arms share one
+  # collection window; the hidden arms omit the cached first answer.
+  A_R:
+    peer_source: none
+    n_peers: 0
+    description: "Exp. A: first answer shown, no peers"
+  A_WR:
+    peer_source: anchored_wrong
+    n_peers: 2
+    description: "Exp. A: first answer shown, two wrong peers (same personas as WR)"
+  A_Rhid:
+    peer_source: none
+    n_peers: 0
+    show_initial: false
+    description: "Exp. A: first answer hidden, no peers (fresh re-answer)"
+  A_WRhid:
+    peer_source: anchored_wrong
+    n_peers: 2
+    show_initial: false
+    description: "Exp. A: first answer hidden, two wrong peers (stateless peer condition)"
+  # Experiment C: matched three-round control; both arms collected together.
+  C_R:
+    peer_source: none
+    n_peers: 0
+    description: "Exp. C: no peers, three rounds, each round shows the previous answer"
+  C_WR:
+    peer_source: anchored_wrong
+    n_peers: 2
+    description: "Exp. C: two wrong peers re-asserting, three rounds"
+  # Experiment B: natural errors on a held-out pool; nested panels.
+  B_R:
+    peer_source: none
+    n_peers: 0
+    description: "Exp. B: no peers (matched baseline)"
+  B_P0:
+    peer_source: natural_panel
+    n_peers: 2
+    n_wrong: 0
+    description: "Exp. B: two natural peers, both correct"
+  B_P1:
+    peer_source: natural_panel
+    n_peers: 2
+    n_wrong: 1
+    description: "Exp. B: two natural peers, one correct and one wrong"
+  B_P2:
+    peer_source: natural_panel
+    n_peers: 2
+    n_wrong: 2
+    description: "Exp. B: two natural peers, both wrong"
+
 # ── Multi-round settings (X3 only) ────────────────────────────────────────
 rounds:
   default: 1

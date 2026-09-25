@@ -239,10 +239,16 @@ def run_condition(
                     round_index, unit,
                 )
 
+            # Experiment A: `show_initial: false` hides the cached first answer
+            # in round 1. The hidden answer still defines the unit's initial
+            # state (r0_is_correct), so transitions are resampling transitions.
+            shown_previous = (None if (round_index == 1 and
+                                       condition.get("show_initial", True) is False)
+                              else previous_text)
             system_prompt, user_prompt = build_revision_prompt(
                 question_text=question["question_text"],
                 answer_options=question.get("answer_options"),
-                own_previous_text=previous_text,
+                own_previous_text=shown_previous,
                 peers=round_peers,
                 peer_source=peer_source,
                 source_framing=source_framing,
@@ -304,6 +310,7 @@ def run_condition(
                     "replicate": replicate,
                     "round_index": round_index,
                     "n_rounds_total": rounds,
+                    "initial_answer_shown": shown_previous is not None,
                     # ── initial state (identical across conditions) ──
                     "r0_unit_id": r0["r0_unit_id"],
                     # Always the Round-0 answer, matching r0_is_correct.

@@ -30,6 +30,18 @@ from .voting import budget_matched_comparison, voting_baseline
 logger = logging.getLogger("platos_ship3.run_analysis")
 
 
+def _robustness(registry: pd.DataFrame, project_root: Path,
+                paths: Dict[str, str]) -> Dict[str, Any]:
+    """next_plan.md §4 sensitivity analyses (exploratory)."""
+    from .robustness import run_all as robustness_run_all
+
+    pool_path = _resolve(project_root, paths.get(
+        "gsm_symbolic_pool_file", "./results/processed/gsm_symbolic_pool.parquet"))
+    gsm_pool = pd.read_parquet(pool_path) if pool_path.exists() else pd.DataFrame(
+        columns=["question_identifier", "gsm_symbolic_id"])
+    return robustness_run_all(registry, Path(project_root), gsm_pool)
+
+
 def _resolve(project_root: Path, raw: str) -> Path:
     path = Path(raw)
     return path if path.is_absolute() else (project_root / raw).resolve()
@@ -251,12 +263,29 @@ def run_full_analysis(project_root: Path) -> Dict[str, Any]:
         # One table per condition: WR and H differ in how often the model
         # proposes a change and in whether the change is right, so a pooled
         # policy score would mostly report the WR/H mix.
+        # Cached Round-0 answers feed the Experiment D comparators: another
+        # sample of the focal model, and the verifier model's own unanchored
+        # answer (it is also a focal model, so its answers are already cached).
+        from src.agents import load_models_config
+
+        models_cfg = load_models_config(Path(project_root))
+        verifier_slug = str((models_cfg.get("verifier_agent") or {}).get("model_slug", ""))
+        verifier_focal = [k for k, s in models_cfg.get("focal_agents", {}).items()
+                          if str(s.get("model_slug", "")) == verifier_slug]
+        r0_answers = {(f, q, int(r)): a for f, q, r, a in zip(
+            r0["focal_key"], r0["question_identifier"], r0["replicate"], r0["extracted_answer"])}
+        independent = {}
+        if verifier_focal:
+            vr0 = r0[r0["focal_key"] == verifier_focal[0]]
+            independent = {(q, int(r)): a for q, r, a in zip(
+                vr0["question_identifier"], vr0["replicate"], vr0["extracted_answer"])}
         tables = []
         for (condition, focal), units in (
                 [((c, "ALL"), g) for c, g in subset.groupby("condition")]
                 + [(k, g) for k, g in subset.groupby(["condition", "focal_key"])]):
             table = score_policies(verified[verified["unit_id"].isin(units["unit_id"])],
-                                   units)
+                                   units, r0_answers=r0_answers,
+                                   independent_answers=independent)
             if not table.empty:
                 tables.append(table.assign(condition=condition, focal_key=focal))
         safeguard_table = (pd.concat(tables, ignore_index=True)
@@ -324,6 +353,7 @@ def run_full_analysis(project_root: Path) -> Dict[str, Any]:
         "gee_condition_ladder": gee.to_dict("records") if not gee.empty else [],
         "parse_failure_bounds": bounds.to_dict("records") if not bounds.empty else [],
         "adoption_excess_exploratory": adoption_excess(registry, solo_accuracy),
+        "robustness_exploratory": _robustness(registry, project_root, paths),
         "accounting_identity_max_deviation": (
             float(identity["absolute_difference"].max()) if not identity.empty
             else None),

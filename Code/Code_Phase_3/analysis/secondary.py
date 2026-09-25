@@ -161,14 +161,32 @@ def adoption_excess(registry: pd.DataFrame, solo_accuracy: Dict[str, float],
     joined["diff"] = joined["adopted_peer_target"].astype(float) - joined["chance"].astype(float)
 
     rows = []
+    rng_seed = seed
     for focal, group in joined.groupby("focal_key"):
-        per_q = group.groupby("question_identifier")["diff"].mean().to_numpy()
-        estimate, low, high = bootstrap_ci(per_q, n_resamples=n_resamples, seed=seed)
+        # The printed estimate is trial-weighted (a mean over initially
+        # correct units). Its interval must target the same estimand, so the
+        # bootstrap resamples whole questions and recomputes the trial-weighted
+        # ratio sum(diff) / n in each resample. The question-weighted mean is
+        # kept as a labelled sensitivity (next_plan.md P0.2).
+        per_q = group.groupby("question_identifier")["diff"].agg(["sum", "count"])
+        sums, counts = per_q["sum"].to_numpy(float), per_q["count"].to_numpy(float)
+        rng = np.random.default_rng(rng_seed)
+        idx = rng.integers(0, len(sums), size=(n_resamples, len(sums)))
+        boot = sums[idx].sum(axis=1) / counts[idx].sum(axis=1)
+        low, high = (float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5)))
+        q_mean, q_low, q_high = bootstrap_ci(
+            group.groupby("question_identifier")["diff"].mean().to_numpy(),
+            n_resamples=n_resamples, seed=seed)
         rows.append({"focal_key": focal, "solo_accuracy": solo_accuracy.get(focal, np.nan),
                      "adoption": float(group["adopted_peer_target"].astype(float).mean()),
                      "chance": float(group["chance"].mean()),
-                     "excess": float(group["diff"].mean()), "excess_q_mean": estimate,
-                     "ci_low": low, "ci_high": high, "n_units": int(len(group))})
+                     "excess": float(group["diff"].mean()),
+                     "ci_low": low, "ci_high": high,
+                     "weighting": "trial-weighted; question-cluster bootstrap",
+                     "excess_question_weighted": q_mean,
+                     "excess_question_weighted_ci": [q_low, q_high],
+                     "n_units": int(len(group)),
+                     "n_questions": int(len(sums))})
     table = pd.DataFrame(rows).dropna(subset=["solo_accuracy"])
     result = {"per_model": table.to_dict("records")}
     if len(table) >= 3:

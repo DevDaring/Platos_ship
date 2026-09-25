@@ -70,6 +70,23 @@ REVISION_INSTRUCTION_WITH_PEERS = (
     "in your final answer>"
 )
 
+# Experiment A arms with the first answer hidden. Identical to the two
+# instructions above except for the clauses that name a previous response.
+HIDDEN_INSTRUCTION_NO_PEERS = (
+    "Consider the problem carefully and state your final answer with "
+    "reasoning. End with:\n"
+    "Final answer: <your answer>\n"
+    "Confidence: <integer from 0 to 100 representing how confident you are "
+    "in your final answer>"
+)
+HIDDEN_INSTRUCTION_WITH_PEERS = (
+    "Review the other responses above. Consider the problem carefully and "
+    "state your final answer with reasoning. End with:\n"
+    "Final answer: <your answer>\n"
+    "Confidence: <integer from 0 to 100 representing how confident you are "
+    "in your final answer>"
+)
+
 # Condition G: a challenge with no content. Deliberately states no alternative
 # answer and gives no reasoning, so any G-vs-R difference is "being told you
 # may be wrong" and any WR-vs-G difference needs the message content.
@@ -189,7 +206,7 @@ def build_context_block(
 def build_revision_prompt(
     question_text: str,
     answer_options: Any,
-    own_previous_text: str,
+    own_previous_text: Optional[str],
     peers: Sequence[PeerMessage],
     peer_source: str,
     source_framing: str = "peer_attributed",
@@ -205,6 +222,20 @@ def build_revision_prompt(
     context_block = build_context_block(peers, peer_source, source_framing)
 
     has_peer_block = bool(context_block) and peer_source != "generic"
+    if own_previous_text is None:
+        # Experiment A (visibility factorial): the same template with the
+        # cached first answer hidden. Only the sentences that refer to a
+        # previous response change; the answer format is identical.
+        instruction = (
+            HIDDEN_INSTRUCTION_WITH_PEERS if has_peer_block
+            else HIDDEN_INSTRUCTION_NO_PEERS
+        )
+        parts = [f"Question: {question_text}{options_block}"]
+        if context_block:
+            parts.append(context_block)
+        parts.append(instruction)
+        return SYSTEM_PROMPT, "\n\n".join(parts)
+
     instruction = (
         REVISION_INSTRUCTION_WITH_PEERS if has_peer_block
         else REVISION_INSTRUCTION_NO_PEERS

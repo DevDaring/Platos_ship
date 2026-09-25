@@ -78,11 +78,21 @@ def x6_scoring_units(revisions: pd.DataFrame, experiment: Dict[str, Any],
     ].drop_duplicates("unit_id")
 
 
+def _paired_ci(per_q_a: pd.Series, per_q_b: pd.Series, seed: int):
+    """Question-paired bootstrap CI for mean(a - b) over shared questions."""
+    joined = pd.concat([per_q_a.rename("a"), per_q_b.rename("b")], axis=1).dropna()
+    if joined.empty:
+        return np.nan, np.nan, np.nan
+    return bootstrap_ci((joined["a"] - joined["b"]).to_numpy(), seed=seed)
+
+
 def score_policies(
     verified: pd.DataFrame,
     all_revisions: pd.DataFrame,
     confidence_threshold: int = 90,
     seed: int = 20260502,
+    r0_answers: Optional[Dict[tuple, Any]] = None,
+    independent_answers: Optional[Dict[tuple, Any]] = None,
 ) -> pd.DataFrame:
     """
     Score every policy on the FULL set of revision units, not only the changed
@@ -91,96 +101,141 @@ def score_policies(
 
     `verified` holds one row per proposed change (from src/verifier.py);
     `all_revisions` holds every unit of the same conditions.
+
+    Each unit carries an adoption PROBABILITY in [0, 1], so a policy's final
+    correctness is an expectation. For every deterministic policy this is 0/1.
+    `random_matched` adopts each proposed change with probability equal to the
+    verifier's acceptance rate among changes OF THE SAME FOCAL MODEL; scoring
+    the exact expectation instead of one Bernoulli draw makes the comparator
+    matched in the reported numbers, not only in expectation (next_plan.md P0.3).
+
+    Experiment D comparators (all computed from cached calls, no new API calls):
+      independent_answer  adopt a change only when the verifier model's own
+                          unanchored answer (its cached Round-0 answer to the
+                          same question and replicate) equals the revision;
+      extra_focal_sample  adopt a change only when another cached Round-0
+                          sample of the focal model equals the revision;
+      verifier_model_alone  replace the focal answer by the verifier model's own
+                          answer on every unit (a competence baseline).
     """
     if all_revisions.empty:
         return pd.DataFrame()
 
-    units = all_revisions.copy()
+    units = all_revisions.reset_index(drop=True).copy()
     verdicts = (
         verified.set_index("unit_id")["adopt_change"].to_dict()
         if not verified.empty else {}
     )
 
-    changed = units["answer_changed"].fillna(False).astype(bool)
+    changed = units["answer_changed"].fillna(False).astype(bool).to_numpy()
     coverage = float(changed.mean())
-    rng = np.random.default_rng(seed)
-
-    # Random policy adopts changes at the verifier's realised adoption rate.
     n_changed = int(changed.sum())
-    verifier_adoption_rate = (
-        float(np.mean([bool(verdicts.get(u, False))
-                       for u in units.loc[changed, "unit_id"]]))
-        if n_changed and verdicts else 0.0
-    )
-    random_adopt = np.zeros(len(units), dtype=bool)
-    random_adopt[np.flatnonzero(changed.to_numpy())] = (
-        rng.random(n_changed) < verifier_adoption_rate
-    )
+    verifier_adopt = np.array(
+        [bool(verdicts.get(u, False)) if c else False
+         for u, c in zip(units["unit_id"], changed)], dtype=bool)
+
+    # Random retention: probability = the verifier's acceptance rate among the
+    # changes of the same focal model, applied to every change of that model.
+    random_prob = np.zeros(len(units), dtype=float)
+    for focal, idx in units.groupby("focal_key").groups.items():
+        idx = np.asarray(list(idx))
+        ch = idx[changed[idx]]
+        if len(ch):
+            random_prob[ch] = verifier_adopt[ch].mean()
 
     revision_confidence = pd.to_numeric(
         units.get("extracted_confidence"), errors="coerce")
+    revised_correct = _score(units["extracted_answer"], units["correct_answer"])
+    initial_correct_answer = _score(units["r0_answer"], units["correct_answer"])
 
     policies: Dict[str, np.ndarray] = {
-        "always_keep": np.zeros(len(units), dtype=bool),
-        "always_revise": changed.to_numpy(),
-        "verifier": np.array(
-            [bool(verdicts.get(u, False)) if c else False
-             for u, c in zip(units["unit_id"], changed)], dtype=bool),
-        "random_matched": random_adopt,
-        "confidence": (changed.to_numpy()
-                       & (revision_confidence.fillna(-1) >= confidence_threshold).to_numpy()),
-        "oracle_upper_bound": (
-            changed.to_numpy()
-            & _score(units["extracted_answer"], units["correct_answer"])
-        ),
+        "always_keep": np.zeros(len(units)),
+        "always_revise": changed.astype(float),
+        "verifier": verifier_adopt.astype(float),
+        "random_matched": random_prob,
+        "confidence": (changed & (revision_confidence.fillna(-1) >= confidence_threshold)
+                       .to_numpy()).astype(float),
+        "oracle_upper_bound": (changed & revised_correct).astype(float),
     }
+    extra_calls: Dict[str, float] = {}
+    if independent_answers:
+        indep = [independent_answers.get((q, r)) for q, r in
+                 zip(units["question_identifier"], units["replicate"])]
+        policies["independent_answer"] = np.array(
+            [c and a is not None and answers_equal(a, rev)
+             for c, a, rev in zip(changed, indep, units["extracted_answer"])], dtype=float)
+        extra_calls["independent_answer"] = float(changed.mean())
+    if r0_answers:
+        other = []
+        for f, q, r in zip(units["focal_key"], units["question_identifier"], units["replicate"]):
+            other.append(r0_answers.get((f, q, (int(r) + 1) % 3)))
+        policies["extra_focal_sample"] = np.array(
+            [c and a is not None and answers_equal(a, rev)
+             for c, a, rev in zip(changed, other, units["extracted_answer"])], dtype=float)
+        extra_calls["extra_focal_sample"] = float(changed.mean())
 
     rows: List[Dict[str, Any]] = []
     initial_correct = units["r0_is_correct"].fillna(False).astype(bool).to_numpy()
+    per_question: Dict[str, pd.Series] = {}
+    per_question_harm: Dict[str, pd.Series] = {}
+
+    def summarise(policy_name: str, expected_correct: np.ndarray, adopt: np.ndarray):
+        frame = pd.DataFrame({"q": units["question_identifier"], "c": expected_correct,
+                              "init": initial_correct})
+        per_question[policy_name] = frame.groupby("q")["c"].mean()
+        per_question_harm[policy_name] = (1 - frame[frame["init"]].groupby("q")["c"].mean())
+        estimate, low, high = bootstrap_ci(per_question[policy_name].to_numpy(), seed=seed)
+        harm_den = int(initial_correct.sum())
+        ben_den = int((~initial_correct).sum())
+        harm_num = float((initial_correct * (1 - expected_correct)).sum())
+        ben_num = float(((~initial_correct) * expected_correct).sum())
+        rows.append({
+            "policy": policy_name,
+            "is_deployable": policy_name != "oracle_upper_bound",
+            "accuracy": estimate, "accuracy_ci_low": low, "accuracy_ci_high": high,
+            "harmful_revision": harm_num / harm_den if harm_den else np.nan,
+            "harmful_revision_denominator": harm_den,
+            "beneficial_revision": ben_num / ben_den if ben_den else np.nan,
+            "beneficial_revision_denominator": ben_den,
+            "beneficial_corrections_retained": ben_num,
+            "coverage_changes_proposed": coverage,
+            "adoption_rate_of_changes": (float(adopt[changed].mean())
+                                         if n_changed and adopt is not None else np.nan),
+            "extra_calls_per_unit": extra_calls.get(policy_name, 0.0),
+            "n_units": int(len(units)),
+            "n_questions": int(units["question_identifier"].nunique()),
+        })
 
     for policy_name, adopt in policies.items():
-        final_answer = np.where(adopt, units["extracted_answer"],
-                                units["r0_answer"])
-        final_correct = _score(pd.Series(final_answer), units["correct_answer"])
+        expected = adopt * revised_correct + (1 - adopt) * initial_correct_answer
+        summarise(policy_name, expected, adopt)
 
-        # Question-level values, because the question is the inference unit.
-        per_question = (
-            pd.DataFrame({"question_identifier": units["question_identifier"],
-                          "correct": final_correct})
-            .groupby("question_identifier")["correct"].mean()
-        )
-        estimate, low, high = bootstrap_ci(per_question.to_numpy(), seed=seed)
-
-        harmful_denominator = int(initial_correct.sum())
-        harmful_numerator = int((initial_correct & ~final_correct).sum())
-        beneficial_denominator = int((~initial_correct).sum())
-        beneficial_numerator = int((~initial_correct & final_correct).sum())
-
-        rows.append(
-            {
-                "policy": policy_name,
-                "is_deployable": policy_name != "oracle_upper_bound",
-                "accuracy": estimate,
-                "accuracy_ci_low": low,
-                "accuracy_ci_high": high,
-                "harmful_revision": (harmful_numerator / harmful_denominator
-                                     if harmful_denominator else np.nan),
-                "harmful_revision_denominator": harmful_denominator,
-                "beneficial_revision": (beneficial_numerator / beneficial_denominator
-                                        if beneficial_denominator else np.nan),
-                "beneficial_revision_denominator": beneficial_denominator,
-                "coverage_changes_proposed": coverage,
-                "adoption_rate_of_changes": (float(adopt.sum() / n_changed)
-                                             if n_changed else np.nan),
-                "n_units": int(len(units)),
-                "n_questions": int(units["question_identifier"].nunique()),
-            }
-        )
+    if independent_answers:
+        alone = np.array([a is not None and answers_equal(a, c) for a, c in zip(
+            [independent_answers.get((q, r)) for q, r in
+             zip(units["question_identifier"], units["replicate"])],
+            units["correct_answer"])], dtype=float)
+        extra_calls["verifier_model_alone"] = 1.0
+        summarise("verifier_model_alone", alone, None)
 
     table = pd.DataFrame(rows)
     baseline = table.loc[table["policy"] == "always_keep", "accuracy"]
     if not baseline.empty:
         table["accuracy_minus_always_keep"] = table["accuracy"] - float(baseline.iloc[0])
+    # Question-paired differences: verifier minus every other policy.
+    diffs = {}
+    for name in per_question:
+        if name == "verifier":
+            continue
+        est, lo, hi = _paired_ci(per_question["verifier"], per_question[name], seed)
+        hest, hlo, hhi = _paired_ci(per_question_harm["verifier"], per_question_harm[name], seed)
+        diffs[name] = (est, lo, hi, hest, hlo, hhi)
+    table["verifier_minus_accuracy"] = table["policy"].map(lambda p: diffs.get(p, (np.nan,) * 6)[0])
+    table["verifier_minus_accuracy_ci_low"] = table["policy"].map(lambda p: diffs.get(p, (np.nan,) * 6)[1])
+    table["verifier_minus_accuracy_ci_high"] = table["policy"].map(lambda p: diffs.get(p, (np.nan,) * 6)[2])
+    table["verifier_minus_harmful"] = table["policy"].map(lambda p: diffs.get(p, (np.nan,) * 6)[3])
+    table["verifier_minus_harmful_ci_low"] = table["policy"].map(lambda p: diffs.get(p, (np.nan,) * 6)[4])
+    table["verifier_minus_harmful_ci_high"] = table["policy"].map(lambda p: diffs.get(p, (np.nan,) * 6)[5])
     return table
 
 

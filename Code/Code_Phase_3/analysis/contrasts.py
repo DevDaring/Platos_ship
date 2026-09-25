@@ -222,9 +222,17 @@ def run_family(
     seed: int = 20260502,
 ) -> tuple[List[ContrastResult], Dict[str, Any]]:
     """
-    Run one declared family. Correlation entries are reported separately from
-    the Holm family, because a correlation across models and a paired
-    difference across questions are not exchangeable tests.
+    Run one declared family and Holm-correct over EVERY declared entry.
+
+    ANALYSIS_PLAN.md (frozen 23 Sept 2026, commit 6c78611) declares X1_primary
+    with six entries: four paired contrasts and two capability correlations.
+    Holm needs no exchangeability between tests, so the correlations enter the
+    family with their exact permutation p-values. An entry that cannot be
+    estimated (Protocol A ran its re-answer control on two models only, so its
+    excess correlation has no p-value) enters with p = 1, the conservative
+    choice; the five-test variant that drops it is kept as a sensitivity.
+    The earlier version of this function corrected over the four paired
+    contrasts only, which is a deviation from the frozen plan.
     """
     paired: List[ContrastResult] = []
     gradients: Dict[str, Any] = {}
@@ -260,7 +268,38 @@ def run_family(
             logger.warning("Unknown statistic '%s' in family %s.",
                            statistic, family_name)
 
-    apply_family(paired, family_name, alpha=alpha)
+    from .stats import holm_correct
+
+    # Declared correlation entries, in declaration order (the *_raw companions
+    # are descriptive and are not family members).
+    declared = [spec["name"] for spec in specifications
+                if spec["stat"] == "spearman_solo_vs_harmful_excess"]
+    raw_p = ([r.p_value for r in paired]
+             + [gradients[name].get("p_value", float("nan")) for name in declared])
+    conservative = [p if p is not None and np.isfinite(p) else 1.0 for p in raw_p]
+    adjusted, reject = holm_correct(conservative, alpha)
+    available = [p for p in raw_p if p is not None and np.isfinite(p)]
+    adjusted_available, _ = holm_correct(available, alpha)
+    lookup_available = iter(adjusted_available)
+    adjusted_drop = [next(lookup_available) if p is not None and np.isfinite(p)
+                     else float("nan") for p in raw_p]
+
+    for i, result in enumerate(paired):
+        result.family = family_name
+        result.p_holm = adjusted[i]
+        result.significant_after_holm = bool(reject[i])
+        result.extra["holm_family_size"] = len(raw_p)
+        result.extra["p_holm_dropping_unavailable"] = adjusted_drop[i]
+    for j, name in enumerate(declared):
+        i = len(paired) + j
+        gradients[name]["family"] = family_name
+        gradients[name]["p_holm"] = adjusted[i]
+        gradients[name]["significant_after_holm"] = bool(reject[i])
+        gradients[name]["p_used_in_holm"] = conservative[i]
+        gradients[name]["unavailable_entered_as_p1"] = not (
+            raw_p[i] is not None and np.isfinite(raw_p[i]))
+        gradients[name]["holm_family_size"] = len(raw_p)
+        gradients[name]["p_holm_dropping_unavailable"] = adjusted_drop[i]
     return paired, gradients
 
 

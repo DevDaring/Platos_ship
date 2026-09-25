@@ -44,6 +44,8 @@ class PersonaPools:
     honest_bank: Dict[tuple, List[Dict[str, Any]]]     # (question_id, replicate)
     # Wrong anchors that state a Confidence line; used by WRconf and WRfilt.
     anchored_confidence: Dict[str, List[Dict[str, Any]]] = None  # type: ignore[assignment]
+    # Experiment B: natural weak-model answers, all samples per question.
+    natural_bank: Dict[str, List[Dict[str, Any]]] = None  # type: ignore[assignment]
 
     @property
     def has_correct(self) -> bool:
@@ -125,6 +127,19 @@ def _index_honest(frame: Optional[pd.DataFrame]) -> Dict[tuple, List[Dict[str, A
     return index
 
 
+def _index_natural(frame: Optional[pd.DataFrame]) -> Dict[str, List[Dict[str, Any]]]:
+    """Experiment B bank: every usable natural message per question."""
+    if frame is None or frame.empty:
+        return {}
+    index: Dict[str, List[Dict[str, Any]]] = {}
+    for row in frame.to_dict("records"):
+        if (str(row.get("error_status") or "") in FAILED_STATUSES
+                or not str(row.get("message_text") or "").strip()):
+            continue
+        index.setdefault(row["question_identifier"], []).append(row)
+    return index
+
+
 def load_pools(paths: Dict[str, str], project_root: Path) -> PersonaPools:
     """Load whichever pools exist; missing optional pools degrade gracefully."""
 
@@ -157,6 +172,7 @@ def load_pools(paths: Dict[str, str], project_root: Path) -> PersonaPools:
         honest_bank=_index_honest(_read("honest_bank_file")),
         anchored_confidence=_index_personas(_read("confidence_personas_file"),
                                             "confident", "confidence"),
+        natural_bank=_index_natural(_read("natural_bank_file")),
     )
     logger.info(
         "Pools loaded: wrong=%d q, correct=%d q, hedged=%d q, honest=%d (q,rep)",
@@ -332,6 +348,55 @@ def build_peers(
                 )
             )
         diagnostics["n_peers_built"] = len(peers)
+        return peers, diagnostics
+
+    if peer_source == "natural_panel":
+        # Experiment B: controlled exposure to NATURALLY produced errors. The
+        # bank holds ordinary weak-model answers (no persona, no assigned
+        # answer). A question is eligible only when the bank has at least two
+        # correct and two wrong answers, so every composition (0, 1 or 2
+        # wrong) can be formed on the SAME question cohort. The draws are
+        # nested: the one-error panel is the first correct message of the
+        # zero-error panel plus the first wrong message of the two-error one.
+        bank = [m for m in (pools.natural_bank or {}).get(question_id, [])
+                if str(m.get("extracted_answer") or "").strip()]
+        bank.sort(key=lambda m: (str(m.get("weak_model_key", "")),
+                                 int(m.get("replicate", 0))))
+        correct = [m for m in bank if bool(m.get("is_correct"))]
+        wrong = [m for m in bank if not bool(m.get("is_correct"))]
+        diagnostics["n_bank_correct"] = len(correct)
+        diagnostics["n_bank_wrong"] = len(wrong)
+        if len(correct) < 2 or len(wrong) < 2:
+            diagnostics["skipped_reason"] = (
+                f"natural_panel_ineligible: {len(correct)} correct, {len(wrong)} "
+                "wrong in bank (need 2 and 2)")
+            return [], diagnostics
+        panel_rng = derive_rng(master_seed, "natural_panel", question_id, replicate)
+        correct_pick = panel_rng.sample(correct, 2)
+        wrong_pick = panel_rng.sample(wrong, 2)
+        n_wrong = int(condition.get("n_wrong", 0))
+        chosen = correct_pick[:n_peers - n_wrong] + wrong_pick[:n_wrong]
+        peers = []
+        for i, message in enumerate(chosen):
+            text = message.get("message_text", "") or ""
+            confidence, _ = extract_confidence(text)
+            is_wrong = not bool(message.get("is_correct"))
+            peers.append(PeerMessage(
+                display_name=PEER_DISPLAY_NAMES[i % len(PEER_DISPLAY_NAMES)],
+                text=text,
+                final_answer=message.get("extracted_answer"),
+                confidence=confidence,
+                message_generator_model=message.get("served_model", "")
+                or message.get("weak_model_key", ""),
+                nominal_peer_slot_model=message.get("weak_model_key", ""),
+                served_model=message.get("served_model", ""),
+                peer_source="natural_panel",
+                anchor_mode="wrong" if is_wrong else "correct",
+                assigned_target=message.get("extracted_answer") if is_wrong else None,
+                persona_identifier=message.get("honest_unit_id"),
+            ))
+        diagnostics["n_peers_built"] = len(peers)
+        diagnostics["n_natural_wrong_shown"] = n_wrong
         return peers, diagnostics
 
     if peer_source == "honest":
